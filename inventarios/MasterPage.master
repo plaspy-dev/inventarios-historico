@@ -1,0 +1,108 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="MasterPage" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <link rel="Stylesheet" type="text/css" href="css/estilos.css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Gestión de inventarios · edición histórica</title>
+    <link rel="Stylesheet" type="text/css" href="css/jquery-ui-1.8.20.custom.css" />
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-1.8.20.custom.min.js"></script>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server" class="cxc" >
+    <div id="contenedor">
+    <table class="cxc" border="0" id="tcxc" cellpadding=0 cellspacing=0>
+  <tr>
+    <td><table width="100%" border="0" id="tlogo" cellpadding=0 cellspacing=0>
+      <tr>
+        <td rowspan="2" width="12px">
+            <asp:ImageButton ID="ILogo" runat="server" CausesValidation="False" ImageUrl="~/img/logo.png" PostBackUrl="~/Default.aspx" />
+       </td>
+        <td align="right"><asp:Label runat="server" ID="LPagina" CssClass="titulo"></asp:Label></td>
+      </tr>
+      <tr>
+        <td align="left" valign="bottom">
+        </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr>
+    <td style="height:100%; min-height:100%; width: 100%" id="tdcxc">
+        <table border="0" cellpadding="0" cellspacing="0" class="cxc">
+      <!-- fwtable fwsrc="template.png" fwpage="Página 1" fwbase="template.jpg" fwstyle="Dreamweaver" fwdocid = "528861927" fwnested="0" -->
+      <tr>
+        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="51" height="1" border="0" id="undefined_2" /></td>
+        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="817" height="1" border="0" id="undefined_2" /></td>
+        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="43" height="1" border="0" id="undefined_2" /></td>
+        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="1" height="1" border="0" id="undefined_2" /></td>
+        </tr>
+      <tr>
+        <td><img name="template_r1_c1" src="img/img/template_r1_c1.jpg" width="51" height="42" border="0" id="template_r1_c1" alt="" /></td>
+        <td width="100%" background="img/img/template_r1_c2.jpg" valign="top" align="right"><asp:Label runat="server" ID="LUsuario" CssClass="usuario"></asp:Label></td>
+        <td><img name="template_r1_c3" src="img/img/template_r1_c3.jpg" width="43" height="42" border="0" id="template_r1_c3" alt="" /></td>
+        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="1" height="42" border="0" id="undefined_2" /></td>
+        </tr>
+      <tr class="cxc">
+        <td background="img/img/template_r2_c1.jpg"></td>
+        <td style="background: #FFF url(img/img/template_r2_c2.jpg) no-repeat" class="cxc" valign="top">
+            <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+          </asp:ContentPlaceHolder></td>
+          <td background="img/img/template_r2_c3.jpg"></td>
+        <td background="img/img/spacer.gif"></td>
+        </tr>
+      <tr>
+        <td><img name="template_r3_c1" src="img/img/template_r3_c1.jpg" width="51" height="49" border="0" id="template_r3_c1" alt="" /></td>
+        <td background="img/img/template_r3_c2.jpg"></td>
+        <td><img name="template_r3_c3" src="img/img/template_r3_c3.jpg" width="43" height="49" border="0" id="template_r3_c3" alt="" /></td>
+        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="1" height="49" border="0" id="undefined_2" /></td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+</div>
+    <div id="footer">Carrera 23 No. 80-58 PBX:(057+1)702 7022 Bogotá,Colombia<br />
+          Todos los derechos reservados <strong>SDG LTDA. </strong><br />
+          Desarrollado por <a href="https://service.example.invalid" target="_blank">Software 
+        Developers Group Ltda</a>.</div>    
+    </form>    
+    <script type="text/javascript">
+        // reemplazamos la funcion de validacion de ASP
+        function ValidatorOnChange(event) {
+            if (!event) {
+                event = window.event;
+            }
+            Page_InvalidControlToBeFocused = null;
+            var targetedControl;
+            if (event) {
+                if ((typeof (event.srcElement) != "undefined") && (event.srcElement != null)) {
+                    targetedControl = event.srcElement;
+                }
+                else {
+                    targetedControl = event.target;
+                }
+            }
+            var vals;
+            if (typeof (targetedControl) != "undefined") { // omitimos este
+                if (typeof (targetedControl.Validators) != "undefined") {
+                    vals = targetedControl.Validators;
+                } else {
+                    if (targetedControl.tagName.toLowerCase() == "label") {
+                        targetedControl = document.getElementById(targetedControl.htmlFor);
+                        vals = targetedControl.Validators;
+                    }
+                }
+            }
+            var i;
+            if (vals) {
+                for (i = 0; i < vals.length; i++) {
+                    ValidatorValidate(vals[i], null, event);
+                }
+            }
+            ValidatorUpdateIsValid();
+        }
+    </script>
+</body>
+</html>
