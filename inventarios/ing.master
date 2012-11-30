@@ -1,0 +1,226 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="ing.master.cs" Inherits="ing" %>
+<%@ Register src="~/modificaciones.ascx" TagName="modificaciones" TagPrefix="uc1" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <link rel="Stylesheet" type="text/css" href="css/estilos.css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Plaspy</title>
+    <link rel="Stylesheet" type="text/css" href="css/jquery-ui-1.8.20.custom.css" />
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-1.7.2.min.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-1.8.20.custom.min.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.ui.datepicker-es.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-numeric-min.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.ui.autocomplete.selectFirst.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/main.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            $("#tabs").tabs();
+            $("#<%= DAlmacen.ClientID %>").change(function() {
+                $.goURL("alm=" + $(this).val());
+            });
+        });
+        addFunctionToStart(function() {
+            addDialog("#<%= PAlertas.ClientID %>", "#dAlertas", true);
+        });
+    </script>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <div id="loading">Cargando ...</div>
+    <form id="form1" runat="server" class="cxc" >
+    <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePageMethods="true" ScriptMode="Release" LoadScriptsBeforeUI="false">
+    </asp:ScriptManager>
+    <div id="contenedor">
+    <table class="cxc" border="0" id="tcxc" cellpadding=0 cellspacing=0>
+  <tr>
+    <td><table width="100%" border="0" id="tlogo" cellpadding=0 cellspacing=0>
+      <tr>
+        <td rowspan="2" width="12px">
+        <asp:ImageButton ID="ILogo" runat="server" CausesValidation="False" ImageUrl="~/img/logo.png" PostBackUrl="~/inicio.aspx" /></td>
+        <td align="right"><asp:Label runat="server" ID="LPagina" CssClass="titulo"></asp:Label></td>
+      </tr>
+      <tr>
+        <td align="left" valign="bottom">
+        <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
+                <ContentTemplate>
+                <asp:Panel runat="server" ID="PAlertas" Visible="false">
+                    <div class="hide" id="dAlertas" title="Alertas" >
+                        <asp:GridView ID="GAlertas" runat="server" AutoGenerateColumns="False" 
+                            DataSourceID="SAlertas" EmptyDataText="No se encontraron alertas" ShowHeader="false">
+                            <RowStyle CssClass="GridRow"></RowStyle>
+                            <FooterStyle CssClass="GridFooter"></FooterStyle>
+                            <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                            <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                            <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                            <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                            <Columns>
+                                <asp:HyperLinkField DataTextField="nombre" HeaderText="Nombre" DataNavigateUrlFields="id" ItemStyle-HorizontalAlign="Left"
+                                    DataNavigateUrlFormatString="~/almacen/entrada.aspx?ei={0}" SortExpression="id" ItemStyle-Wrap="false" />
+                            </Columns>
+                        </asp:GridView>
+                        <asp:SqlDataSource ID="SAlertas" runat="server" 
+                            ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                            ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                            SelectCommand="SELECT CAST(CONCAT('Entrada No. ', entrada{0}.id, ' desde ', IFNULL(almacen.nombre,'(Ajustes)')) AS CHAR) AS nombre,entrada{0}.id,IFNULL(almacen.nombre,'(Ajustes)') AS almacen FROM entrada{0}
+                                    LEFT JOIN almacen ON (almacen.id=entrada{0}.desde)
+                                    WHERE entrada{0}.fecha IS NULL;">
+                        </asp:SqlDataSource>
+                        <button style="display: none !important;"></button>
+                    </div>
+                </asp:Panel>
+                    <div class="ui-tabs">
+                         <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-corner-all" style="float:right!important;line-height: 0.6;" id="uMenu">
+                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
+                                <asp:LinkButton ID="HAlertas" runat="server" onclick="HAlertas_Click" CausesValidation="false"></asp:LinkButton>
+                            </li>
+                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
+                                <asp:HyperLink ID="HContrasena" runat="server" NavigateUrl="~/contrasena.aspx">Contraseña</asp:HyperLink>
+                            </li>
+                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
+                                <asp:HyperLink ID="HSalir" runat="server" NavigateUrl="~/?end=1">Salir</asp:HyperLink>
+                            </li>
+                         </ul>
+                        </div>
+                </ContentTemplate>
+                </asp:UpdatePanel>
+        </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr>
+    <td style="height:100%; min-height:100%; width: 100%" id="tdcxc">
+        <table border="0" cellpadding="0" cellspacing="0" class="cxc">
+      <!-- fwtable fwsrc="template.png" fwpage="Página 1" fwbase="template.jpg" fwstyle="Dreamweaver" fwdocid = "528861927" fwnested="0" -->
+      <tr>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="51" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="817" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="43" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="1" /></td>
+        </tr>
+      <tr>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/template_r1_c1.jpg" Width="51" Height="42" /></td>
+        <td width="100%" class="bg2" valign="top" align="right">
+        <table cellpadding=0 cellspacing=0>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <asp:Label runat="server" ID="LMensaje"></asp:Label>&nbsp;
+                    <asp:Label runat="server" ID="LUsuario" CssClass="usuario"></asp:Label>
+                    <span class="usuario">(
+                    <asp:label runat="server" ID="LAlmacen" CssClass="usuario"></asp:label>
+                    <asp:DropDownList ID="DAlmacen" runat="server" DataSourceID="SAlmacen" 
+                        DataTextField="nombre" DataValueField="id" AppendDataBoundItems="true" >
+                        <asp:ListItem Text="(Ajustes)" Value="0"></asp:ListItem>
+                    </asp:DropDownList>)
+                    </span>
+                    <asp:SqlDataSource ID="SAlmacen" runat="server" 
+                        ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                        ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                        SelectCommand="SELECT id, nombre FROM almacen WHERE estado IS NULL {0} ORDER BY nombre">
+                    </asp:SqlDataSource>
+                </td>
+            </tr>
+        </table>
+        </td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/template_r1_c3.jpg" Width="43" Height="42" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="42" /></td>
+      </tr>
+      <tr>
+        <td class="bg3"></td>
+            <td class="bg4" valign="top">
+                <table>
+                    <tr>
+                        <td valign="top">
+                        <div id="tabs" style="min-width: 230px">
+                            <ul>
+                                <li><a href="#tabs-1">Navegador</a></li>
+                                <li><a href="#tabs-2">Propiedades</a></li>
+                            </ul>
+                            <div id="tabs-1">
+                                <asp:TreeView ID="TMenu" runat="server" EnableViewState="False" ExpandImageUrl="~/img/menubg.png" CollapseImageUrl="~/img/menubg.png">
+                                    <SelectedNodeStyle CssClass="linkMenu linkMenuA" ImageUrl="~/img/menuover.png" />
+                                    <NodeStyle CssClass="linkMenu" />
+                                </asp:TreeView>
+                            </div>
+                            <div id="tabs-2" class="hide">
+                                <uc1:modificaciones ID="MModificaciones" IdModificacion="" runat="server"/>
+                            </div>
+                        </div>
+                        </td>
+                        <td valign="top"><asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+                </asp:ContentPlaceHolder></td>
+                    </tr>
+                </table>
+          </td>
+          <td class="bg5"></td>
+        <td></td>
+        </tr>
+      <tr>
+        <td><asp:Image ID="Image1" runat="server" ImageUrl="~/img/img/template_r3_c1.jpg" Width="51" Height="49" /></td>
+        <td class="bg6"></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/template_r3_c3.jpg" Width="43" Height="49" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="49" /></td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+</div>
+    <div id="footer">Calle de Ejemplo 100. Tel. +1 202 555 0140<br />
+          Todos los derechos reservados <strong>SDG LTDA. </strong><br />
+          Desarrollado por <a href="http://www.sdg.com.co" target="_blank">Software Developers Group Ltda</a>.</div>    
+    </form>    
+    <script type="text/javascript">
+        prm = Sys.WebForms.PageRequestManager.getInstance();
+        prm.add_beginRequest(function(sender, args) {
+            if (g_OpenDialog) {
+                $(g_OpenDialog).dialog("close");
+                g_OpenDialog = null;
+            }
+            $("#loading").show();
+        });
+
+        prm.add_pageLoaded(function(sender, args) {
+
+            inicio();
+            $("#loading").hide();
+        });
+        // reemplazamos la funcion de validacion de ASP
+        function ValidatorOnChange(event) {
+            if (!event) {
+                event = window.event;
+            }
+            Page_InvalidControlToBeFocused = null;
+            var targetedControl;
+            if (event) {
+                if ((typeof (event.srcElement) != "undefined") && (event.srcElement != null)) {
+                    targetedControl = event.srcElement;
+                }
+                else {
+                    targetedControl = event.target;
+                }
+            }
+            var vals;
+            if (typeof (targetedControl) != "undefined") { // omitimos este
+                if (typeof (targetedControl.Validators) != "undefined") {
+                    vals = targetedControl.Validators;
+                } else {
+                    if (targetedControl.tagName.toLowerCase() == "label") {
+                        targetedControl = document.getElementById(targetedControl.htmlFor);
+                        vals = targetedControl.Validators;
+                    }
+                }
+            }
+            var i;
+            if (vals) {
+                for (i = 0; i < vals.length; i++) {
+                    ValidatorValidate(vals[i], null, event);
+                }
+            }
+            ValidatorUpdateIsValid();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<paginas>
+  <seccion>
+    <titulo>Administrador</titulo>
+    <pagina>
+      <titulo>Parámetros</titulo>
+      <url>~/administrador/Default.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Usuarios</titulo>
+      <url>~/administrador/usuario.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Grupos de usuarios</titulo>
+      <url>~/administrador/grupos.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Productos</titulo>
+      <url>~/administrador/productos.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Almacenes</titulo>
+      <url>~/administrador/almacenes.aspx</url>
+    </pagina>
+  </seccion>
+  <seccion>
+    <titulo>Almacen</titulo>
+    <pagina>
+      <titulo>Entrada</titulo>
+      <url>~/almacen/entrada.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Traslado</titulo>
+      <url>~/almacen/traslado.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Estado</titulo>
+      <url>~/almacen/estado.aspx</url>
+    </pagina>
+  </seccion>
+</paginas>

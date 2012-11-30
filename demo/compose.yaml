@@ -1,0 +1,17 @@
+services:
+  mysql:
+    image: mysql:5.6.51
+    container_name: prueba-inventarios-historico-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${INVENTARIO_DEMO_ROOT:?Generate a local test password}
+      MYSQL_DATABASE: demo_inventory
+      MYSQL_USER: inventario_demo
+      MYSQL_PASSWORD: ${INVENTARIO_DEMO_LOGIN:?Generate a local test password}
+    ports:
+      - "127.0.0.1:53306:3306"
+    networks: [demo]
+    volumes:
+      - ./schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
+      - ./insertar-demo.sh:/docker-entrypoint-initdb.d/20-demo.sh:ro
+networks:
+  demo: {}

@@ -1,0 +1,177 @@
+using System;
+using System.Collections;
+using System.Data;
+using System.Web;
+using MySql.Data.MySqlClient;
+using SDG.Componentes;
+
+namespace SDG.Web.UI.WebControls;
+
+internal class SessionState
+{
+	private class Querys
+	{
+		public int pos;
+
+		public string query;
+
+		public Querys(int pos, string query)
+		{
+			this.pos = pos;
+			this.query = query;
+		}
+	}
+
+	public ArrayList aCambios = new ArrayList();
+
+	public string szQuery = "";
+
+	public DataTable dataTable;
+
+	public SessionState(string owner, string query)
+	{
+		szQuery = query;
+		dataTable = new DataTable();
+		HttpContext.Current.Session["SessionState_" + owner] = this;
+	}
+
+	public static string GetValor(object valor)
+	{
+		if (valor == null)
+		{
+			return "NULL";
+		}
+		return GetValor(valor.ToString());
+	}
+
+	public static string GetValor(string valor)
+	{
+		string mySQLDateFormat = Conector.GetMySQLDateFormat(valor);
+		if (mySQLDateFormat.Length > 0)
+		{
+			valor = mySQLDateFormat;
+		}
+		if (valor == null || valor.Length == 0)
+		{
+			return "NULL";
+		}
+		switch (valor)
+		{
+		case "SYSDATE()":
+			return valor;
+		case "True":
+			return "true";
+		case "False":
+			return "false";
+		default:
+		{
+			string text = valor;
+			text = text.Replace("\\", "\\\\");
+			text = text.Replace("'", "\\'");
+			return "'" + text + "'";
+		}
+		}
+	}
+
+	public string[] GetQuerys()
+	{
+		string[] array = new string[aCambios.Count];
+		for (int i = 0; i < aCambios.Count; i++)
+		{
+			array[i] = ((Querys)aCambios[i]).query;
+		}
+		return array;
+	}
+
+	public bool Aplicar(string conexion)
+	{
+		if (aCambios.Count == 0)
+		{
+			return true;
+		}
+		MySqlConnection mySqlConnection;
+		try
+		{
+			mySqlConnection = new MySqlConnection(conexion);
+			mySqlConnection.Open();
+		}
+		catch (MySqlException innerException)
+		{
+			throw new InvalidOperationException(conexion + ": Error en la consulta", innerException);
+		}
+		for (int i = 0; i < aCambios.Count; i++)
+		{
+			Querys querys = (Querys)aCambios[i];
+			try
+			{
+				MySqlCommand mySqlCommand = mySqlConnection.CreateCommand();
+				mySqlCommand.CommandText = querys.query;
+				int num = mySqlCommand.ExecuteNonQuery();
+				if (num == -1)
+				{
+					return false;
+				}
+			}
+			catch (MySqlException innerException2)
+			{
+				throw new InvalidOperationException(querys.query + ": Error en la consulta", innerException2);
+			}
+		}
+		return true;
+	}
+
+	public bool CleanQuerys(int pos)
+	{
+		if (pos == -1)
+		{
+			return false;
+		}
+		DataRow dataRow = dataTable.Rows[pos];
+		if (dataRow["sqlexists"].ToString().Length == 0)
+		{
+			for (int i = 0; i < aCambios.Count; i++)
+			{
+				Querys querys = (Querys)aCambios[i];
+				if (querys.pos == pos)
+				{
+					aCambios.RemoveAt(i);
+					i--;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	public void DeleteRow(int pos)
+	{
+		DataRow dataRow = dataTable.Rows[pos];
+		CleanQuerys(pos);
+		dataRow.Delete();
+	}
+
+	public void AddQuery(string query, int pos)
+	{
+		aCambios.Add(new Querys(pos, query));
+	}
+
+	public static void Clean(string owner)
+	{
+		HttpContext.Current.Session.Remove("SessionState_" + owner);
+	}
+
+	public static SessionState Get(string owner)
+	{
+		return (SessionState)HttpContext.Current.Session["SessionState_" + owner];
+	}
+
+	public static SessionState Get(string owner, string query)
+	{
+		SessionState sessionState = (SessionState)HttpContext.Current.Session["SessionState_" + owner];
+		if (sessionState == null || sessionState.szQuery != query)
+		{
+			return null;
+		}
+		return sessionState;
+	}
+}
