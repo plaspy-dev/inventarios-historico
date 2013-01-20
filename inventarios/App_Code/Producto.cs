@@ -5,132 +5,252 @@ using System.Web;
 using System.Collections;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
+using System.IO;
+using System.Text;
+using System.Xml.Serialization;
 
 /// <summary>
 /// Descripción breve de Producto
 /// </summary>
+[Serializable]
 public class Producto
 {
-    public String producto { set; get; }
-    public String nombre { set; get; }
+    // para no serializar [XmlIgnore]
+    protected string _Codigo;
+    protected string _Unidad;
+    protected string _Descripcion;
+    protected string _Nombre;
+    protected int _nSerial = -1;
+    protected int _nLote = -1;
+    protected int _nVence = -1;
+
+    public String id { set; get; }
     public String lote { set; get; }
     public String vence { set; get; }
-    public double cantidad { set; get; }
+    public Decimal cantidad { set; get; }
+    public string serial { set; get; }
+    public int ubicacion { set; get; }
+    
+    [XmlIgnore]
+    public int nSerial { 
+        set {
+            _nSerial=value;
+        }
+        get {
+            if (_nSerial == -1 && !string.IsNullOrEmpty(id))
+                _nSerial = GetProducto(id).nSerial;
+            return _nSerial;
+        }
+    }
+    [XmlIgnore]
+    public int nLote {
+        set
+        {
+            _nLote = value;
+        }
+        get
+        {
+            if (_nLote == -1 && !string.IsNullOrEmpty(id))
+                _nLote = GetProducto(id).nLote;
+            return _nLote;
+        }
+    }
+    [XmlIgnore]
+    public int nVence {
+        set
+        {
+            _nVence = value;
+        }
+        get
+        {
+            if (_nVence == -1 && !string.IsNullOrEmpty(id))
+                _nVence = GetProducto(id).nVence;
+            return _nVence;
+        }
+    }
+    [XmlIgnore]
+    public String nombre { set { _Nombre = value; } 
+        get {
+            if (_Nombre == null && !string.IsNullOrEmpty(id))
+                _Nombre = GetProducto(id).nombre;
+            return _Nombre;
+        } 
+    }
+    [XmlIgnore]
+    public string codigo { 
+        set { 
+            _Codigo = value; 
+        } 
+        get {
+            if (_Codigo==null && !string.IsNullOrEmpty(id))
+                _Codigo = GetProducto(id).codigo;
+            return _Codigo;
+        } 
+    }
+    [XmlIgnore]
+    public string unidad { set { _Unidad = value; } 
+        get { 
+            if (_Unidad==null && !string.IsNullOrEmpty(id))
+                _Unidad = GetProducto(id).unidad;
+            return _Unidad; 
+        } 
+    }
+    [XmlIgnore]
+    public string descripcion { set { _Descripcion = value; } 
+        get {
+            if (_Descripcion == null && !string.IsNullOrEmpty(id))
+                _Descripcion = GetProducto(id).descripcion;
+            return _Descripcion; 
+        } 
+    }
+    [XmlIgnore]
+    public string NombreUbicacion { 
+        get {
+            return Almacen.GetNombreUbicacion(ubicacion);
+        } 
+    }
+    [XmlIgnore]
+    public string NombreCompleto {
+        get {
+            string completo="";
+            if (!string.IsNullOrEmpty(codigo))
+                completo = codigo + " - ";
+            completo += nombre;
+            return completo;
+        }
+    }
+    [XmlIgnore]
+    public string ProductoCompleto
+    {
+        get
+        {
+            string completo = "";
+            if (!string.IsNullOrEmpty(codigo))
+                completo = codigo + " - ";
+            completo += nombre;
+            if (!string.IsNullOrEmpty(lote))
+                completo += " (" + lote + ")";
+            completo += " " + vence;
+            return completo.Trim();
+        }
+    }
+
+    static public Producto GetProducto(string id)
+    {
+        Dictionary<string, Producto> info = GetCacheProductos();
+        Producto producto= null;
+        try
+        {
+            producto = info[id];
+        }
+        catch
+        {
+            producto = new Producto();
+            Query query = new Query("producto");
+            CConector conector = CConector.GetConector();
+
+            query += "nombre";
+            query += "descripcion";
+            query += "codigo";
+            query += "unidad";
+            query += "vence";
+            query += "lote";
+            query += "serial";
+
+            MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
+            if (reader != null && reader.Read())
+            {
+                producto.id = id;
+                producto.nombre = reader["nombre"].ToString();
+                producto.descripcion = reader["descripcion"].ToString();
+                producto.codigo = reader["codigo"].ToString();
+                producto.unidad = reader["unidad"].ToString();
+                producto.nVence = Convert.ToInt32(reader["vence"]);
+                producto.nLote = Convert.ToInt32(reader["lote"]);
+                producto.nSerial = Convert.ToInt32(reader["serial"]);
+            }
+            
+            info[id] = producto;
+        }
+        return producto;
+    }
+
+    static public Dictionary<string, Producto> GetCacheProductos()
+    {
+        Dictionary<string, Producto> info = (Dictionary<string, Producto>)HttpContext.Current.Session["productos_cache"];
+        if (info == null)
+            info = new Dictionary<string, Producto>();
+        return info;
+    }
+
     public Producto()
     {
+        ubicacion = 0;
+        serial = "";
     }
-    public Producto(String _producto, String _nombre, double _cantidad, String _lote, String _fecha)
+
+    public Producto(string idproducto) {
+
+        Producto producto= GetProducto(idproducto);
+        
+        id = producto.id;
+        nombre= producto.nombre;
+        descripcion = producto.descripcion;
+        codigo= producto.codigo;
+        unidad= producto.unidad;
+        nVence= producto.nVence;
+        nLote= producto.nLote;
+        nSerial = producto.nSerial;
+
+        ubicacion = 0;
+        serial = "";
+    }
+
+    public Producto(String _producto, String _nombre, Decimal _cantidad, String _lote, String _fecha, string _codigo, string _unidad, string _descripcion)
     {
-        producto = _producto;
+        id = _producto;
         nombre = _nombre;
         cantidad = _cantidad;
         lote = _lote;
         vence = _fecha;
+        codigo = _codigo;
+        unidad = _unidad;
+        descripcion = _descripcion;
+        ubicacion=0;
+        serial="";
     }
-    public Producto(String _producto, String _nombre, double _cantidad)
+
+    public Producto(String _producto, String _nombre, string _codigo, string _unidad,string _descripcion)
     {
-        producto = _producto;
+        id = _producto;
+        nombre = _nombre;
+        cantidad = 0;
+        codigo = _codigo;
+        unidad = _unidad;
+        descripcion = _descripcion;
+        ubicacion=0;
+        serial="";
+    }
+
+    public Producto(String _producto, String _nombre, Decimal _cantidad, string _codigo, string _unidad, string _descripcion)
+    {
+        id = _producto;
         nombre = _nombre;
         cantidad = _cantidad;
+        codigo = _codigo;
+        unidad = _unidad;
+        descripcion = _descripcion;
+        ubicacion=0;
+        serial="";
     }
 
-    public static void Clean() {
-
-        HttpContext.Current.Session["producto_temp"] = new List<Producto>();
-    }
-
-    public static List<Producto> GetProductosUsados() {
-        
-        List<Producto> productos = (List<Producto>)HttpContext.Current.Session["producto_temp"];
-        if(productos==null) {
-            productos= new List<Producto>();
-            HttpContext.Current.Session["producto_temp"]= productos;
-        }
-        return productos;
-    }
-
-    public static double GetProductoUsado(string producto) {
-        
-        List<Producto> productos = GetProductosUsados();
-        var resultado = from p in productos
-                        where p.producto==producto
-                        select p;
-        return resultado.Sum(p => p.cantidad);
-    }
-
-    public static double GetProductoUsado(string producto, string lote, string fecha)
+    public Producto(String _producto, Decimal _cantidad, String _lote, String _fecha, int _ubicacion)
     {
-        List<Producto> productos = GetProductosUsados();
-        var resultado = from p in productos
-                        where p.producto == producto && p.lote==lote && p.vence==fecha
-                        select p;
-        return resultado.Sum(p => p.cantidad);
-    }
-    
-    public static void DeleteProducto(String producto, double cantidad, string lote, string vencimiento)
-    {
-        List<Producto> productos = GetProductosUsados();
-        productos.RemoveAll(p => p.producto == producto && p.cantidad == cantidad && p.lote == lote && p.vence == vencimiento);
-    }
-
-    public static ArrayList GetProductos(String producto, double cantidad, String almacen, string lote, string vencimiento)
-    {
-        ArrayList productos = new ArrayList();
-        CConector conector = new CConector();
-
-        string szDisponible = conector.QueryString(string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto=" + Query.GetValor(producto) + " AND lote=" + Query.GetValor(lote) + " AND vence=STR_TO_DATE(" + Query.GetValor(vencimiento) + ", '%d/%m/%Y')", almacen));
-        double dCantidad = Convert.ToDouble(szDisponible);
-        dCantidad -= GetProductoUsado(producto, lote, vencimiento);
-
-        if (dCantidad < cantidad)
-            return null;
-
-        productos.Add(new Producto(producto, "", cantidad, lote, vencimiento));
-
-        List<Producto> productosalmacenados = GetProductosUsados();
-        for (int i = 0; i < productos.Count; i++ ) {
-
-            productosalmacenados.Add((Producto)productos[i]);
-        }
-
-        return productos;
-    }
-
-    public static ArrayList GetProductos(String producto, double cantidad, String almacen) {
-
-        ArrayList productos = new ArrayList();
-        CConector conector = new CConector();
-
-        string szDisponible= conector.QueryString(string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto=" + Query.GetValor(producto), almacen));
-        double dCantidad=Convert.ToDouble(szDisponible);
-        dCantidad -= GetProductoUsado(producto);
-        if (dCantidad < cantidad)
-            return null;
-        
-        MySqlDataReader reader = conector.Query(string.Format("SELECT cantidad,lote,vence FROM estado{0} WHERE producto=" + Query.GetValor(producto) + " AND cantidad>0 ORDER BY vence", almacen));
-        if(reader!=null) {
-            while(reader.Read()) {
-                
-                dCantidad= Convert.ToDouble(reader["cantidad"]);
-                dCantidad -= GetProductoUsado(producto, reader["lote"].ToString(), CConector.GetFromMySQLDate(reader["vence"]));
-                if (dCantidad == 0)
-                    continue;
-                if(dCantidad>cantidad) 
-                    dCantidad = cantidad;
-                productos.Add(new Producto(producto, "", dCantidad, reader["lote"].ToString(), CConector.GetFromMySQLDate(reader["vence"])));
-                cantidad-= dCantidad;
-                if (cantidad == 0)
-                    break;
-            }
-        }
-        if (cantidad > 0 || productos.Count==0)
-            return null;
-
-        List<Producto> productosalmacenados = GetProductosUsados();
-        for (int i = 0; i < productos.Count; i++)
-        {
-            productosalmacenados.Add((Producto)productos[i]);
-        }
-        return productos;
+        id = _producto;
+        cantidad = _cantidad;
+        lote = _lote;
+        vence = _fecha;
+        ubicacion = _ubicacion;
+        serial="";
     }
 }

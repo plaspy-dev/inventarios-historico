@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2012-11-30 · Recuperar el inventario web y la gestión de accesos.** Incorpora la estructura del sitio, la pantalla de grupos y sus recursos de navegación. El lector puede localizar la administración que acompaña a las operaciones de inventario.
+**2013-01-20 · Registrar salidas y transformaciones de productos.** Añade formularios de salida y transformación y amplía la búsqueda de productos. El usuario puede seleccionar el artículo y registrar los movimientos que cambian su existencia o composición.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2012-11-30 · Recover web inventory and access management.** Recover the site layout, group screen, and navigation resources. Readers can find the administration area that accompanies inventory operations.
+**2013-01-20 · Record product withdrawals and transformations.** Add withdrawal and transformation forms and extend product lookups. Users can select an item and record movements that change its stock or composition.
 
 ### How to explore the source
 

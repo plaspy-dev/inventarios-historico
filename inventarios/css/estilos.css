@@ -36,7 +36,7 @@ body {
 }
 #footer {
 	position: relative;
-	z-index: 5;
+	z-index: 0;
 	font-family: Helvetica, Arial, sans-serif;
 	color: #FFF;
 	font-size: 8px;
@@ -48,6 +48,7 @@ body {
 {
     background: url('../img/check.gif') no-repeat;
 }
+
 .hrv {
 	height: 300px; 
 	width: 0px; 
@@ -61,6 +62,26 @@ body {
 	height:0px; 
 	border-bottom: 1px solid #FFF; 
 	border-top: 1px solid #AAA;
+}
+
+.tdb
+{
+    border-bottom: 1px solid #3f7506; 
+}
+.tdt
+{
+    border-top: 1px solid #3f7506; 
+}
+.tdl
+{
+    border-left: 1px solid #3f7506; 
+}
+.tdr
+{
+    border-right: 1px solid #3f7506; 
+}
+table .tablecollapse {
+    border-collapse:collapse;
 }
 
 #loading 
@@ -117,7 +138,7 @@ body {
     color: #146B13;
     font-size: 35px;
 }
-.GridHeader
+.GridPager,.GridFooter,.GridHeader
 {
     /* ui-widget-header */
     border: 1px solid #3f7506; background: #156b13 url(images/ui-bg_highlight-soft_33_156b13_1x100.png) 50% 50% repeat-x; color: #ffffff; font-weight: bold;
@@ -134,9 +155,11 @@ body {
     border: 1px solid #45930b; 
     background: #DDEBCF;
 }
+
 .GridSelRow 
 {
-    
+    border: 1px solid #3f7506; background: #156b13 url(images/ui-bg_highlight-soft_33_156b13_1x100.png) 50% 50% repeat-x; color: #ffffff; font-weight: bold;
+    color: White !important;
 }
 
 .bg2 

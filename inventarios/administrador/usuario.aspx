@@ -126,7 +126,7 @@
                         <asp:SqlDataSource ID="SAlmacenes" runat="server"
                                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                                SelectCommand="(SELECT -2 AS id,'( Todos --Incluidos los nuevos)' AS nombre) UNION (SELECT -1 AS id,'(Ajustes)' AS nombre) UNION (SELECT id,nombre FROM almacen) ORDER BY nombre;">
+                                SelectCommand="(SELECT -2 AS id,'( Todos --Incluidos los nuevos)' AS nombre) UNION (SELECT -1 AS id,'(Ajustes)' AS nombre) UNION (SELECT id,nombre FROM almacen WHERE estado IS NULL) ORDER BY nombre;">
                         </asp:SqlDataSource>
                     </div>
                 </div>

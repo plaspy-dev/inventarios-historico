@@ -19,8 +19,17 @@ public partial class almacen_entrada : System.Web.UI.Page
         SProductos.SelectCommand = string.Format(SProductos.SelectCommand, ((ing)Master).GetAlmacen());
         SProductos.UpdateCommand = string.Format(SProductos.UpdateCommand, ((ing)Master).GetAlmacen());
         SProductos.DeleteCommand = string.Format(SProductos.DeleteCommand, ((ing)Master).GetAlmacen());
+        SUbicacion.SelectCommand = string.Format(SUbicacion.SelectCommand, ((ing)Master).GetAlmacen());
 
         if(!IsPostBack) {
+
+            GProductos.Columns[9].Visible = false;
+            if (Session["entrada_clean"] != null)
+            {
+                ViewState["clean"] = true;
+                Session["entrada_clean"] = null;
+            }
+            else ViewState["clean"] = false;
 
             CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
             if(!string.IsNullOrEmpty(Request.QueryString["ei"])) {
@@ -33,14 +42,16 @@ public partial class almacen_entrada : System.Web.UI.Page
                 query+="fecha";
                 query += "desde";
                 query += "traslado";
+                query += "documento";
 
                 MySqlDataReader reader= conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["ei"])));
                 if(reader!=null && reader.Read()) {
 
                     HId.Value = TNumero.Text = reader["id"].ToString();
-                    ((ing)Master).SetModificacion(HId.Value);
+                    ((ing)Master).SetModificacion(HId.Value, ((ing)Master).GetAlmacen());
                     TObservaciones.Text = reader["observaciones"].ToString();
                     TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
+                    TDocumento.Text = reader["documento"].ToString();
 
                     bool traslado = false;
                     if (!string.IsNullOrEmpty(reader["traslado"].ToString())) {
@@ -52,6 +63,9 @@ public partial class almacen_entrada : System.Web.UI.Page
                             HTraslado.Text += "(Ajustes)";
                         else HTraslado.Text += conector.QueryString("SELECT nombre FROM almacen WHERE id=" + reader["desde"].ToString());
                     }
+
+                    GProductos.Columns[8].Visible = TFecha.Text.Length != 0;
+                    GProductos.Columns[9].Visible = TFecha.Text.Length == 0;
 
                     TProducto.Focus();
                     GProductos.Columns[0].Visible = !traslado;
@@ -70,28 +84,43 @@ public partial class almacen_entrada : System.Web.UI.Page
 
     protected void GProductos_SelectedIndexChanged(object sender, EventArgs e)
     {
-        TProducto.Text= HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[2].Text).Trim();
-        TCantidad.Text= Convert.ToDouble(HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[3].Text).Trim()).ToString(CultureInfo.InvariantCulture);
-        TLote.Text= HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[4].Text).Trim();
-        TVencimiento.Text= HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[5].Text).Trim();
-        TProductoID.Text = HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[6].Text).Trim();
+        TProducto.Text= HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[3].Text).Trim();
+        TCantidad.Text= Convert.ToDecimal(HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[4].Text).Trim()).ToString(CultureInfo.InvariantCulture);
+        TUnidad.Text = HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[5].Text).Trim();
+        TLote.Text= HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[6].Text).Trim();
+        TVencimiento.Text= HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[7].Text).Trim();
+        TProductoID.Text = GProductos.DataKeys[GProductos.SelectedIndex].Values[1].ToString();
+        DUbicacion.SelectedValue = GProductos.DataKeys[GProductos.SelectedIndex].Values[2].ToString();
     }
 
     protected void BAgregar_Click(object sender, EventArgs e)
     {
+        Producto producto = new Producto(TProductoID.Text, Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), TLote.Text, TVencimiento.Text, Convert.ToInt32(DUbicacion.SelectedValue));
+
+        RVencimiento.Enabled = producto.nVence==1;
+        RLote.Enabled = producto.nLote == 1;
+        LVencimiento.CssClass= TVencimiento.CssClass = producto.nVence>0 ? "" : "hide";
+        LLote.CssClass = TLote.CssClass = producto.nLote > 0 ? "" : "hide";
+
         Page.Validate("producto");
         if (!Page.IsValid)
             return;
 
-        IOrderedDictionary data = new OrderedDictionary();
-        data.Add("nombre", TProducto.Text);
-        data.Add("producto", TProductoID.Text);
-        data.Add("cantidad", Convert.ToDouble(TCantidad.Text, CultureInfo.InvariantCulture));
-        data.Add("lote", TLote.Text);
-        data.Add("vence", Convert.ToDateTime(TVencimiento.Text));
+        ProductoUsado productousado = new ProductoUsado(HProductos.Value);
 
-        /*if (sender != BAgregar)
-            data.Add("id", TProcedimientoID.Text);*/
+        IOrderedDictionary data = new OrderedDictionary();
+        data.Add("nombre", producto.nombre);
+        data.Add("codigo", producto.codigo);
+        data.Add("producto", producto.id);
+        data.Add("cantidad", producto.cantidad);
+        data.Add("lote", producto.lote);
+        object vence = null;
+        if (!string.IsNullOrEmpty(producto.vence))
+            vence = Convert.ToDateTime(producto.vence);
+        data.Add("vence", vence);
+        data.Add("unidad", producto.unidad);
+        data.Add("nubicacion", DUbicacion.SelectedItem.Text);
+        data.Add("ubicacion", producto.ubicacion);
 
         if (GProductos.SelectedIndex == -1)
         {
@@ -99,25 +128,43 @@ public partial class almacen_entrada : System.Web.UI.Page
         }
         else
         {
-            data.Add("id", GProductos.DataKeys[GProductos.SelectedIndex].Value);
+            data.Add("id", GProductos.DataKeys[GProductos.SelectedIndex].Values[0]);
 
             IOrderedDictionary dataold = new OrderedDictionary();
 
-            dataold.Add("nombre", HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[2].Text).Trim());
-            dataold.Add("cantidad", Convert.ToDouble(HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[3].Text).Trim()));
-            dataold.Add("lote", HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[4].Text).Trim());
-            dataold.Add("vence", Convert.ToDateTime(HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[5].Text).Trim()));
-            dataold.Add("producto", HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[6].Text).Trim());
+            productousado.DeleteProducto(GProductos.DataKeys[GProductos.SelectedIndex].Values[1].ToString(),
+                Convert.ToDecimal(HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[4].Text).Trim()),
+                HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[6].Text).Trim(),
+                HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[7].Text).Trim(),
+                Convert.ToInt32(GProductos.DataKeys[GProductos.SelectedIndex].Values[2])
+                );
 
-            dataold.Add("id", GProductos.DataKeys[GProductos.SelectedIndex].Value);
+            dataold.Add("nombre", HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[3].Text).Trim());
+            dataold.Add("cantidad", Convert.ToDecimal(HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[4].Text).Trim()));
+            dataold.Add("lote", HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[6].Text).Trim());
+            dataold.Add("vence", Convert.ToDateTime(HttpUtility.HtmlDecode(GProductos.SelectedRow.Cells[7].Text).Trim()));
+
+            dataold.Add("id", GProductos.DataKeys[GProductos.SelectedIndex].Values[0]);
 
             SProductos.GetView().Update(data, data, dataold, OnDataSourceOperationComplete);
         }
         GProductos.SelectedIndex = -1;
         GProductos.DataBind();
 
-        TProducto.Text = TProductoID.Text = TCantidad.Text= TLote.Text = TVencimiento.Text = "";
+        RVencimiento.Enabled = true;
+        RLote.Enabled = true;
+
+        LVencimiento.CssClass = TVencimiento.CssClass = "";
+        LLote.CssClass = TLote.CssClass = "";
+
+        TUnidad.Text= TProducto.Text = TProductoID.Text = TCantidad.Text= TLote.Text = TVencimiento.Text = "";
+        DUbicacion.SelectedIndex = 0;
         TProducto.Focus();
+
+        productousado.GetProductosUsados().Add(producto);
+        HProductos.Value = productousado.Serialize();
+
+        ScriptManager.RegisterStartupScript(TProducto, typeof(String), "pregunta", "window.onbeforeunload = function() { return '¿Ha realizado cambios, esta seguro de abandonar la pagina?'; };", true);
     }
 
     private bool OnDataSourceOperationComplete(int count, Exception e)
@@ -129,16 +176,30 @@ public partial class almacen_entrada : System.Web.UI.Page
         return false;
     }
 
+    protected void GProductos_RowDeleted(object sender, GridViewDeletedEventArgs e)
+    {
+        ProductoUsado productousado = new ProductoUsado(HProductos.Value);
+        string vence = e.Values["vence"] == null ? "" : e.Values["vence"].ToString();
+        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), e.Values["lote"].ToString(), vence, Convert.ToInt32(e.Keys["ubicacion"]));
+        HProductos.Value = productousado.Serialize();
+    }
+
     protected void BAceptar_Click(object sender, EventArgs e)
     {
         if (!IsValid)
             return;
+
+        if (GProductos.Rows.Count == 0) {
+            LMensaje.Text = "Por favor ingrese por lo menos un producto";
+            return;
+        }
 
         Query query = new Query("entrada" + ((ing)Master).GetAlmacen());
         CConector conector = new CConector();
 
         query["observaciones"] = TObservaciones.Text;
         query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
+        query["documento"] = TDocumento.Text;
 
         conector.StartTransaction();
 
@@ -148,23 +209,35 @@ public partial class almacen_entrada : System.Web.UI.Page
         {
             int res = conector.QueryMod(query.GetInsert(), true);
             if (res == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
                 return;
+            }
             HId.Value = res.ToString();
         }
         else
         {
             if (conector.QueryMod(query.GetUpdate("id=" + Query.GetValor(HId.Value))) == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
                 return;
+            }
         }
 
-        if (conector.InsertModificacion(HId.Value) == -1)
+        if (conector.InsertModificacion(HId.Value, ((ing)Master).GetAlmacen()) == -1)
+        {
+            LMensaje.Text = conector.GetLastError();
             return;
+        }
 
         string[] productos = SProductos.GetQuerys();
         for (int i = 0; i < productos.Length; i++)
         {
             if (conector.QueryMod(string.Format(productos[i], ((ing)Master).GetAlmacen()).Replace("@rentrada", HId.Value)) == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
                 return;
+            }
         }
 
         if(existe) {
@@ -177,20 +250,60 @@ public partial class almacen_entrada : System.Web.UI.Page
 
                 if (almacendesde.Length > 0 && trasladoId.Length > 0)
                     if (conector.QueryMod(string.Format("DELETE traslado_items{0} FROM traslado_items{0} LEFT JOIN entrada_items{1} ON (entrada_items{1}.id=traslado_items{0}.entrada_items) WHERE traslado_items{0}.traslado=" + trasladoId + " AND entrada_items{1}.id IS NULL;", almacendesde, ((ing)Master).GetAlmacen())) == -1)
+                    {
+                        LMensaje.Text = conector.GetLastError();
                         return;
+                    }
 
             }
         }
 
-        if(TFecha.Text.Length>0)
+        if (TFecha.Text.Length > 0)
+        {
+            if(GProductos.Columns[9].Visible) {
+                for (int i = 0; i < GProductos.Rows.Count; i++)
+                {
+                    DropDownList ubicacion = (DropDownList)GProductos.Rows[i].FindControl("DUbicacion");
+                    if(ubicacion.SelectedValue!="0") { // se modifico la ubicacion.
+                        if (conector.QueryMod("UPDATE entrada_items" + ((ing)Master).GetAlmacen() + " SET ubicacion=" + ubicacion.SelectedValue + " WHERE id=" + GProductos.DataKeys[i].Values[0]) == -1)
+                        {
+                            LMensaje.Text = conector.GetLastError();
+                            return;
+                        }
+                    }
+                }
+            }
             if (conector.QueryMod("UPDATE entrada_items" + ((ing)Master).GetAlmacen() + " SET ingreso=SYSDATE() WHERE entrada=" + HId.Value + " AND ingreso IS NULL") == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
                 return;
+            }
+        }
 
         conector.Commit();
+        Session["entrada_clean"] = 1;
         ((ing)Master).SetResultado("Entrada " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)
     {
+        Session["entrada_clean"] = 1;
         Response.Redirect(Request.Url.AbsolutePath);
+    }
+    protected void BActualizar_Click(object sender, EventArgs e)
+    {
+        ProductoUsado productousado = new ProductoUsado(HProductos.Value);
+        HProductos.Value = "";
+        List<Producto> productos = productousado.GetProductosUsados();
+        for (int i = 0; i < productos.Count; i++)
+        {
+            Producto producto = productos[i];
+            TProductoID.Text = producto.id;
+            TCantidad.Text = producto.cantidad.ToString(CultureInfo.InvariantCulture);
+            TLote.Text = producto.lote;
+            TVencimiento.Text = producto.vence;
+            TProducto.Text = producto.NombreCompleto;
+            TUnidad.Text = producto.unidad;
+            BAgregar_Click(sender, e);
+        }
     }
 }

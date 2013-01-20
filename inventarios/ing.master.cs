@@ -11,13 +11,13 @@ public partial class ing : System.Web.UI.MasterPage
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        // CUsuario.CheckVariables();
         CUsuario usuario = (CUsuario)Usuario.GetUsuario();
 
         if (!IsPostBack)
         {
             InitAlmacen();
             CheckAlmacen();
-            ViewState["almacen"] = DAlmacen.SelectedValue;
             LUsuario.Text = usuario.GetNombre();
 
             CConector conector= new CConector();
@@ -48,6 +48,10 @@ public partial class ing : System.Web.UI.MasterPage
         }
         usuario.CreateMenu(TMenu, Session["parametros"] == null ? "" : Session["parametros"].ToString());
     }
+    public void SetModificacion(string idModificaciones, string id2) {
+        
+        MModificaciones.SetModificacion(idModificaciones, id2);
+    }
     public void SetModificacion(string idModificaciones)
     {
         MModificaciones.IdModificacion = idModificaciones;
@@ -69,11 +73,15 @@ public partial class ing : System.Web.UI.MasterPage
             Response.Redirect(HttpContext.Current.Request.Url.AbsolutePath + query);
             Response.End();
         }
-        if (ViewState["almacen"]!=null && ViewState["almacen"].ToString()!=GetAlmacen()) {
+        /*if (ViewState["almacen"]!=null && ViewState["almacen"].ToString()!=GetAlmacen()) {
             Response.Redirect(HttpContext.Current.Request.Url.AbsolutePath + HttpContext.Current.Request.Url.Query);
             Response.End();
-        }
+        }*/
     }
+    public DropDownList GetDropDownAlmacen() {
+        return DAlmacen;
+    }
+
     public string GetAlmacen() {
 
         InitAlmacen();
@@ -99,6 +107,9 @@ public partial class ing : System.Web.UI.MasterPage
     }
 
     protected void InitAlmacen() {
+
+        if (ViewState["almacen"] != null) // ya se inicio el almacen
+            return;
 
         CUsuario usuario = (CUsuario)Usuario.GetUsuario();
         if (usuario["almacenes"] == "")
@@ -131,7 +142,7 @@ public partial class ing : System.Web.UI.MasterPage
                     DAlmacen.DataBind();
                     DAlmacen.SelectedValue = Session["almacen"].ToString();
                 }
-                catch (Exception ex) { if(DAlmacen.Items.Count>0) DAlmacen.SelectedIndex = 0; }
+                catch { if(DAlmacen.Items.Count>0) DAlmacen.SelectedIndex = 0; }
             }
             Session["almacen"] = null;
             ViewState["almacen"] = DAlmacen.SelectedValue;
@@ -145,8 +156,9 @@ public partial class ing : System.Web.UI.MasterPage
                     DAlmacen.DataBind();
                     DAlmacen.SelectedValue = CConector.GetCookie("almacen");
                 }
-                catch (Exception ex) { if (DAlmacen.Items.Count > 0) DAlmacen.SelectedIndex = 0; }
+                catch { if (DAlmacen.Items.Count > 0) DAlmacen.SelectedIndex = 0; }
             }
+            ViewState["almacen"] = DAlmacen.SelectedValue;
         }
     }
     protected void HAlertas_Click(object sender, EventArgs e)

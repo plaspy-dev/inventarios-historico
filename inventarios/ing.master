@@ -7,11 +7,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Gestión de inventarios · edición histórica</title>
     <link rel="Stylesheet" type="text/css" href="css/jquery-ui-1.8.20.custom.css" />
-    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-1.7.2.min.js"></script>
-    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-1.8.20.custom.min.js"></script>
+    <link rel="Stylesheet" type="text/css" href="css/alertas/jquery-ui-1.9.2.custom.min.css" />
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-1.8.3.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-1.9.2.custom.min.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.ui.datepicker-es.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-numeric-min.js"></script>
-    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.ui.autocomplete.selectFirst.js"></script>
+    
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/main.js"></script>
     <script type="text/javascript">
         $(function() {
@@ -70,16 +71,24 @@
                         <button style="display: none !important;"></button>
                     </div>
                 </asp:Panel>
+                    <div class="alertas">
+                        <div class="ui-tabs">
+                            <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-corner-all" style="float:right!important;line-height: 0.6;">
+                            </ul>
+                        </div>
+                    </div>
                     <div class="ui-tabs">
                          <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-corner-all" style="float:right!important;line-height: 0.6;" id="uMenu">
-                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
-                                <asp:LinkButton ID="HAlertas" runat="server" onclick="HAlertas_Click" CausesValidation="false"></asp:LinkButton>
-                            </li>
+                            <span class=alertas>
+                                <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
+                                    <asp:LinkButton ID="HAlertas" runat="server" onclick="HAlertas_Click" CausesValidation="false"></asp:LinkButton>
+                                </li>
+                            </span>
                             <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
                                 <asp:HyperLink ID="HContrasena" runat="server" NavigateUrl="~/contrasena.aspx">Contraseña</asp:HyperLink>
                             </li>
                             <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
-                                <asp:HyperLink ID="HSalir" runat="server" NavigateUrl="~/?end=1">Salir</asp:HyperLink>
+                                <asp:HyperLink ID="HSalir" runat="server" NavigateUrl="~/Default.aspx?end=1">Salir</asp:HyperLink>
                             </li>
                          </ul>
                         </div>

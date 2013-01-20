@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using SDG.Componentes;
+using MySql.Data.MySqlClient;
 
 public partial class administrador_almacenes : System.Web.UI.Page
 {
@@ -18,6 +20,9 @@ public partial class administrador_almacenes : System.Web.UI.Page
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
             GResultado.Columns[0].Visible = usuario.CanUpdate();
+#if DEBUG
+            BActualizar.Visible= usuario.CanAdmin();
+#endif
         }
     }
 
@@ -29,12 +34,16 @@ public partial class administrador_almacenes : System.Web.UI.Page
         CConector conector = CConector.GetConector();
         string szQuery;
         string mensaje;
+        bool crearalmacenes = false;
+
+        conector.StartTransaction();
 
         query["nombre"] = TNombre.Text;
         query["descripcion"] = TDescripcion.Text;
 
         if (HId.Value.Length == 0)
         {
+            crearalmacenes = true;
             szQuery = query.GetInsert();
             mensaje = TNombre.Text + " ingresado";
         }
@@ -48,36 +57,83 @@ public partial class administrador_almacenes : System.Web.UI.Page
             return;
         if (HId.Value.Length == 0)
             HId.Value = res.ToString();
+
+
         if (conector.InsertModificacion(HId.Value) == -1)
             return;
 
-        // creammos las tablas del almacen
-        if (conector.QueryMod("CREATE TABLE entrada0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	fecha DATE,		observaciones TEXT,	desde BIGINT UNSIGNED,	traslado BIGINT UNSIGNED,	estado INT,	PRIMARY KEY(id)) ENGINE=InnoDB;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TABLE entrada_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	entrada BIGINT UNSIGNED NOT NULL, producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,	ingreso DATETIME,	traslado_items BIGINT UNSIGNED,	FOREIGN KEY (entrada) REFERENCES entrada0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TABLE estado0 (	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE UNSIGNED,	lote VARCHAR(255),	vence DATE,	modificacion DATETIME,	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(producto,lote,vence)) ENGINE=InnoDB;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TABLE traslado0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	envio DATE,		llegada DATE,	observaciones TEXT,	destino BIGINT UNSIGNED,	entrada BIGINT UNSIGNED,	estado INT,	PRIMARY KEY(id)) ENGINE=InnoDB;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TABLE traslado_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	traslado BIGINT UNSIGNED NOT NULL,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,	ingreso DATETIME,	entrada_items BIGINT UNSIGNED,	FOREIGN KEY (traslado) REFERENCES traslado0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;".Replace("0", HId.Value)) == -1)
-            return;
 
-        // creamos los disparadores
-        if (conector.QueryMod("CREATE TRIGGER bi_entrada_items0 BEFORE INSERT ON entrada_items0 FOR EACH ROW BEGIN 	IF NEW.ingreso IS NOT NULL THEN 		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence; 	    INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, SYSDATE()); 	END IF; END;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TRIGGER bu_entrada_items0 BEFORE UPDATE ON entrada_items0 FOR EACH ROW BEGIN 	IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;			UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence;			INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, SYSDATE());		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence;		INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, SYSDATE());		END IF; END;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TRIGGER bd_entrada_items0 BEFORE DELETE ON entrada_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN      UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;	END IF; END; ".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TRIGGER bi_traslado_items0 BEFORE INSERT ON traslado_items0 FOR EACH ROW BEGIN 	IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence;	END IF; END;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TRIGGER bu_traslado_items0 BEFORE UPDATE ON traslado_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence;	END IF; END;".Replace("0", HId.Value)) == -1)
-            return;
-        if (conector.QueryMod("CREATE TRIGGER bd_traslado_items0 BEFORE DELETE ON traslado_items0 FOR EACH ROW BEGIN 	IF OLD.ingreso IS NOT NULL THEN 		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence; 	END IF; END;".Replace("0", HId.Value)) == -1)
-            return;
-        /*if (conector.QueryMod("CREATE TRIGGER bu_estado0 BEFORE UPDATE ON estado0 FOR EACH ROW BEGIN	IF NEW.cantidad<0 THEN    UPDATE error_cantidades_negativas SET x=1;	END IF; END;".Replace("0", HId.Value)) == -1)
-            return;*/
+        string []consultas= SUbicaciones.GetQuerys();
+        for (int i = 0; i < consultas.Length; i++)
+            if (conector.QueryMod(consultas[i].Replace("@almacen", HId.Value)) == -1)
+                return;
+
+        conector.Commit();
+
+        if (crearalmacenes)
+        {
+
+            // creammos las tablas del almacen
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE entrada0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	fecha DATE,		observaciones TEXT,	desde BIGINT UNSIGNED,	traslado BIGINT UNSIGNED,	estado INT,	documento VARCHAR(255), PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE entrada_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	entrada BIGINT UNSIGNED NOT NULL, producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,	ingreso DATETIME,	traslado_items BIGINT UNSIGNED,	FOREIGN KEY (entrada) REFERENCES entrada0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE estado0 (	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE UNSIGNED,	lote VARCHAR(255),	vence DATE,serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,	modificacion DATETIME,	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(producto,lote,vence,serial, ubicacion)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE traslado0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	envio DATE,		llegada DATE,	observaciones TEXT,	destino BIGINT UNSIGNED,	entrada BIGINT UNSIGNED,	estado INT,	documento VARCHAR(255), PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE traslado_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	traslado BIGINT UNSIGNED NOT NULL,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,	ingreso DATETIME,	entrada_items BIGINT UNSIGNED,	FOREIGN KEY (traslado) REFERENCES traslado0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE salida0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	fecha DATE,		observaciones TEXT,	estado INT,	documento VARCHAR(255), PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE salida_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	salida BIGINT UNSIGNED NOT NULL,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,	ingreso DATETIME,	FOREIGN KEY (salida) REFERENCES salida0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE transformacion_salida0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,	ingreso DATETIME,	observaciones TEXT,	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE transformacion_entrada0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,	ingreso DATETIME,	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+                return;
+            /*if (conector.QueryMod(Almacen.ReplaceAlmacenTables("", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("", HId.Value)) == -1)
+                return;*/
+
+
+            // creamos los disparadores
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_entrada_items0 BEFORE INSERT ON entrada_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;	IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	    INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial, NEW.ubicacion, SYSDATE());	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_entrada_items0 BEFORE UPDATE ON entrada_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN 		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;	IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;			INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad,NEW.serial,NEW.ubicacion, SYSDATE());		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad,serial,ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial,NEW.ubicacion, SYSDATE());	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_entrada_items0 BEFORE DELETE ON entrada_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN      UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_traslado_items0 BEFORE INSERT ON traslado_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_traslado_items0 BEFORE UPDATE ON traslado_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial AND NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_traslado_items0 BEFORE DELETE ON traslado_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_salida_items0 BEFORE INSERT ON salida_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_salida_items0 BEFORE UPDATE ON salida_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_salida_items0 BEFORE DELETE ON salida_items0 FOR EACH ROW BEGIN 	IF OLD.ingreso IS NOT NULL THEN 		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion; 	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_transformacion_salida0 BEFORE INSERT ON transformacion_salida0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_transformacion_salida0 BEFORE UPDATE ON transformacion_salida0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_transformacion_salida0 BEFORE DELETE ON transformacion_salida0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_transformacion_entrada0 BEFORE INSERT ON transformacion_entrada0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	    INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial,ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial, NEW.ubicacion, SYSDATE());	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_transformacion_entrada0 BEFORE UPDATE ON transformacion_entrada0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;			INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad,NEW.serial,NEW.ubicacion, SYSDATE());		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad,serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial,NEW.ubicacion, SYSDATE());	END IF; END;", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_transformacion_entrada0 BEFORE DELETE ON transformacion_entrada0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN      UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", HId.Value)) == -1)
+                return;
+            /*if (conector.QueryMod(Almacen.ReplaceAlmacenTables("", HId.Value)) == -1)
+                return;
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("", HId.Value)) == -1)
+                return;*/
+        }
 
         ((ing)Master).SetResultado(mensaje);
     }
@@ -94,5 +150,175 @@ public partial class administrador_almacenes : System.Web.UI.Page
         TDescripcion.Text = HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[3].Text).Trim();
 
         ((ing)Master).SetModificacion(HId.Value);
+    }
+
+    protected void BActualizar_Click(object sender, EventArgs e)
+    {
+        CConector conector = new CConector();
+        MySqlDataReader reader= conector.Query("SELECT id FROM almacen");
+        if(reader!=null) {
+
+            while(reader.Read()) {
+
+                CConector conector2= new CConector();
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada0 ADD documento VARCHAR(255)", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE traslado0 ADD documento VARCHAR(255)", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida0 ADD documento VARCHAR(255)", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada_items0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada_items0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE traslado_items0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE traslado_items0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_salida0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_salida0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_entrada0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_entrada0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("RENAME TABLE estado0 TO estado0_temp;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE estado0 ( producto BIGINT UNSIGNED NOT NULL, cantidad DOUBLE UNSIGNED, lote VARCHAR(255), vence DATE, serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0, modificacion DATETIME, FOREIGN KEY (producto) REFERENCES producto(id),PRIMARY KEY(producto,lote,vence,serial, ubicacion)) ENGINE=InnoDB;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("INSERT INTO estado0 SELECT producto,cantidad,lote,vence,serial,ubicacion,modificacion FROM estado0_temp;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TABLE estado0_temp;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_entrada_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_entrada_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_entrada_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_traslado_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_traslado_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_traslado_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_salida_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_salida_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_salida_items0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_transformacion_salida0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_transformacion_salida0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_transformacion_salida0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_transformacion_entrada0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_transformacion_entrada0;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_transformacion_entrada0;", reader["id"].ToString()));
+
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_entrada_items0 BEFORE INSERT ON entrada_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	    INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial, NEW.ubicacion, SYSDATE());	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_entrada_items0 BEFORE UPDATE ON entrada_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;			INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad,NEW.serial,NEW.ubicacion, SYSDATE());		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad,serial,ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial,NEW.ubicacion, SYSDATE());	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_entrada_items0 BEFORE DELETE ON entrada_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN      UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_traslado_items0 BEFORE INSERT ON traslado_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_traslado_items0 BEFORE UPDATE ON traslado_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial AND NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_traslado_items0 BEFORE DELETE ON traslado_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_salida_items0 BEFORE INSERT ON salida_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_salida_items0 BEFORE UPDATE ON salida_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_salida_items0 BEFORE DELETE ON salida_items0 FOR EACH ROW BEGIN 	IF OLD.ingreso IS NOT NULL THEN 		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion; 	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_transformacion_salida0 BEFORE INSERT ON transformacion_salida0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_transformacion_salida0 BEFORE UPDATE ON transformacion_salida0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_transformacion_salida0 BEFORE DELETE ON transformacion_salida0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_transformacion_entrada0 BEFORE INSERT ON transformacion_entrada0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	    INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial,ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial, NEW.ubicacion, SYSDATE());	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_transformacion_entrada0 BEFORE UPDATE ON transformacion_entrada0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;			INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad,NEW.serial,NEW.ubicacion, SYSDATE());		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad,serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial,NEW.ubicacion, SYSDATE());	END IF; END;", reader["id"].ToString()));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_transformacion_entrada0 BEFORE DELETE ON transformacion_entrada0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN      UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", reader["id"].ToString()));
+            }
+        }
+
+        CConector conector3 = new CConector();
+        conector3.QueryMod("ALTER TABLE entrada0 ADD documento VARCHAR(255)");
+        conector3.QueryMod("ALTER TABLE traslado0 ADD documento VARCHAR(255)");
+        conector3.QueryMod("ALTER TABLE salida0 ADD documento VARCHAR(255)");
+
+        conector3.QueryMod("ALTER TABLE entrada_items0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';");
+        conector3.QueryMod("ALTER TABLE entrada_items0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;");
+
+        conector3.QueryMod("ALTER TABLE estado0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';");
+        conector3.QueryMod("ALTER TABLE estado0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;");
+
+        conector3.QueryMod("ALTER TABLE traslado_items0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';");
+        conector3.QueryMod("ALTER TABLE traslado_items0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;");
+
+        conector3.QueryMod("ALTER TABLE salida_items0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';");
+        conector3.QueryMod("ALTER TABLE salida_items0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;");
+
+        conector3.QueryMod("ALTER TABLE transformacion_salida0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';");
+        conector3.QueryMod("ALTER TABLE transformacion_salida0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;");
+
+        conector3.QueryMod("ALTER TABLE transformacion_entrada0 ADD serial VARCHAR(255) NOT NULL DEFAULT '';");
+        conector3.QueryMod("ALTER TABLE transformacion_entrada0 ADD ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0;");
+
+        conector3.QueryMod("RENAME TABLE estado0 TO estado0_temp;");
+        conector3.QueryMod("CREATE TABLE estado0 ( producto BIGINT UNSIGNED NOT NULL, cantidad DOUBLE UNSIGNED, lote VARCHAR(255), vence DATE, serial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0, modificacion DATETIME, FOREIGN KEY (producto) REFERENCES producto(id),PRIMARY KEY(producto,lote,vence,serial, ubicacion)) ENGINE=InnoDB;");
+        conector3.QueryMod("INSERT INTO estado0 SELECT producto,cantidad,lote,vence,serial,ubicacion,modificacion FROM estado0_temp;");
+        conector3.QueryMod("DROP TABLE estado0_temp;");
+
+        conector3.QueryMod("DROP TRIGGER bi_entrada_items0;");
+        conector3.QueryMod("DROP TRIGGER bu_entrada_items0;");
+        conector3.QueryMod("DROP TRIGGER bd_entrada_items0;");
+        conector3.QueryMod("DROP TRIGGER bi_traslado_items0;");
+        conector3.QueryMod("DROP TRIGGER bu_traslado_items0;");
+        conector3.QueryMod("DROP TRIGGER bd_traslado_items0;");
+        conector3.QueryMod("DROP TRIGGER bi_salida_items0;");
+        conector3.QueryMod("DROP TRIGGER bu_salida_items0;");
+        conector3.QueryMod("DROP TRIGGER bd_salida_items0;");
+        conector3.QueryMod("DROP TRIGGER bi_transformacion_salida0;");
+        conector3.QueryMod("DROP TRIGGER bu_transformacion_salida0;");
+        conector3.QueryMod("DROP TRIGGER bd_transformacion_salida0;");
+        conector3.QueryMod("DROP TRIGGER bi_transformacion_entrada0;");
+        conector3.QueryMod("DROP TRIGGER bu_transformacion_entrada0;");
+        conector3.QueryMod("DROP TRIGGER bd_transformacion_entrada0;");
+
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_entrada_items0 BEFORE INSERT ON entrada_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	    INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial, NEW.ubicacion, SYSDATE());	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_entrada_items0 BEFORE UPDATE ON entrada_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;			INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad,NEW.serial,NEW.ubicacion, SYSDATE());		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad,serial,ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial,NEW.ubicacion, SYSDATE());	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_entrada_items0 BEFORE DELETE ON entrada_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN      UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_traslado_items0 BEFORE INSERT ON traslado_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_traslado_items0 BEFORE UPDATE ON traslado_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial AND NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_traslado_items0 BEFORE DELETE ON traslado_items0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_salida_items0 BEFORE INSERT ON salida_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_salida_items0 BEFORE UPDATE ON salida_items0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_salida_items0 BEFORE DELETE ON salida_items0 FOR EACH ROW BEGIN 	IF OLD.ingreso IS NOT NULL THEN 		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion; 	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_transformacion_salida0 BEFORE INSERT ON transformacion_salida0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_transformacion_salida0 BEFORE UPDATE ON transformacion_salida0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad+OLD.cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad-NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_transformacion_salida0 BEFORE DELETE ON transformacion_salida0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence;	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bi_transformacion_entrada0 BEFORE INSERT ON transformacion_entrada0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF NEW.ingreso IS NOT NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;	    INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial,ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial, NEW.ubicacion, SYSDATE());	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bu_transformacion_entrada0 BEFORE UPDATE ON transformacion_entrada0 FOR EACH ROW BEGIN 	IF NEW.lote IS NULL THEN		SET NEW.lote='';	END IF;	IF NEW.ubicacion IS NULL THEN		SET NEW.ubicacion=0;	END IF;	IF NEW.serial IS NULL THEN		SET NEW.serial='';	END IF;	IF NEW.vence IS NULL THEN		SET NEW.vence='0000-00-00';	END IF;		IF OLD.ingreso IS NOT NULL THEN		IF NEW.producto!=OLD.producto OR NEW.lote!=OLD.lote OR NEW.vence!=OLD.vence OR NEW.serial!=OLD.serial OR NEW.ubicacion!=OLD.ubicacion THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;			UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;			INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad, serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad,NEW.serial,NEW.ubicacion, SYSDATE());		ELSEIF NEW.cantidad!=OLD.cantidad THEN			UPDATE estado0 SET cantidad=cantidad-OLD.cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;		END IF;	ELSEIF NEW.ingreso IS NOT NULL AND OLD.ingreso IS NULL THEN		UPDATE estado0 SET cantidad=cantidad+NEW.cantidad,modificacion=SYSDATE() WHERE producto=NEW.producto AND lote=NEW.lote AND vence=NEW.vence AND serial=NEW.serial AND ubicacion=NEW.ubicacion;		INSERT IGNORE INTO estado0 (producto, lote, vence, cantidad,serial, ubicacion, modificacion) VALUES (NEW.producto, NEW.lote, NEW.vence, NEW.cantidad, NEW.serial,NEW.ubicacion, SYSDATE());	END IF; END;", "0"));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TRIGGER bd_transformacion_entrada0 BEFORE DELETE ON transformacion_entrada0 FOR EACH ROW BEGIN	IF OLD.ingreso IS NOT NULL THEN      UPDATE estado0 SET cantidad=cantidad-OLD.cantidad,modificacion=SYSDATE() WHERE producto=OLD.producto AND lote=OLD.lote AND vence=OLD.vence AND serial=OLD.serial AND ubicacion=OLD.ubicacion;	END IF; END;", "0"));
+
+        ((ing)Master).SetResultado("Almacenes actualizados");
+    }
+    protected void BMas_Click(object sender, EventArgs e)
+    {
+        if (!IsValid)
+            return;
+        IOrderedDictionary data = new OrderedDictionary();
+        data.Add("nombre", TUbicacion.Text);
+
+        if (GUbicaciones.SelectedIndex == -1)
+        {
+            SUbicaciones.GetView().Insert(data, OnDataSourceOperationComplete);
+        }
+        else
+        {
+            data.Add("id", GUbicaciones.DataKeys[GUbicaciones.SelectedIndex].Value);
+
+            IOrderedDictionary dataold = new OrderedDictionary();
+            dataold.Add("id", GUbicaciones.DataKeys[GUbicaciones.SelectedIndex].Value);
+            SUbicaciones.GetView().Update(data, data, dataold, OnDataSourceOperationComplete);
+        }
+        TUbicacion.Text = "";
+        GUbicaciones.SelectedIndex = -1;
+        GUbicaciones.DataBind();
+    }
+
+    private bool OnDataSourceOperationComplete(int count, Exception e)
+    {
+        if (e != null)
+        {
+            throw e;
+        }
+        return false;
+    }
+
+    protected void GUbicaciones_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        TUbicacion.Text = HttpUtility.HtmlDecode(GUbicaciones.SelectedRow.Cells[2].Text);
     }
 }
