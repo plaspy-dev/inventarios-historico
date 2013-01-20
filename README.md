@@ -9,7 +9,7 @@ Archived Web Forms site for recording stock receipts, issues and transfers acros
 > [!WARNING]
 > **Status: Archived.** The website compiles today with the documented Windows toolchain.
 
-This 2012-11-30 source snapshot tracks stock and movements separately for each warehouse.
+This 2013-01-20 source snapshot tracks stock and movements separately for each warehouse.
 
 ### Overview
 
@@ -17,8 +17,10 @@ Workshop and warehouse staff use the inventory screens to track items and curren
 
 ### Features
 
+- Open stock transformations in `almacen/transformaciones.aspx`.
 - Sign in with a local inventory account through `inventarios/Default.aspx`.
 - Record incoming stock at `inventarios/almacen/entrada.aspx`.
+- Record stock withdrawals at `inventarios/almacen/salida.aspx`.
 - Move stock between warehouse locations at `inventarios/almacen/traslado.aspx`.
 - Maintain product records at `inventarios/administrador/productos.aspx`.
 
@@ -44,7 +46,7 @@ MySQL Connector/NET 6.3.5.0 is included.
 
 ### Project structure
 
-The recovery includes the archived menu definition `inventarios/directorio.xml` dated 2012-11-30, and 21 interface graphics from the same source.
+The recovery includes the archived menu definition `inventarios/directorio.xml` dated 2013-01-20, and 21 interface graphics from the same source.
 
 `inventarios/` has the pages and stock workflows. `src/SDG.Componentes/` builds the C# reconstruction of the period assembly. `demo/` contains the build script and Web Forms configuration template.
 
@@ -60,7 +62,7 @@ The later 2026 reconstruction trial runs the exact revision with ASP.NET Compile
 
 ### History
 
-This source snapshot comes from a dated RAR archive. The original date is 2012-11-30. The 2026 reconstruction supplies the build, bilingual guide and local database fixture.
+This source snapshot comes from a dated RAR archive. The original date is 2013-01-20. The 2026 reconstruction supplies the build, bilingual guide and local database fixture.
 
 ### License
 
@@ -81,7 +83,7 @@ Archivado — Sitio Web Forms para registrar entradas, salidas y traslados de ex
 > [!WARNING]
 > **Estado: archivado.** El sitio compila hoy con las herramientas de Windows indicadas.
 
-Este respaldo de fuentes del 2012-11-30 controla existencias y movimientos por almacén.
+Este respaldo de fuentes del 2013-01-20 controla existencias y movimientos por almacén.
 
 ### Descripción general
 
@@ -89,8 +91,10 @@ El personal de taller y almacén usa las pantallas de inventario para seguir los
 
 ### Funciones
 
+- Abre las transformaciones de existencias en `almacen/transformaciones.aspx`.
 - Inicia sesión con una cuenta local de inventarios desde `inventarios/Default.aspx`.
 - Registra entradas de existencias en `inventarios/almacen/entrada.aspx`.
+- Registra salidas de existencias en `inventarios/almacen/salida.aspx`.
 - Registra traslados entre ubicaciones en `inventarios/almacen/traslado.aspx`.
 - Mantén las fichas de productos en `inventarios/administrador/productos.aspx`.
 
@@ -116,7 +120,7 @@ El árbol incluye MySQL Connector/NET 6.3.5.0.
 
 ### Estructura
 
-La recuperación incluye la definición del menú archivado `inventarios/directorio.xml` del 2012-11-30 y 21 gráficos de interfaz del mismo respaldo.
+La recuperación incluye la definición del menú archivado `inventarios/directorio.xml` del 2013-01-20 y 21 gráficos de interfaz del mismo respaldo.
 
 `inventarios/` contiene las páginas y los movimientos. `src/SDG.Componentes/` compila la reconstrucción C# del ensamblado de época. `demo/` contiene el lanzador de compilación y la plantilla Web Forms.
 
@@ -132,7 +136,7 @@ En la prueba posterior de reconstrucción de 2026 se usa esta revisión exacta c
 
 ### Historial
 
-Este corte proviene de un respaldo RAR con fecha original del 2012-11-30. La reconstrucción de 2026 aporta compilación, guía bilingüe y base de datos local ficticia.
+Este corte proviene de un respaldo RAR con fecha original del 2013-01-20. La reconstrucción de 2026 aporta compilación, guía bilingüe y base de datos local ficticia.
 
 ### Licencia
 

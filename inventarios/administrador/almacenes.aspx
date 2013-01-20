@@ -9,7 +9,7 @@
     <td valign="top"><table width="100%" border="0">
       <tr>
         <td>
-<table width="100%" border="0">
+<table width="100%" border="0"  class="tablecollapse">
           <tr>
             <td>Nombre</td>
             <td>
@@ -31,7 +31,48 @@
               </td>
           </tr>
           <tr>
-            <td>&nbsp;</td>
+              <td colspan="3" class="GridHeader">Ubicaciones</td>
+          </tr>
+          <tr>
+              <td colspan="3" class="tdl tdr">
+              <asp:GridView ID="GUbicaciones" runat="server" AutoGenerateColumns="False" 
+                DataKeyNames="id" DataSourceID="SUbicaciones" 
+                onselectedindexchanged="GUbicaciones_SelectedIndexChanged" >
+                <RowStyle CssClass="GridRow"></RowStyle>
+                <FooterStyle CssClass="GridFooter"></FooterStyle>
+                <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                <Columns>
+                    <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
+                    <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
+                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" />
+                </Columns>
+                </asp:GridView>
+                <sdg:CustomDataSource ID="SUbicaciones" runat="server" 
+                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                    SelectCommand="SELECT id, nombre FROM ubicacion WHERE almacen=@almacen AND estado IS NULL" 
+                    UpdateCommand="UPDATE ubicacion SET nombre=@nombre WHERE id=@id"
+                    InsertCommand="INSERT INTO ubicacion (nombre,almacen) VALUES (@nombre,@almacen)"
+                    DeleteCommand="UPDATE ubicacion SET estado=-1 WHERE id=@id" >
+                    <SelectParameters>
+                        <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="almacen" />
+                    </SelectParameters>
+                </sdg:CustomDataSource>
+              </td>
+          </tr>
+          <tr>
+            <td class="tdl tdb">Ubicacion<asp:RequiredFieldValidator ControlToValidate="TUbicacion" ValidationGroup="ubicacion" ErrorMessage="Por favor ingrese una ubicación." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            </td>
+            <td class="tdb"><asp:TextBox runat="server" ID="TUbicacion"></asp:TextBox></td>
+            <td align="left" class="tdr tdb"><asp:Button runat="server" ID="BMas" ValidationGroup="ubicacion" Text="+" onclick="BMas_Click" /></td>
+          </tr>
+          <tr>
+            <td>
+                <asp:Button ID="BActualizar" runat="server" Text="Actualizar" Visible="false" 
+                    onclick="BActualizar_Click" CausesValidation="false" />
+              </td>
             <td align="right">
                 <asp:Button ID="BAceptar" runat="server" Text="Aceptar" onclick="BAceptar_Click" />
                 <asp:Button ID="BCancelar" runat="server" CausesValidation="False" Text="Cancelar" onclick="BCancelar_Click" />
@@ -65,9 +106,6 @@
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT id, nombre, descripcion FROM almacen WHERE estado IS NULL" 
                 DeleteCommand="UPDATE almacen SET estado=-1 WHERE id=@id" >
-                <SelectParameters>
-                    <asp:QueryStringParameter QueryStringField="tipo" Name="tipo" Type="Int32" DefaultValue="1" />
-                </SelectParameters>
             </asp:SqlDataSource>
           </td>
       </tr>

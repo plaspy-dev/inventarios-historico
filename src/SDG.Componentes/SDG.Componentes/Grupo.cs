@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Configuration;
-using System.IO;
 using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml;
@@ -43,10 +41,7 @@ public class Grupo
 				}
 			}
 		}
-		catch (FileNotFoundException)
-		{
-		}
-		catch (Exception)
+		catch
 		{
 		}
 	}

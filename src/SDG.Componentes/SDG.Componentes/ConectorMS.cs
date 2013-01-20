@@ -1,8 +1,5 @@
 using System;
-using System.Configuration;
 using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -44,10 +41,7 @@ public class ConectorMS
 				m_pSQLConector.Close();
 			}
 		}
-		catch (SqlException)
-		{
-		}
-		catch (Exception)
+		catch
 		{
 		}
 	}
@@ -59,25 +53,8 @@ public class ConectorMS
 
 	public void ShowError(string error)
 	{
-		string text = DateTime.Now.ToString() + " Error[ConectorMS] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "'\r\n" + m_szQuery + "\r\n";
-		string path = ConfigurationSettings.AppSettings["filelogs"].ToString();
-		try
-		{
-			EventLog.WriteEntry("ConectorMS", text, EventLogEntryType.Error);
-			if (!File.Exists(path))
-			{
-				using StreamWriter streamWriter = File.CreateText(path);
-				streamWriter.WriteLine(text);
-			}
-			else
-			{
-				using StreamWriter streamWriter2 = File.AppendText(path);
-				streamWriter2.WriteLine(text);
-			}
-		}
-		catch (Exception)
-		{
-		}
+		string logs = DateTime.Now.ToString() + " Error[ConectorMS] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "'\r\n" + m_szQuery + "\r\n";
+		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -90,7 +67,7 @@ public class ConectorMS
 				}
 			}
 		}
-		catch (Exception)
+		catch
 		{
 		}
 	}

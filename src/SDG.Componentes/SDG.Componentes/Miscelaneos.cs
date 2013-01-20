@@ -1,5 +1,8 @@
+using System;
+
 namespace SDG.Componentes;
 
+[Serializable]
 public class Miscelaneos
 {
 	public string Id { get; set; }

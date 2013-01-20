@@ -8,8 +8,22 @@
     }
 </style>
 <script type="text/javascript">
+    $(function() {
+        if (hasStorage) {
+          if(<%= (bool)ViewState["clean"] ? "true" : "false" %>) {
+                localStorage.entrada=null;
+            } else {
+            $("#<%= HProductos.ClientID %>").val(localStorage.entrada);
+              if($("#<%= HProductos.ClientID %>").val().length) {
+                $("#<%= BActualizar.ClientID %>").click();
+              }
+            }
+        }
+    });
     addFunctionToStart(function() {
-
+        if (hasStorage) 
+          localStorage.entrada = $("#<%= HProductos.ClientID %>").val();
+          
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -21,8 +35,13 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
+                            if (item.codigo && item.codigo != "")
+                                item.nombre = item.codigo + " - " + item.nombre;
                             return {
-                                value: item.value, label: item.item
+                                value: item.id, label: item.nombre
+                                , unidad: item.unidad, codigo: item.codigo
+                                , descripcion: item.descripcion
+                                , nSerial: item.nSerial, nLote: item.nLote, nVence: item.nVence
                             }
                         }))
                     },
@@ -31,11 +50,21 @@
                     }
                 });
             },
+            autoFocus: true,
             minLength: 3,
             select: function(event, ui) {
 
                 $("#<%= TProductoID.ClientID %>").val(ui.item.value);
                 $("#<%= TProducto.ClientID %>").val(ui.item.label);
+                $("#tdescripcion").text(ui.item.descripcion);
+                if (ui.item.unidad && ui.item.unidad != "")
+                    $("#sunidad").text("(" + ui.item.unidad + ")");
+                else $("#sunidad").text("");
+                
+                ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
+                ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
+                ValidatorEnable($("#<%= RVencimiento.ClientID %>")[0], ui.item.nVence==1);
+                ValidatorEnable($("#<%= RLote.ClientID %>")[0], ui.item.nLote==1);
                 return false;
             }
         });
@@ -49,46 +78,81 @@
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
 <ContentTemplate>
     <asp:HiddenField runat="server" ID="HId" />
-    <table>
+    <table class="tablecollapse">
         <tr>
             <td colspan="5" align="right"><asp:HyperLink runat="server" ID="HTraslado"></asp:HyperLink></td>
         </tr>
         <tr>
             <td>Número</td>
             <td><asp:TextBox runat="server" ID="TNumero" CssClass="likenumero"></asp:TextBox></td>
-            <td>Fecha</td>
-            <td><asp:TextBox runat="server" ID="TFecha" CssClass="fecha"></asp:TextBox></td>
+            <td>Fecha
+            <asp:RequiredFieldValidator ControlToValidate="TFecha" ErrorMessage="Por favor ingrese una fecha." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <asp:RangeValidator ControlToValidate="TFecha" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator3" Display="Dynamic" Type="Date">*</asp:RangeValidator>
+            </td>
+            <td><asp:TextBox runat="server" ID="TFecha" CssClass="fecha"></asp:TextBox>
+            </td>
             <td>&nbsp;</td>
         </tr>
         <tr>
-            <td>&nbsp;</td>
-            <td>
-                &nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
+            <td colspan="2">Documento equivalente<asp:RequiredFieldValidator ControlToValidate="TDocumento" ErrorMessage="Por favor ingrese un documento." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td colspan="2"><asp:TextBox runat="server" ID="TDocumento" Width="98%"></asp:TextBox></td>
         </tr>
         <tr>
-            <td>Producto<asp:RequiredFieldValidator ControlToValidate="TProductoID" ValidationGroup="producto" ErrorMessage="Por favor ingrese un producto." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td>Cantidad<asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td>Lote<asp:RequiredFieldValidator ControlToValidate="TLote" ValidationGroup="producto" ErrorMessage="Por favor ingrese un lote." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td>Vence<asp:RequiredFieldValidator ControlToValidate="TVencimiento" ValidationGroup="producto" ErrorMessage="Por favor ingrese una fecha." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td>&nbsp;</td>
+            <td colspan="5" class="tdb">&nbsp;</td>
         </tr>
         <tr>
-            <td><asp:TextBox ID="TProducto" runat="server"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
+            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" />Productos</td>
+        </tr>
+        <tr>
+            <td class="tdl"></td>
+            <td colspan="4" class="tdr" id="tdescripcion"></td>
+        </tr>
+        <tr>
+            <td class="tdl">Producto<asp:RequiredFieldValidator ControlToValidate="TProductoID" ValidationGroup="producto" ErrorMessage="Por favor ingrese un producto." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td colspan="4" class="tdr"><asp:TextBox ID="TProducto" Width="98%" runat="server"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
+        </tr>
+        <tr class="GridAltRow">
+            <td class="tdl"></td>
+            <td><span id="sunidad"></span><asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td><asp:Label runat="server" ID="LLote" Text="Lote"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TLote" ValidationGroup="producto" ErrorMessage="Por favor ingrese un lote." ID="RLote" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td><asp:Label runat="server" ID="LVencimiento" Text="Vence"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TVencimiento" ValidationGroup="producto" ErrorMessage="Por favor ingrese una fecha." ID="RVencimiento" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td class="tdr">&nbsp;</td>
+        </tr>
+        <tr>
+            <td class="tdl">Cantidad</td>
             <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
             <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote"></asp:TextBox></td>
-            <td><asp:TextBox ID="TVencimiento" runat="server" CssClass="fecha"></asp:TextBox></td>
-            <td>
-                <asp:Button ID="BAgregar" runat="server" Text="Agregar" 
-                    ValidationGroup="producto" onclick="BAgregar_Click" />
+            <td><asp:TextBox ID="TVencimiento" runat="server" CssClass="fecha"></asp:TextBox>
+            <asp:TextBox ID="TUnidad" runat="server" CssClass="hide"></asp:TextBox>
+            </td>
+            <td class="tdr">
             </td>
         </tr>
         <tr>
-            <td colspan="5" align="center">
+            <td class="tdl">
+                Ubicación</td>
+            <td><asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
+                       DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id">
+                       <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
+                </asp:DropDownList>
+                <asp:SqlDataSource ID="SUbicacion" runat="server" 
+                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                    ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                    SelectCommand="SELECT id, nombre FROM ubicacion WHERE almacen={0} AND estado IS NULL ORDER BY nombre">
+                </asp:SqlDataSource></td>
+            <td>
+                &nbsp;</td>
+            <td>
+                &nbsp;</td>
+            <td class="tdr">
+                <asp:Button ID="BAgregar" runat="server" Text="Agregar" ValidationGroup="producto" onclick="BAgregar_Click" />
+                <asp:Button ID="BActualizar" runat="server" Text="Actualizar" CssClass="hide" CausesValidation="false" onclick="BActualizar_Click" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="5" align="center" class="tdl tdb tdr">
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
-                    DataKeyNames="id" DataSourceID="SProductos" 
+                    DataKeyNames="id,producto,ubicacion" DataSourceID="SProductos" onrowdeleted="GProductos_RowDeleted" 
                     onselectedindexchanged="GProductos_SelectedIndexChanged" EmptyDataText="No hay productos" >
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -99,32 +163,52 @@
                     <Columns>
                         <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
                         <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                        <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" />
+                        <asp:BoundField DataField="codigo" HeaderText="Código" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
-                        <asp:BoundField DataField="producto" HeaderText="IdProducto" SortExpression="producto" ItemStyle-CssClass="hide" HeaderStyle-CssClass="hide" />
+                        <asp:BoundField DataField="nubicacion" HeaderText="Ubicación" SortExpression="nubicacion" />
+                        <asp:TemplateField HeaderText="Ubicación">
+                            <ItemTemplate>
+                                <asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
+                                   DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id" SelectedValue='<%# Eval("ubicacion") %>'>
+                                   <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
+                                </asp:DropDownList>
+                            </ItemTemplate>
+                        </asp:TemplateField>
                     </Columns>
                 </asp:GridView>
                 <sdg:customdatasource ID="SProductos" runat="server" 
                     ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                    SelectCommand="SELECT entrada_items{0}.id,entrada_items{0}.producto,entrada_items{0}.cantidad,entrada_items{0}.lote,entrada_items{0}.vence
-                            ,producto.nombre
+                    SelectCommand="SELECT entrada_items{0}.id,entrada_items{0}.producto,entrada_items{0}.cantidad,entrada_items{0}.lote
+                            ,IF(entrada_items{0}.vence='0000-00-00',NULL,entrada_items{0}.vence) AS vence
+                            ,producto.nombre,producto.unidad,producto.codigo,entrada_items{0}.ubicacion,IFNULL(ubicacion.nombre,'(Ninguna)') AS nubicacion
                             FROM entrada_items{0}
                             LEFT JOIN producto ON (producto.id=entrada_items{0}.producto)
+                            LEFT JOIN ubicacion ON (ubicacion.id=entrada_items{0}.ubicacion)
                             WHERE entrada_items{0}.entrada=@entrada;" 
-                    InsertCommand="INSERT INTO entrada_items{0} (entrada,producto,cantidad,lote,vence) VALUES (@rentrada, @producto,@cantidad,@lote,@vence)"
-                    UpdateCommand="UPDATE entrada_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence WHERE id=@id"
+                    InsertCommand="INSERT INTO entrada_items{0} (entrada,producto,cantidad,lote,vence,ubicacion) VALUES (@rentrada, @producto,@cantidad,@lote,@vence,@ubicacion)"
+                    UpdateCommand="UPDATE entrada_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion WHERE id=@id"
                     DeleteCommand="DELETE FROM entrada_items{0} WHERE id=@id" >
                     <SelectParameters>
                         <asp:ControlParameter ControlID="TNumero" Name="entrada" PropertyName="Text" />
                     </SelectParameters>
                 </sdg:customdatasource>
             </td>
-        </tr>        
+        </tr>
+        <tr>
+            <td colspan="5">&nbsp;</td>
+        </tr>     
         <tr>
             <td>Observaciones</td>
             <td colspan="4"><asp:TextBox runat="server" ID="TObservaciones" TextMode="MultiLine" Width="99%"></asp:TextBox></td>
+        </tr>
+        <tr>
+            <td colspan="5"><asp:ValidationSummary runat="server" ID="ValidationSumary1" /><asp:ValidationSummary ValidationGroup="producto" runat="server" ID="ValidationSummary2" />
+            <asp:Label runat="server" ID="LMensaje" ForeColor="Red"></asp:Label>
+            </td>
         </tr>
         <tr>
             <td colspan="5" align="right">

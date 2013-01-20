@@ -25,17 +25,20 @@ public partial class modificaciones : System.Web.UI.UserControl
         public string Fecha { get { return _fecha; } }
     }
 
-    protected string _idModificacion="";
-
     protected void Page_Load(object sender, EventArgs e)
     {
         if (!IsPostBack)
         {
-            Update();
+            // Update();
         }
     }
 
-    public void Update()
+    public void SetModificacion(String modificacionId) {
+        
+        SetModificacion(modificacionId, null);
+    }
+
+    public void SetModificacion(String modificacionId, String modificacionId2)
     {
         CConector conector = CConector.GetConector();
         Query query = new Query("modificaciones");
@@ -43,7 +46,19 @@ public partial class modificaciones : System.Web.UI.UserControl
         query["usuario"] = "usuarios.nombre";
         query["fecha"] = "modificaciones.fecha";
         string url = HttpContext.Current.Request.Url.AbsolutePath.Replace(HttpContext.Current.Request.ApplicationPath, "~");
-        MySqlDataReader reader = conector.Query(query.GetSelect("modificaciones.id='" + IdModificacion + "' AND modificaciones.url='" + url + "' ORDER BY modificaciones.fecha", "LEFT JOIN usuarios ON (usuarios.id=modificaciones.usuario)"));
+        string condicion="modificaciones.id=" + Query.GetValor(modificacionId);
+        if (!string.IsNullOrEmpty(modificacionId2))
+        {
+            condicion += " AND modificaciones.id2=" + Query.GetValor(modificacionId2);
+        }
+        else
+        {
+            condicion += " AND modificaciones.id2 IS NULL";
+        }
+        condicion+= " AND modificaciones.url=" + Query.GetValor(url);
+        condicion += " ORDER BY modificaciones.fecha";
+
+        MySqlDataReader reader = conector.Query(query.GetSelect(condicion, "LEFT JOIN usuarios ON (usuarios.id=modificaciones.usuario)"));
         if (reader != null)
         {
             PModificaciones.Visible = false;
@@ -71,7 +86,6 @@ public partial class modificaciones : System.Web.UI.UserControl
 
     public string IdModificacion
     {
-        set { _idModificacion = value; Update(); }
-        get { return _idModificacion; }
+        set { SetModificacion(value); }
     }
 }

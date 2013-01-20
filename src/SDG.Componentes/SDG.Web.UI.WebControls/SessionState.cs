@@ -1,14 +1,16 @@
 using System;
 using System.Collections;
 using System.Data;
-using System.Web;
+using System.Globalization;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
 
 namespace SDG.Web.UI.WebControls;
 
+[Serializable]
 internal class SessionState
 {
+	[Serializable]
 	private class Querys
 	{
 		public int pos;
@@ -32,7 +34,7 @@ internal class SessionState
 	{
 		szQuery = query;
 		dataTable = new DataTable();
-		HttpContext.Current.Session["SessionState_" + owner] = this;
+		Utilidades.GetViewState()["SessionState_" + owner] = this;
 	}
 
 	public static string GetValor(object valor)
@@ -41,16 +43,27 @@ internal class SessionState
 		{
 			return "NULL";
 		}
+		if (valor is float)
+		{
+			return GetValor(((decimal)valor).ToString(CultureInfo.InvariantCulture));
+		}
+		if (valor is double num)
+		{
+			return GetValor(num.ToString(CultureInfo.InvariantCulture));
+		}
+		if (valor is decimal num2)
+		{
+			return GetValor(num2.ToString(CultureInfo.InvariantCulture));
+		}
+		if (valor is DateTime)
+		{
+			return GetValor(Conector.GetMySQLDateFormat((DateTime)valor, horas: true));
+		}
 		return GetValor(valor.ToString());
 	}
 
 	public static string GetValor(string valor)
 	{
-		string mySQLDateFormat = Conector.GetMySQLDateFormat(valor);
-		if (mySQLDateFormat.Length > 0)
-		{
-			valor = mySQLDateFormat;
-		}
 		if (valor == null || valor.Length == 0)
 		{
 			return "NULL";
@@ -157,17 +170,17 @@ internal class SessionState
 
 	public static void Clean(string owner)
 	{
-		HttpContext.Current.Session.Remove("SessionState_" + owner);
+		Utilidades.GetViewState()["SessionState_" + owner] = null;
 	}
 
 	public static SessionState Get(string owner)
 	{
-		return (SessionState)HttpContext.Current.Session["SessionState_" + owner];
+		return (SessionState)Utilidades.GetViewState()["SessionState_" + owner];
 	}
 
 	public static SessionState Get(string owner, string query)
 	{
-		SessionState sessionState = (SessionState)HttpContext.Current.Session["SessionState_" + owner];
+		SessionState sessionState = (SessionState)Utilidades.GetViewState()["SessionState_" + owner];
 		if (sessionState == null || sessionState.szQuery != query)
 		{
 			return null;

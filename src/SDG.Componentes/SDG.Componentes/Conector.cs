@@ -1,12 +1,10 @@
 using System;
-using System.Configuration;
-using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using MySql.Data.MySqlClient;
+using MySql.Data.Types;
 
 namespace SDG.Componentes;
 
@@ -44,10 +42,7 @@ public class Conector
 				m_pSQLConector.Close();
 			}
 		}
-		catch (MySqlException)
-		{
-		}
-		catch (Exception)
+		catch
 		{
 		}
 	}
@@ -84,31 +79,14 @@ public class Conector
 
 	public static void SetCookie(string cookie, string valor, DateTime expires)
 	{
-		HttpContext.Current.Response.Cookies[cookie].Value = valor.Replace(" ", "%%");
+		HttpContext.Current.Response.Cookies[cookie].Value = HttpUtility.UrlEncode(valor);
 		HttpContext.Current.Response.Cookies[cookie].Expires = expires;
 	}
 
 	public void ShowError(string error)
 	{
-		string text = DateTime.Now.ToString() + " Error[Conector] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
-		try
-		{
-			string path = ConfigurationSettings.AppSettings["filelogs"].ToString();
-			EventLog.WriteEntry("Conector", text, EventLogEntryType.Error);
-			if (!File.Exists(path))
-			{
-				using StreamWriter streamWriter = File.CreateText(path);
-				streamWriter.WriteLine(text);
-			}
-			else
-			{
-				using StreamWriter streamWriter2 = File.AppendText(path);
-				streamWriter2.WriteLine(text);
-			}
-		}
-		catch (Exception)
-		{
-		}
+		string logs = DateTime.Now.ToString() + " Error[Conector] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
+		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -121,7 +99,7 @@ public class Conector
 				}
 			}
 		}
-		catch (Exception)
+		catch
 		{
 		}
 	}
@@ -273,10 +251,24 @@ public class Conector
 		return " WHERE " + campo + " " + comparador + " '" + dato + "'";
 	}
 
-	public static void SelectInComboText(DropDownList lista, string value)
+	public static bool SelectInComboText(DropDownList lista, string texto)
 	{
-		ListItem listItem = lista.Items.FindByText(value);
-		lista.SelectedIndex = ((listItem != null) ? lista.Items.IndexOf(listItem) : 0);
+		bool result = true;
+		if (lista.Items.Count < 2)
+		{
+			lista.DataBind();
+		}
+		lista.SelectedIndex = -1;
+		ListItem listItem = lista.Items.FindByText(texto);
+		if (listItem == null)
+		{
+			result = false;
+		}
+		else
+		{
+			listItem.Selected = true;
+		}
+		return result;
 	}
 
 	public static string GetDate(object fecha)
@@ -312,54 +304,82 @@ public class Conector
 		return fecha.Substring(0, 10);
 	}
 
-	public static string GetModificacion(string idUsuario, string idDocumento, string tabla, string url)
+	public static string GetModificacion(string idUsuario, string idDocumento, string id2, string tabla, string url)
 	{
 		Query query = new Query(tabla);
 		query["id"] = idDocumento;
 		query["fecha"] = "SYSDATE()";
 		query["url"] = url;
 		query["usuario"] = idUsuario;
+		if (!string.IsNullOrEmpty(id2))
+		{
+			query["id2"] = id2;
+		}
 		return query.GetInsert();
 	}
 
-	public static string GetModificacion(string idUsuario, string idDocumento, string tabla)
+	public static string GetModificacion(string idUsuario, string idDocumento, string id2, string tabla)
 	{
-		return GetModificacion(idUsuario, idDocumento, tabla, HttpContext.Current.Request.Url.AbsolutePath.Replace(HttpContext.Current.Request.ApplicationPath, "~"));
+		return GetModificacion(idUsuario, idDocumento, id2, tabla, HttpContext.Current.Request.Url.AbsolutePath.Replace(HttpContext.Current.Request.ApplicationPath, "~"));
 	}
 
-	public static string GetModificacion(string idUsuario, string idDocumento)
+	public static string GetModificacion(string idUsuario, string idDocumento, string id2)
 	{
-		return GetModificacion(idUsuario, idDocumento, "modificaciones");
+		return GetModificacion(idUsuario, idDocumento, id2, "modificaciones");
+	}
+
+	public int InsertModificacion(string idDocumento, string id2)
+	{
+		Usuario usuario = Usuario.GetUsuario();
+		return QueryMod(GetModificacion(usuario.GetID(), idDocumento, id2));
 	}
 
 	public int InsertModificacion(string idDocumento)
 	{
 		Usuario usuario = Usuario.GetUsuario();
-		return QueryMod(GetModificacion(usuario.GetID(), idDocumento));
+		return QueryMod(GetModificacion(usuario.GetID(), idDocumento, null));
 	}
 
-	public int InsertModificacion(string idDocumento, string url)
+	public int InsertModificacion(string idDocumento, string id2, string url)
 	{
 		Usuario usuario = Usuario.GetUsuario();
-		return QueryMod(GetModificacion(usuario.GetID(), idDocumento, "modificaciones", url));
+		return QueryMod(GetModificacion(usuario.GetID(), idDocumento, id2, "modificaciones", url));
 	}
 
 	public int InsertModificacionWeb(string idDocumento)
 	{
 		Usuario usuario = Usuario.GetUsuario();
-		return QueryMod(GetModificacion(usuario.GetID(), idDocumento, "modificacionesweb"));
+		return QueryMod(GetModificacion(usuario.GetID(), idDocumento, null, "modificacionesweb"));
+	}
+
+	public static string GetMySQLDateFormat(DateTime fecha)
+	{
+		return GetMySQLDateFormat(fecha, horas: false);
+	}
+
+	public static string GetMySQLDateFormat(DateTime fecha, bool horas)
+	{
+		string text = fecha.Year + "-" + fecha.Month.ToString().PadLeft(2, '0') + "-" + fecha.Day.ToString().PadLeft(2, '0');
+		if (horas)
+		{
+			string text2 = text;
+			text = text2 + " " + fecha.Hour.ToString().PadLeft(2, '0') + ":" + fecha.Minute.ToString().PadLeft(2, '0') + ":" + fecha.Second.ToString().PadLeft(2, '0');
+		}
+		return text;
 	}
 
 	public static string GetMySQLDateFormat(string text)
 	{
+		return GetMySQLDateFormat(text, horas: false);
+	}
+
+	public static string GetMySQLDateFormat(string text, bool horas)
+	{
 		try
 		{
-			DateTime dateTime = Convert.ToDateTime(text);
-			string text2 = ((dateTime.Month < 10) ? ("0" + dateTime.Month) : dateTime.Month.ToString());
-			string text3 = ((dateTime.Day < 10) ? ("0" + dateTime.Day) : dateTime.Day.ToString());
-			return dateTime.Year + "-" + text2 + "-" + text3;
+			return GetMySQLDateFormat(Convert.ToDateTime(text), horas);
 		}
-		catch (Exception)
+		catch
 		{
 		}
 		return "";
@@ -369,9 +389,13 @@ public class Conector
 	{
 		try
 		{
+			if (typeof(MySqlDateTime) == fecha.GetType())
+			{
+				fecha = ((MySqlDateTime)fecha).GetDateTime();
+			}
 			return ((DateTime)fecha).ToShortDateString();
 		}
-		catch (Exception)
+		catch
 		{
 		}
 		return "";

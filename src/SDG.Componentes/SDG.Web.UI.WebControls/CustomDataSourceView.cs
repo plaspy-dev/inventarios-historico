@@ -209,7 +209,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 		{
 			orderedDictionary = SelectParameters.GetValues(HttpContext.Current, _owner);
 		}
-		catch (ArgumentException)
+		catch
 		{
 		}
 		string text = _owner.SelectCommand;
@@ -345,7 +345,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 				text = text.Replace("@" + item.Key.ToString(), SessionState.GetValor(item.Value));
 			}
 		}
-		catch (ArgumentException)
+		catch
 		{
 		}
 		try
@@ -369,7 +369,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 				dataRow[item2.Key.ToString()] = text2;
 			}
 		}
-		catch (ArgumentException)
+		catch
 		{
 		}
 		sessionState.AddQuery(text, sessionState.dataTable.Rows.Count - 1);
@@ -402,7 +402,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 				{
 					flag2 = Convert.ToDouble(text2) == Convert.ToDouble(text3);
 				}
-				catch (Exception)
+				catch
 				{
 				}
 				if (!flag2)
@@ -411,7 +411,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 					{
 						flag2 = Convert.ToDateTime(text2) == Convert.ToDateTime(text3);
 					}
-					catch (Exception)
+					catch
 					{
 					}
 					if (!flag2)
@@ -447,7 +447,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 					text = text.Replace("@" + item.Key.ToString(), SessionState.GetValor(item.Value));
 				}
 			}
-			catch (ArgumentException)
+			catch
 			{
 			}
 		}
@@ -470,7 +470,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 				text = text.Replace("@" + item2.Key.ToString(), SessionState.GetValor(item2.Value));
 			}
 		}
-		catch (ArgumentException)
+		catch
 		{
 		}
 		sessionState.AddQuery(text, num);
@@ -503,7 +503,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 				{
 					flag2 = Convert.ToDouble(text2) == Convert.ToDouble(text3);
 				}
-				catch (Exception)
+				catch
 				{
 				}
 				if (!flag2)
@@ -512,7 +512,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 					{
 						flag2 = Convert.ToDateTime(text2) == Convert.ToDateTime(text3);
 					}
-					catch (Exception)
+					catch
 					{
 					}
 					if (!flag2)

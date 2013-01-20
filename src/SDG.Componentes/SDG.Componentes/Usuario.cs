@@ -119,61 +119,66 @@ public class Usuario
 		return m_szID;
 	}
 
-	public bool CanRead()
+	public virtual int GetPermisos(string url)
+	{
+		return m_pGrupo.GetPermisos(url);
+	}
+
+	public virtual bool CanRead()
 	{
 		if (m_nGrupo == 0)
 		{
 			return true;
 		}
-		return m_pGrupo.GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) > 0;
+		return GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) > 0;
 	}
 
-	public bool CanInsert()
+	public virtual bool CanInsert()
 	{
 		if (m_nGrupo == 0)
 		{
 			return true;
 		}
-		return (m_pGrupo.GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 4) == 4;
+		return (GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 4) == 4;
 	}
 
-	public bool CanPrint()
+	public virtual bool CanPrint()
 	{
 		if (m_nGrupo == 0)
 		{
 			return true;
 		}
-		return (m_pGrupo.GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 2) == 2;
+		return (GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 2) == 2;
 	}
 
-	public bool CanUpdate()
+	public virtual bool CanUpdate()
 	{
 		if (m_nGrupo == 0)
 		{
 			return true;
 		}
-		return (m_pGrupo.GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 8) == 8;
+		return (GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 8) == 8;
 	}
 
-	public bool CanDelete()
+	public virtual bool CanDelete()
 	{
 		if (m_nGrupo == 0)
 		{
 			return true;
 		}
-		return (m_pGrupo.GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 0x10) == 16;
+		return (GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 0x10) == 16;
 	}
 
-	public bool CanAdmin()
+	public virtual bool CanAdmin()
 	{
 		if (m_nGrupo == 0)
 		{
 			return true;
 		}
-		return (m_pGrupo.GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 0x20) == 32;
+		return (GetPermisos(HttpContext.Current.Request.Url.AbsolutePath) & 0x20) == 32;
 	}
 
-	public bool CanAccess()
+	public virtual bool CanAccess()
 	{
 		if (m_nGrupo == 0)
 		{
@@ -183,7 +188,7 @@ public class Usuario
 		{
 			return true;
 		}
-		int permisos = m_pGrupo.GetPermisos(HttpContext.Current.Request.Url.AbsolutePath);
+		int permisos = GetPermisos(HttpContext.Current.Request.Url.AbsolutePath);
 		return permisos > 0;
 	}
 
@@ -212,7 +217,7 @@ public class Usuario
 				Usuario usuario2 = (Usuario)Activator.CreateInstance(Assembly.Load("App_Code").GetType(ConfigurationSettings.AppSettings["Usuario"]));
 				return usuario2.ValidateUser(usuario, password);
 			}
-			catch (Exception)
+			catch
 			{
 			}
 		}
@@ -228,7 +233,7 @@ public class Usuario
 				Usuario usuario = (Usuario)Activator.CreateInstance(Assembly.Load("App_Code").GetType(ConfigurationSettings.AppSettings["Usuario"]));
 				return usuario.ValidateUser();
 			}
-			catch (Exception)
+			catch
 			{
 			}
 		}

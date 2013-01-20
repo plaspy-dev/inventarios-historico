@@ -30,8 +30,8 @@ public class CustomDataSource : DataSourceControl
 
 	protected CustomDataSourceView _view;
 
-	[DefaultValue("")]
 	[Category("ParentDataSource")]
+	[DefaultValue("")]
 	public string ParentDataSource
 	{
 		get
@@ -44,8 +44,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[DefaultValue("")]
 	[Category("InsertCommand")]
+	[DefaultValue("")]
 	public string InsertCommand
 	{
 		get
@@ -114,8 +114,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[Category("Data")]
 	[DefaultValue("")]
+	[Category("Data")]
 	public string TypeName
 	{
 		get
@@ -128,8 +128,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[DefaultValue("")]
 	[Category("Data")]
+	[DefaultValue("")]
 	public string SelectMethod
 	{
 		get
@@ -142,25 +142,25 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[DefaultValue(null)]
-	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
-	[MergableProperty(false)]
-	[PersistenceMode(PersistenceMode.InnerProperty)]
 	[Category("Data")]
+	[MergableProperty(false)]
+	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
+	[DefaultValue(null)]
+	[PersistenceMode(PersistenceMode.InnerProperty)]
 	public ParameterCollection SelectParameters => View.SelectParameters;
 
-	[DefaultValue(null)]
 	[Category("Data")]
-	[PersistenceMode(PersistenceMode.InnerProperty)]
-	[MergableProperty(false)]
 	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
+	[PersistenceMode(PersistenceMode.InnerProperty)]
+	[DefaultValue(null)]
+	[MergableProperty(false)]
 	public ParameterCollection InsertParameters => View.InsertParameters;
 
-	[MergableProperty(false)]
-	[PersistenceMode(PersistenceMode.InnerProperty)]
 	[DefaultValue(null)]
-	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
+	[PersistenceMode(PersistenceMode.InnerProperty)]
+	[MergableProperty(false)]
 	[Category("Data")]
+	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
 	public ParameterCollection UpdateParameters => View.UpdateParameters;
 
 	protected CustomDataSourceView View
