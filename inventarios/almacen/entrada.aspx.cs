@@ -95,16 +95,25 @@ public partial class almacen_entrada : System.Web.UI.Page
 
     protected void BAgregar_Click(object sender, EventArgs e)
     {
-        Producto producto = new Producto(TProductoID.Text, Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), TLote.Text, TVencimiento.Text, Convert.ToInt32(DUbicacion.SelectedValue));
+        Producto producto = new Producto(TProductoID.Text);
 
         RVencimiento.Enabled = producto.nVence==1;
         RLote.Enabled = producto.nLote == 1;
+        REntero.Enabled = producto.nNumero == 1;
+        RDecimal.Enabled = producto.nNumero != 1;
         LVencimiento.CssClass= TVencimiento.CssClass = producto.nVence>0 ? "" : "hide";
         LLote.CssClass = TLote.CssClass = producto.nLote > 0 ? "" : "hide";
+        TLote.CssClass += " tlote";
+        TVencimiento.CssClass += " fecha";
 
         Page.Validate("producto");
         if (!Page.IsValid)
             return;
+
+        producto.cantidad=Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
+        producto.lote=TLote.Text;
+        producto.vence=TVencimiento.Text;
+        producto.ubicacion= Convert.ToInt32(DUbicacion.SelectedValue);
 
         ProductoUsado productousado = new ProductoUsado(HProductos.Value);
 
@@ -153,9 +162,13 @@ public partial class almacen_entrada : System.Web.UI.Page
 
         RVencimiento.Enabled = true;
         RLote.Enabled = true;
+        REntero.Enabled = true;
+        RDecimal.Enabled = true;
 
         LVencimiento.CssClass = TVencimiento.CssClass = "";
         LLote.CssClass = TLote.CssClass = "";
+        TLote.CssClass += " tlote";
+        TVencimiento.CssClass +=" fecha";
 
         TUnidad.Text= TProducto.Text = TProductoID.Text = TCantidad.Text= TLote.Text = TVencimiento.Text = "";
         DUbicacion.SelectedIndex = 0;
@@ -180,7 +193,8 @@ public partial class almacen_entrada : System.Web.UI.Page
     {
         ProductoUsado productousado = new ProductoUsado(HProductos.Value);
         string vence = e.Values["vence"] == null ? "" : e.Values["vence"].ToString();
-        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), e.Values["lote"].ToString(), vence, Convert.ToInt32(e.Keys["ubicacion"]));
+        string lote = e.Values["lote"] == null ? "" : e.Values["lote"].ToString();
+        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), lote, vence, Convert.ToInt32(e.Keys["ubicacion"]));
         HProductos.Value = productousado.Serialize();
     }
 

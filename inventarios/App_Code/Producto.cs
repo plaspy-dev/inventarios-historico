@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Web.Caching;
 using System.Collections;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
@@ -23,6 +24,8 @@ public class Producto
     protected int _nSerial = -1;
     protected int _nLote = -1;
     protected int _nVence = -1;
+    protected int _nNumero= -1;
+    protected string _Empresa;
 
     public String id { set; get; }
     public String lote { set; get; }
@@ -30,7 +33,33 @@ public class Producto
     public Decimal cantidad { set; get; }
     public string serial { set; get; }
     public int ubicacion { set; get; }
-    
+
+    [XmlIgnore]
+    public string Empresa
+    {
+        set {
+            _Empresa = value;
+        }
+        get {
+            if (_Empresa == null && !string.IsNullOrEmpty(id))
+                _Empresa = GetProducto(id).Empresa;
+            return _Empresa;
+        }
+    }
+    [XmlIgnore]
+    public int nNumero
+    {
+        set
+        {
+            _nNumero = value;
+        }
+        get
+        {
+            if (_nNumero == -1 && !string.IsNullOrEmpty(id))
+                _nNumero = GetProducto(id).nNumero;
+            return _nNumero;
+        }
+    }
     [XmlIgnore]
     public int nSerial { 
         set {
@@ -134,17 +163,15 @@ public class Producto
             return completo.Trim();
         }
     }
+    static public void RemoveProducto(string id) {
+        if (HttpRuntime.Cache["producto" + id] != null)
+            HttpRuntime.Cache.Remove("producto" + id);
+    }
 
     static public Producto GetProducto(string id)
     {
-        Dictionary<string, Producto> info = GetCacheProductos();
-        Producto producto= null;
-        try
-        {
-            producto = info[id];
-        }
-        catch
-        {
+        Producto producto = (Producto)HttpRuntime.Cache["producto" + id];
+        if(producto==null) {
             producto = new Producto();
             Query query = new Query("producto");
             CConector conector = CConector.GetConector();
@@ -156,6 +183,8 @@ public class Producto
             query += "vence";
             query += "lote";
             query += "serial";
+            query += "empresa";
+            query += "entero";
 
             MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
             if (reader != null && reader.Read())
@@ -168,19 +197,12 @@ public class Producto
                 producto.nVence = Convert.ToInt32(reader["vence"]);
                 producto.nLote = Convert.ToInt32(reader["lote"]);
                 producto.nSerial = Convert.ToInt32(reader["serial"]);
+                producto.nNumero = Convert.ToInt32(reader["entero"]);
+                producto.Empresa = reader["empresa"].ToString();
             }
-            
-            info[id] = producto;
+            HttpRuntime.Cache.Insert("producto" + id, producto, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
         return producto;
-    }
-
-    static public Dictionary<string, Producto> GetCacheProductos()
-    {
-        Dictionary<string, Producto> info = (Dictionary<string, Producto>)HttpContext.Current.Session["productos_cache"];
-        if (info == null)
-            info = new Dictionary<string, Producto>();
-        return info;
     }
 
     public Producto()
@@ -201,6 +223,7 @@ public class Producto
         nVence= producto.nVence;
         nLote= producto.nLote;
         nSerial = producto.nSerial;
+        nNumero = producto.nNumero;
 
         ubicacion = 0;
         serial = "";

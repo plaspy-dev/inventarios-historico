@@ -40,14 +40,25 @@ public partial class almacen_transformaciones : System.Web.UI.Page
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["tri"])));
                 if (reader != null && reader.Read())
                 {
+                    Producto producto = new Producto(reader["producto"].ToString());
+
                     TNumero.Text = reader["id"].ToString();
                     ((ing)Master).SetModificacion(TNumero.Text, ((ing)Master).GetAlmacen());
+
                     TObservaciones.Text = reader["observaciones"].ToString();
-                    TProductoID.Text = reader["producto"].ToString();
+                    TProductoID.Text = producto.id;
+                    TProducto.Text = producto.NombreCompleto;
                     TCantidad.Text = Convert.ToDecimal(reader["cantidad"]).ToString(CultureInfo.InvariantCulture);
                     TLote.Text = reader["lote"].ToString();
-                    TVencimiento.Text= CConector.GetFromMySQLDate(reader["vence"]);
-                    TProducto.Text = conector.QueryString("SELECT nombre FROM producto WHERE id=" + TProductoID.Text);
+                    
+                    TLote.Visible= producto.nLote > 0;
+                    TVencimiento.Visible = producto.nVence > 0;
+
+                    object vence=null;
+                    try {
+                        vence=reader["vence"];
+                    } catch{}
+                    TVencimiento.Text= CConector.GetFromMySQLDate(vence);
 
                     query = new Query("transformacion_entrada" + ((ing)Master).GetAlmacen());
                     query += "producto";
@@ -57,14 +68,26 @@ public partial class almacen_transformaciones : System.Web.UI.Page
 
                     reader = conector.Query(query.GetSelect("id=" + Query.GetValor(TNumero.Text)));
                     if(reader!=null && reader.Read()) {
-                        TProductoID2.Text = reader["producto"].ToString();
+
+                        producto = new Producto(reader["producto"].ToString());
+
+                        TProductoID2.Text = producto.id;
+                        TProducto2.Text = producto.NombreCompleto;
                         TCantidad2.Text = Convert.ToDecimal(reader["cantidad"]).ToString(CultureInfo.InvariantCulture);
                         TLote2.Text = reader["lote"].ToString();
-                        TVencimiento2.Text = CConector.GetFromMySQLDate(reader["vence"]);
-                        TProducto2.Text = conector.QueryString("SELECT nombre FROM producto WHERE id=" + TProductoID2.Text);
+                        vence=null;
+                        try
+                        {
+                            vence = reader["vence"];
+                        } catch { }
+                        TVencimiento2.Text = CConector.GetFromMySQLDate(vence);
+
+                        TLote2.Visible = producto.nLote > 0;
+                        TVencimiento2.Visible = producto.nVence > 0;
                     }
-                    CAutomatico2.Checked = CAutomatico.Checked = false;
-                    CAutomatico2.CssClass = CAutomatico.CssClass = "hide";
+                    CAutomatico.Visible = CAutomatico2.Visible = false;
+                    /*CAutomatico2.Checked = CAutomatico.Checked = false;
+                    CAutomatico2.CssClass = CAutomatico.CssClass = "hide";*/
                     BAceptar.Enabled = false;
                     return;
                 }
@@ -76,7 +99,31 @@ public partial class almacen_transformaciones : System.Web.UI.Page
     }
     protected void BAceptar_Click(object sender, EventArgs e)
     {
-        RVencimiento.Enabled= RLote.Enabled = !CAutomatico2.Checked;
+        string[] producto = TProductoID.Text.Split(';');
+        Producto pProducto = new Producto(producto[0]);
+
+        LVencimiento.CssClass = TVencimiento.CssClass = pProducto.nVence > 0 ? "" : "hide";
+        LLote.CssClass = TLote.CssClass = pProducto.nLote > 0 ? "" : "hide";
+        TVencimiento.CssClass += " fecha";
+
+        REntero.Enabled = pProducto.nNumero == 1;
+        RDecimal.Enabled = pProducto.nNumero != 1;
+
+        pProducto = new Producto(TProductoID2.Text);
+
+        LVencimiento2.CssClass = TVencimiento2.CssClass = pProducto.nVence > 0 ? "" : "hide";
+        LLote2.CssClass = TLote2.CssClass = pProducto.nLote > 0 ? "" : "hide";
+        TVencimiento2.CssClass += " fecha";
+
+        if (CAutomatico2.Checked) {
+            RVencimiento.Enabled = RLote.Enabled = false;
+        } else {
+            RLote.Enabled = pProducto.nLote == 1;
+            RVencimiento.Enabled = pProducto.nVence == 1;
+        }
+        REntero2.Enabled = pProducto.nNumero == 1;
+        RDecimal2.Enabled = pProducto.nNumero != 1;
+
         Validate();
 
         if (!IsValid)
@@ -89,7 +136,6 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         conector.StartTransaction();
 
         ArrayList productos;
-        string[] producto = TProductoID.Text.Split(';');
         ProductoUsado productousado = new ProductoUsado();
 
         if (producto.Length == 1)

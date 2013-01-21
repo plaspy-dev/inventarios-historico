@@ -14,12 +14,19 @@
     }
 </style>
 <script type="text/javascript">
+    var iniciando=true;
     var proporcion=1;
     addFunctionToStart(function() {
 
         $("#<%= TNumero.ClientID %>").change(function() {
             $.goURL("tri=" + $(this).val());
         });
+        if($("#<%= CAutomatico.ClientID %>").length==0) {
+            $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").show();
+            $("#automatico1,#automatico2").hide();
+            $("#<%= TVencimiento2.ClientID %>,#<%= TLote2.ClientID %>").show();
+            $("#automatico3,#automatico4").hide();
+        }
         $("#<%= CAutomatico.ClientID %>").change(function() {
             if($(this).is(':checked')) {
                 $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").hide();
@@ -28,9 +35,11 @@
                 $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").show();
                 $("#automatico1,#automatico2").hide();
             }
+            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>").show();
+            $("#tdescripcion").text("");
             $("#<%= TProductoID.ClientID %>").val("");
             $("#<%= TProducto.ClientID %>").val("").focus();
-        }).change();
+        });
         $("#<%= CAutomatico2.ClientID %>").change(function() {
             if($(this).is(':checked')) {
                 $("#<%= TVencimiento2.ClientID %>,#<%= TLote2.ClientID %>").hide();
@@ -38,10 +47,13 @@
             } else { 
                 $("#<%= TVencimiento2.ClientID %>,#<%= TLote2.ClientID %>").show();
                 $("#automatico3,#automatico4").hide();
+                $("#<%= TLote2.ClientID %>").focus();
             }
-            $("#<%= TProductoID2.ClientID %>").val("");
-            $("#<%= TProducto2.ClientID %>").val("").focus();
-        }).change();
+            $("#<%= LLote2.ClientID %>,#<%= LVencimiento2.ClientID %>").show();
+        });
+        if(iniciando) 
+            $("#<%= CAutomatico.ClientID %>,#<%= CAutomatico2.ClientID %>").change();
+        iniciando=false;
         
         $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").attr("readonly", true);
         
@@ -56,15 +68,10 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            if($("#<%= CAutomatico.ClientID %>").is(':checked'))
-                                return {
-                                    id: item.id, value: item.nombre, label: item.nombre, cantidad: item.cantidad, producto: item.nombre, unidad: item.unidad, codigo: item.codigo, descripcion: item.descripcion
-                                };
-                            return {
-                                value: item.nombre,id: item.id +";" + item.lote +";" + item.vence, label: item.ProductoCompleto, cantidad: item.cantidad, lote: item.lote, vence: item.vence, producto: item.nombre, unidad: item.unidad, codigo: item.codigo, descripcion: item.descripcion
-                            }; 
+                            item.label= item.ProductoCompleto;
+                            if(!$("#<%= CAutomatico.ClientID %>").is(':checked'))
+                                item.id= item.id +";" + item.lote +";" + item.vence;
+                            return item;
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -77,17 +84,26 @@
             select: function(event, ui) {
 
                 $("#<%= TProductoID.ClientID %>").val(ui.item.id);
-                $("#<%= TProducto.ClientID %>").val(ui.item.value);
-                $("#<%= TUnidad.ClientID %>").val(ui.item.unidad);
-                $("#tdescripcion").text(ui.item.descripcion);
+                $("#<%= TProducto.ClientID %>").val(ui.item.label);
+                var descripcion= ui.item.Empresa;
+                if(ui.item.Empresa!="" && ui.item.descripcion!="")
+                    descripcion+=": ";
+                descripcion+= " " + ui.item.descripcion;
+                $("#tdescripcion").text(descripcion);
                 $("#smax").text("Máx: " + ui.item.cantidad + " " + ui.item.unidad);
                 if(!$("#<%= CAutomatico.ClientID %>").is(':checked')) {
                     $("#<%= TLote.ClientID %>").val(ui.item.lote);
                     $("#<%= TVencimiento.ClientID %>").val(ui.item.vence);
+                    ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
+                    ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
                 } else {
-                    $("#<%= TLote.ClientID %>").val(" ");
-                    $("#<%= TVencimiento.ClientID %>").val(" ");
+                    $("#<%= TLote.ClientID %>").val("");
+                    $("#<%= TVencimiento.ClientID %>").val("");
+                    ui.item.nLote>0 ? $("#automatico1,#<%= LLote.ClientID %>").show() : $("#automatico1,#<%= LLote.ClientID %>").hide();
+                    ui.item.nVence>0 ? $("#automatico2,#<%= LVencimiento.ClientID %>").show() : $("#automatico2,#<%= LVencimiento.ClientID %>").hide();
                 }
+                ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
+                ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
                 
                 /*
                     Buscamos si solo hay una transformacion posible
@@ -102,11 +118,8 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         var mapa= $.map(data.d, function(item) {
-                            if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            return {
-                                value: item.nombre,id: item.id, label: item.nombre, cantidad: item.cantidad, lote: item.lote, vence: item.vence, producto: item.nombre, unidad: item.unidad, codigo: item.codigo, descripcion: item.descripcion
-                            }; 
+                            item.label= item.ProductoCompleto;
+                            return item;
                         });
                         if(mapa.length==1) {
                             select2(mapa[0]);
@@ -134,10 +147,9 @@
                     success: function(data) {
                         response($.map(data.d, function(item) {
                             if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            return {
-                                value: item.nombre,id: item.id, label: item.nombre, cantidad: item.cantidad, lote: item.lote, vence: item.vence, producto: item.nombre, unidad: item.unidad, codigo: item.codigo
-                            }; 
+                                item.label = item.codigo + " - " + item.nombre;
+                            else item.label= item.nombre;
+                            return item;
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -158,17 +170,30 @@
         
             proporcion=item.cantidad;
             $("#<%= TProductoID2.ClientID %>").val(item.id);
-            $("#<%= TProducto2.ClientID %>").val(item.value);
-            $("#<%= TUnidad2.ClientID %>").val(item.unidad);        
+            $("#<%= TProducto2.ClientID %>").val(item.label);
             $("#smax2").text("(" + item.unidad + ")");
             $("#<%= TCantidad.ClientID %>").change();
-            $("#tdescripcion2").text(item.descripcion);
+            var descripcion= item.Empresa;
+            if(item.Empresa!="" && item.descripcion!="")
+                descripcion+=": ";
+            descripcion+= " " + item.descripcion;
+            $("#tdescripcion2").text(descripcion);
+            
+            if(!$("#<%= CAutomatico2.ClientID %>").is(':checked')) {
+                item.nVence>0 ? $("#<%= TVencimiento2.ClientID %>,#<%= LVencimiento2.ClientID %>").show() : $("#<%= TVencimiento2.ClientID %>,#<%= LVencimiento2.ClientID %>").hide();
+                item.nLote>0 ? $("#<%= TLote2.ClientID %>,#<%= LLote2.ClientID %>").show() : $("#<%= TLote2.ClientID %>,#<%= LLote2.ClientID %>").hide();
+                ValidatorEnable($("#<%= RVencimiento.ClientID %>")[0], item.nVence==1);
+                ValidatorEnable($("#<%= RLote.ClientID %>")[0], item.nLote==1);
+            } else {
+                ValidatorEnable($("#<%= RVencimiento.ClientID %>")[0], false);
+                ValidatorEnable($("#<%= RLote.ClientID %>")[0], false);
+            }
+            ValidatorEnable($("#<%= REntero2.ClientID %>")[0], item.nNumero==1);
+            ValidatorEnable($("#<%= RDecimal2.ClientID %>")[0], item.nNumero!=1);
         }
         
         $("#<%= TCantidad.ClientID %>").change(function() {
-            $("#<%= TCantidad2.ClientID %>").val(
-                floatFormatted(proporcion*parseFloat($("#<%= TCantidad.ClientID %>").val())
-            ));
+            $("#<%= TCantidad2.ClientID %>").numeric('value',proporcion*parseFloat($("#<%= TCantidad.ClientID %>").val()));
         });
     });
 </script>
@@ -192,31 +217,27 @@
         <td colspan="5" class="GridHeader">Producto original</td>
     </tr>
     <tr>
-        <td class="tdl"></td>
-        <td colspan="4" class="tdr" id="tdescripcion"></td>
-    </tr>
-    <tr>
-        <td class="tdl">Producto<asp:RequiredFieldValidator ControlToValidate="TProductoID" ErrorMessage="Por favor ingrese un producto." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-        <td colspan="4" class="tdr"><asp:TextBox ID="TProducto" Width="98%" runat="server"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
+        <td class="tdl"><asp:CheckBox runat="server" ID="CAutomatico" Text="Automático" Checked="true" /></td>
+        <td align="right"><asp:Label runat="server" ID="LLote" Text="Lote: "></asp:Label></td>
+        <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><span id="automatico1">Automático</span></td>
+        <td align="right"><asp:Label runat="server" ID="LVencimiento" Text="Vence: "></asp:Label></td>
+        <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico2">Automático</span></td>
     </tr>
     <tr class="GridAltRow">
         <td class="tdl"></td>
-        <td><span id="smax"></span><asp:RequiredFieldValidator ControlToValidate="TCantidad" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
-        </td>
-        <td>Lote
-        </td>
-        <td>Vence
-        </td>
-        <td class="tdr">
-        </td>
+        <td colspan="4" class="tdr" id="tdescripcion"></td>
+    </tr>
+    <tr class="GridAltRow">
+        <td class="tdl">Producto<asp:RequiredFieldValidator ControlToValidate="TProductoID" ErrorMessage="Por favor ingrese un producto." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+        <td colspan="4" class="tdr"><asp:TextBox ID="TProducto" Width="98%" runat="server"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
     </tr>
     <tr>
-        <td class="tdl">Cantidad</td>
+        <td class="tdl">Cantidad<asp:RequiredFieldValidator ControlToValidate="TCantidad" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+        <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+        <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+        </td>
         <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
-        <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><span id="automatico1">Automático</span></td>
-        <td><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico2">Automático</span>
-        <asp:TextBox ID="TUnidad" runat="server" CssClass="hide"></asp:TextBox></td>
-        <td class="tdr"><asp:CheckBox runat="server" ID="CAutomatico" Text="Automático" Checked="true" /></td>
+        <td class="tdr" colspan="3"><span id="smax"></span></td>
     </tr>
     <tr>
         <td colspan="5" class="GridHeader">Producto destino</td>
@@ -233,20 +254,22 @@
         <td class="tdl"></td>
         <td><span id="smax2"></span>
         </td>
-        <td>Lote<asp:RequiredFieldValidator ControlToValidate="TLote2" ErrorMessage="Por favor ingrese un lote." ID="RLote" Enabled="false" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
-        </td>
-        <td>Vence<asp:RequiredFieldValidator ControlToValidate="TVencimiento2" ErrorMessage="Por favor ingrese una fecha." ID="RVencimiento" Enabled="false" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
-        </td>
-        <td class="tdr">
+        <td></td>
+        <td><asp:Label runat="server" ID="LLote2" Text="Lote"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TLote2" ErrorMessage="Por favor ingrese un lote." ID="RLote" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
+        <td class="tdr"><asp:Label runat="server" ID="LVencimiento2" Text="Vence"></asp:Label>
+        <asp:RequiredFieldValidator ControlToValidate="TVencimiento2" ErrorMessage="Por favor ingrese una fecha." ID="RVencimiento" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator>
+        <asp:RangeValidator ControlToValidate="TVencimiento2" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator1" Display="Dynamic" Type="Date">*</asp:RangeValidator>
         </td>
     </tr>
     <tr>
-        <td class="tdl">Cantidad</td>
+        <td class="tdl">Cantidad
+            <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero2" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TCantidad2" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+            <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal2" runat="server" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad2" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+        </td>
         <td><asp:TextBox ID="TCantidad2" ReadOnly="true" runat="server" CssClass="float"></asp:TextBox></td>
+        <td><asp:CheckBox runat="server" ID="CAutomatico2" Text="Automático" Checked="true" /></td>
         <td><asp:TextBox ID="TLote2" runat="server" CssClass="tlote hide"></asp:TextBox><span id="automatico3">Automático</span></td>
-        <td><asp:TextBox ID="TVencimiento2" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico4">Automático</span>
-        <asp:TextBox ID="TUnidad2" runat="server" CssClass="hide"></asp:TextBox></td>
-        <td class="tdr"><asp:CheckBox runat="server" ID="CAutomatico2" Text="Automático" Checked="true" /></td>
+        <td class="tdr"><asp:TextBox ID="TVencimiento2" runat="server" CssClass="fecha hide"></asp:TextBox><span id="automatico4">Automático</span></td>
     </tr>
     <tr>
         <td colspan="5" class="tdt">&nbsp;</td>

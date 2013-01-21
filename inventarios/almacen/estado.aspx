@@ -119,6 +119,7 @@
         <Columns>
             <asp:HyperLinkField HeaderText="Código" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="codigo" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
             <asp:HyperLinkField HeaderText="Producto" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="nombre" SortExpression="nombre" />
+            <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="empresa" SortExpression="empresa" />
             <asp:HyperLinkField HeaderText="Descripción" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="descripcion" SortExpression="descripcion" />
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
@@ -138,7 +139,7 @@
     <asp:SqlDataSource ID="SResultados" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,producto.nombre
+                SelectCommand="SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa
                         ,producto.unidad,producto.codigo,producto.descripcion,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,'' AS lote,'' AS vence
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
@@ -151,6 +152,7 @@
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
                         AND (@nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
+                            OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
                         GROUP BY producto.id HAVING (@todos=1 OR SUM(estado{0}.cantidad)>0)
                         ORDER BY producto.nombre">
@@ -166,7 +168,7 @@
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT estado{0}.producto,estado{0}.lote
                         ,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence
-                        ,estado{0}.cantidad,producto.nombre 
+                        ,estado{0}.cantidad,producto.nombre,producto.empresa
                         ,producto.unidad,producto.codigo,producto.descripcion,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
                         FROM estado{0} 
@@ -179,6 +181,7 @@
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
                         AND (@nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
+                            OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
                         GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence
                         ORDER BY producto.nombre,estado{0}.lote,estado{0}.vence">

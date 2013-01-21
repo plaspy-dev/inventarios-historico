@@ -35,14 +35,8 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            return {
-                                value: item.id, label: item.nombre
-                                , unidad: item.unidad, codigo: item.codigo
-                                , descripcion: item.descripcion
-                                , nSerial: item.nSerial, nLote: item.nLote, nVence: item.nVence
-                            }
+                            item.label= item.ProductoCompleto;
+                            return item;
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -54,9 +48,13 @@
             minLength: 3,
             select: function(event, ui) {
 
-                $("#<%= TProductoID.ClientID %>").val(ui.item.value);
+                $("#<%= TProductoID.ClientID %>").val(ui.item.id);
                 $("#<%= TProducto.ClientID %>").val(ui.item.label);
-                $("#tdescripcion").text(ui.item.descripcion);
+                var descripcion= ui.item.Empresa;
+                if(ui.item.Empresa!="" && ui.item.descripcion!="")
+                    descripcion+=": ";
+                descripcion+= " " + ui.item.descripcion;
+                $("#tdescripcion").text(descripcion);
                 if (ui.item.unidad && ui.item.unidad != "")
                     $("#sunidad").text("(" + ui.item.unidad + ")");
                 else $("#sunidad").text("");
@@ -65,6 +63,8 @@
                 ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
                 ValidatorEnable($("#<%= RVencimiento.ClientID %>")[0], ui.item.nVence==1);
                 ValidatorEnable($("#<%= RLote.ClientID %>")[0], ui.item.nLote==1);
+                ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
+                ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
                 return false;
             }
         });
@@ -101,7 +101,7 @@
             <td colspan="5" class="tdb">&nbsp;</td>
         </tr>
         <tr>
-            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" />Productos</td>
+            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" />Productos</td>
         </tr>
         <tr>
             <td class="tdl"></td>
@@ -113,25 +113,27 @@
         </tr>
         <tr class="GridAltRow">
             <td class="tdl"></td>
-            <td><span id="sunidad"></span><asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td><asp:Label runat="server" ID="LLote" Text="Lote"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TLote" ValidationGroup="producto" ErrorMessage="Por favor ingrese un lote." ID="RLote" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td><asp:Label runat="server" ID="LVencimiento" Text="Vence"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TVencimiento" ValidationGroup="producto" ErrorMessage="Por favor ingrese una fecha." ID="RVencimiento" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td class="tdr">&nbsp;</td>
+            <td><span id="sunidad"></span></td>
+            <td><asp:Label runat="server" ID="LLote" Text="Lote"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TLote" ValidationGroup="producto" ErrorMessage="Por favor ingrese un lote." ID="RLote" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
+            <td><asp:Label runat="server" ID="LVencimiento" Text="Vence"></asp:Label>
+            <asp:RequiredFieldValidator ControlToValidate="TVencimiento" ValidationGroup="producto" ErrorMessage="Por favor ingrese una fecha." ID="RVencimiento" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator>
+            <asp:RangeValidator ControlToValidate="TVencimiento" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator1" Display="Dynamic" Type="Date">*</asp:RangeValidator>
+            </td>
+            <td class="tdr">Ubicación</td>
         </tr>
         <tr>
-            <td class="tdl">Cantidad</td>
+            <td class="tdl">Cantidad
+            <asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+                <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+            </td>
             <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
             <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote"></asp:TextBox></td>
             <td><asp:TextBox ID="TVencimiento" runat="server" CssClass="fecha"></asp:TextBox>
             <asp:TextBox ID="TUnidad" runat="server" CssClass="hide"></asp:TextBox>
             </td>
             <td class="tdr">
-            </td>
-        </tr>
-        <tr>
-            <td class="tdl">
-                Ubicación</td>
-            <td><asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
+            <asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
                        DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id">
                        <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
                 </asp:DropDownList>
@@ -139,7 +141,12 @@
                     ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                     ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                     SelectCommand="SELECT id, nombre FROM ubicacion WHERE almacen={0} AND estado IS NULL ORDER BY nombre">
-                </asp:SqlDataSource></td>
+                </asp:SqlDataSource>
+            </td>
+        </tr>
+        <tr>
+            <td class="tdl"></td>
+            <td></td>
             <td>
                 &nbsp;</td>
             <td>
@@ -217,6 +224,6 @@
             </td>
         </tr>
     </table>
-</ContentTemplate>
-</asp:UpdatePanel>
+    </ContentTemplate>
+</asp:UpdatePanel>    
 </asp:Content>

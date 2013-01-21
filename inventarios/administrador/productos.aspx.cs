@@ -16,6 +16,10 @@ public partial class administrador_productos : System.Web.UI.Page
         {
             CUsuario usuario = (CUsuario)Usuario.GetUsuario();
 
+            DLote.SelectedValue = "1";
+            DVence.SelectedValue = "1";
+            DCantidades.SelectedValue = "0";
+
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
             GResultado.Columns[0].Visible = usuario.CanUpdate();
@@ -31,6 +35,8 @@ public partial class administrador_productos : System.Web.UI.Page
                 query+="unidad";
                 query+="vence";
                 query += "lote";
+                query += "empresa";
+                query += "entero";
                 query += "id";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
@@ -39,10 +45,15 @@ public partial class administrador_productos : System.Web.UI.Page
                     HId.Value= reader["id"].ToString();
                     TNombre.Text= reader["nombre"].ToString();
                     TDescripcion.Text = reader["descripcion"].ToString();
+                    TEmpresa.Text = reader["empresa"].ToString();
                     TCodigo.Text = reader["codigo"].ToString();
                     TUnidad.Text = reader["unidad"].ToString();
                     DVence.SelectedValue = reader["vence"].ToString();
                     DLote.SelectedValue = reader["lote"].ToString();
+                    DCantidades.SelectedValue = reader["entero"].ToString();
+
+                    ((ing)Master).SetModificacion(HId.Value);
+                    BAceptar.Enabled = usuario.CanUpdate();
                 }
             }
         }
@@ -63,6 +74,8 @@ public partial class administrador_productos : System.Web.UI.Page
         query["unidad"] = TUnidad.Text;
         query["vence"] = DVence.SelectedValue;
         query["lote"] = DLote.SelectedValue;
+        query["empresa"] = TEmpresa.Text;
+        query["entero"] = DCantidades.SelectedValue;
 
         if (HId.Value.Length == 0)
         {
@@ -81,6 +94,7 @@ public partial class administrador_productos : System.Web.UI.Page
             HId.Value = res.ToString();
         if (conector.InsertModificacion(HId.Value) == -1)
             return;
+        Producto.RemoveProducto(HId.Value);
         ((ing)Master).SetResultado(mensaje);
     }
 
@@ -91,14 +105,11 @@ public partial class administrador_productos : System.Web.UI.Page
 
     protected void GResultado_SelectedIndexChanged(object sender, EventArgs e)
     {
-        HId.Value = GResultado.SelectedDataKey.Value.ToString();
-        TNombre.Text = HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[2].Text).Trim();
-        TCodigo.Text = HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[3].Text).Trim();
-        TUnidad.Text = HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[4].Text).Trim();
-        TDescripcion.Text = HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[5].Text).Trim();
-        CConector.SelectInComboText(DVence, HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[6].Text).Trim());
-        CConector.SelectInComboText(DLote, HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[7].Text).Trim());
-
-        ((ing)Master).SetModificacion(HId.Value);
+        Response.Redirect(Request.Url.AbsolutePath + "?pid=" + GResultado.SelectedDataKey.Value.ToString());
+    }
+    protected void BBuscar_Click(object sender, EventArgs e)
+    {
+        CFiltrado.Checked = !CFiltrado.Checked;
+        BBuscar.Text = CFiltrado.Checked ? "Cancelar filtrado" : "Filtrar";
     }
 }
