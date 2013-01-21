@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-01-20 · Registrar salidas y transformaciones de productos.** Añade formularios de salida y transformación y amplía la búsqueda de productos. El usuario puede seleccionar el artículo y registrar los movimientos que cambian su existencia o composición.
+**2013-01-21 · Ajustar los campos visibles en movimientos.** Revisa la lógica que muestra y oculta controles de salida, traslado y transformación. Los formularios pueden presentar los campos relacionados con la operación que se está realizando.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-01-20 · Record product withdrawals and transformations.** Add withdrawal and transformation forms and extend product lookups. Users can select an item and record movements that change its stock or composition.
+**2013-01-21 · Adjust visible fields on movement forms.** Revise how withdrawal, transfer, and transformation forms show and hide controls. Each form can present fields relevant to the current operation.
 
 ### How to explore the source
 

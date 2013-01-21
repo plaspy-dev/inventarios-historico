@@ -14,11 +14,8 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            return {
-                                value: item.id, label: item.nombre, unidad: item.unidad, codigo: item.codigo, descripcion: item.descripcion
-                            }
+                            item.label = item.ProductoCompleto;
+                            return item;
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -30,7 +27,7 @@
             minLength: 3,
             select: function(event, ui) {
 
-                $.goURL("pid=" + ui.item.value);
+                $.goURL("pid=" + ui.item.id);
                 return false;
             }
         });
@@ -74,6 +71,14 @@
               </td>
           </tr>
           <tr>
+            <td>Empresa</td>
+            <td>
+                <asp:TextBox ID="TEmpresa" runat="server"></asp:TextBox>
+              </td>
+                <td align="right">
+              </td>
+          </tr>
+          <tr>
             <td>Unidad</td>
             <td>
                 <asp:TextBox ID="TUnidad" runat="server"></asp:TextBox>
@@ -82,7 +87,17 @@
               </td>
           </tr>
           <tr>
-            <td>Fecha de vencimiento<asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td>Manejo de cantidades</td>
+            <td><asp:DropDownList ID="DCantidades" runat="server">
+                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
+                    <asp:ListItem Text="Decimal" Value="0"></asp:ListItem>
+                    <asp:ListItem Text="Entero" Value="1"></asp:ListItem>
+                </asp:DropDownList>
+            </td>
+            <td><asp:RequiredFieldValidator ControlToValidate="DCantidades" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+          </tr>
+          <tr>
+            <td>Fecha de vencimiento</td>
             <td><asp:DropDownList ID="DVence" runat="server">
                     <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
                     <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
@@ -90,10 +105,10 @@
                     <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
                 </asp:DropDownList>
             </td>
-            <td></td>
+            <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
           </tr>
           <tr>
-            <td>Lote<asp:RequiredFieldValidator ControlToValidate="DLote" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td>Lote</td>
             <td>
                 <asp:DropDownList ID="DLote" runat="server">
                     <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
@@ -102,16 +117,17 @@
                     <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
                 </asp:DropDownList>
             </td>
-            <td></td>
+            <td><asp:RequiredFieldValidator ControlToValidate="DLote" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
           </tr>
           <tr>
             <td>&nbsp;</td>
             <td align="right">
                 <asp:Button ID="BAceptar" runat="server" Text="Aceptar" onclick="BAceptar_Click" />
                 <asp:Button ID="BCancelar" runat="server" CausesValidation="False" Text="Cancelar" onclick="BCancelar_Click" />
-                <asp:Button ID="BBuscar" runat="server" CausesValidation="false" Text="Filtrar" />
+                <asp:Button ID="BBuscar" runat="server" CausesValidation="false" Text="Filtrar" 
+                    onclick="BBuscar_Click" />
               </td>
-            <td>
+            <td><asp:CheckBox runat="server" ID="CFiltrado" CssClass="hide" />
                 <asp:HiddenField ID="HTipo" runat="server" />
               </td>
           </tr>
@@ -134,7 +150,9 @@
                     <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" />
                     <asp:BoundField DataField="codigo" HeaderText="Código" SortExpression="codigo" />
                     <asp:BoundField DataField="unidad" HeaderText="Unidad" SortExpression="unidad" />
+                    <asp:BoundField DataField="empresa" HeaderText="Empresa" SortExpression="empresa" />
                     <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" />
+                    <asp:BoundField DataField="entero" HeaderText="Manejo de cantidades" SortExpression="entero" />
                     <asp:BoundField DataField="vence" HeaderText="Fecha de vencimiento" SortExpression="vence" />
                     <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                 </Columns>
@@ -142,23 +160,29 @@
             <asp:SqlDataSource ID="SResultados" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT id,nombre,descripcion,codigo,unidad 
+                SelectCommand="SELECT id,nombre,descripcion,codigo,unidad,empresa 
                         ,CASE vence WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS vence
                         ,CASE lote WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS lote
-                        ,entero
+                        ,CASE entero WHEN 1 THEN 'Entero' ELSE 'Decimal' END AS entero
                         FROM producto 
                         WHERE estado IS NULL
-                        AND (@vence=-1 OR vence=@vence)
-                        AND (@lote=-1 OR lote=@lote)
-                        AND (@nombre='_' OR nombre LIKE CONCAT('%', @nombre,'%'))
-                        AND (@unidad='_' OR unidad LIKE CONCAT('%', @unidad,'%'))
-                        AND (@codigo='_' OR codigo LIKE CONCAT('%', @codigo,'%'))
-                        AND (@descripcion='_' OR descripcion LIKE CONCAT('%', @descripcion,'%'))
+                        AND (@filtrado=0 
+                        OR (
+                            (@vence=-1 OR vence=@vence)
+                            AND (@lote=-1 OR lote=@lote)
+                            AND (@cantidades=-1 OR entero=@cantidades)
+                            AND (@nombre='_' OR nombre LIKE CONCAT('%', @nombre,'%'))
+                            AND (@unidad='_' OR unidad LIKE CONCAT('%', @unidad,'%'))
+                            AND (@codigo='_' OR codigo LIKE CONCAT('%', @codigo,'%'))
+                            AND (@descripcion='_' OR descripcion LIKE CONCAT('%', @descripcion,'%'))
+                        ))
                         " 
                 DeleteCommand="UPDATE producto SET estado=-1 WHERE id=@id" >
                 <SelectParameters>
+                    <asp:ControlParameter ControlID="CFiltrado" PropertyName="Checked" Name="filtrado" />
                     <asp:ControlParameter ControlID="DVence" PropertyName="SelectedValue" Name="vence" />
                     <asp:ControlParameter ControlID="DLote" PropertyName="SelectedValue" Name="lote" />
+                    <asp:ControlParameter ControlID="DCantidades" PropertyName="SelectedValue" Name="cantidades" />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
                     <asp:ControlParameter ControlID="TDescripcion" PropertyName="Text" Name="descripcion" DefaultValue="_" />
                     <asp:ControlParameter ControlID="TUnidad" PropertyName="Text" Name="unidad" DefaultValue="_" />

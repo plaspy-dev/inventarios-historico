@@ -14,8 +14,8 @@ public partial class almacen_estado : System.Web.UI.Page
     {
         ((ing)Master).CheckAlmacen();
 
-        GResultados.Columns[7].Visible = !CTodosAlmacenes.Checked;
-        GResultados.Columns[8].Visible= CTodosAlmacenes.Checked && CAlmacen.Checked;
+        GResultados.Columns[8].Visible = !CTodosAlmacenes.Checked;
+        GResultados.Columns[9].Visible= CTodosAlmacenes.Checked && CAlmacen.Checked;
 
         SKardex.SelectCommand = String.Format(SKardex.SelectCommand, ((ing)Master).GetAlmacen());
         SUbicacion.SelectCommand = String.Format(SUbicacion.SelectCommand, ((ing)Master).GetAlmacen());
@@ -97,8 +97,8 @@ public partial class almacen_estado : System.Web.UI.Page
     protected void BBuscar_Click(object sender, EventArgs e)
     {
         GResultados.DataSourceID = CDetallado.Checked ? "SResultados1" : "SResultados";
-        GResultados.Columns[3].Visible = CDetallado.Checked;
         GResultados.Columns[4].Visible = CDetallado.Checked;
+        GResultados.Columns[5].Visible = CDetallado.Checked;
 
         if(Utilidades.GetRowsCount(GResultados, LTotal)>0) {
 
@@ -149,12 +149,15 @@ public partial class almacen_estado : System.Web.UI.Page
         string []detalle = DProductoUbicaciones.SelectedValue.Split(';');
         string producto = detalle[0];
         string vence = CConector.GetMySQLDateFormat(detalle[1]);
-        string lote = Query.GetValor(detalle[2]);
+        string lote = detalle[2];
         string ubicacion = detalle[3];
 
         if (vence.Length == 0)
             vence = "0000-00-00";
         vence = Query.GetValor(vence);
+        if (lote.Length == 0)
+            vence = "''";
+        else Query.GetValor(lote);
 
         CConector conector = new CConector();
         conector.StartTransaction();

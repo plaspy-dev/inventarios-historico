@@ -31,7 +31,7 @@
             autoFocus: true,
             select: function(event, ui) {
 
-                $("#<%= TProductoID.ClientID %>").val(ui.item.value);
+                $("#<%= TProductoID.ClientID %>").val(ui.item.id);
                 $("#<%= TProducto.ClientID %>").val(ui.item.label);
                 if (ui.item.unidad && ui.item.unidad != "")
                     $("#sunidad").text(ui.item.unidad);
@@ -67,7 +67,7 @@
             autoFocus: true,
             select: function(event, ui) {
 
-                $("#<%= TProductoID2.ClientID %>").val(ui.item.value);
+                $("#<%= TProductoID2.ClientID %>").val(ui.item.id);
                 $("#<%= TProducto2.ClientID %>").val(ui.item.label);
                 if (ui.item.unidad && ui.item.unidad != "")
                     $("#sunidad2").text(ui.item.unidad);

@@ -88,14 +88,23 @@ public partial class almacen_traslado : System.Web.UI.Page
 
     protected void BAgregar_Click(object sender, EventArgs e)
     {
+        string[] saProducto = TProductoID.Text.Split(';');
+        Producto producto = new Producto(saProducto[0]);
+
+        REntero.Enabled = producto.nNumero == 1;
+        RDecimal.Enabled = producto.nNumero != 1;
+
+        LVencimiento.CssClass = TVencimiento.CssClass = producto.nVence > 0 ? "" : "hide";
+        LLote.CssClass = TLote.CssClass = producto.nLote > 0 ? "" : "hide";
+        TVencimiento.CssClass += " fecha";
+        TLote.CssClass += " tlote";
+
         Page.Validate("producto");
         if (!Page.IsValid)
             return;
 
         ProductoUsado productousado = new ProductoUsado(HProductos.Value);
-        ArrayList productos;
-
-        string []saProducto= TProductoID.Text.Split(';');
+        ArrayList productos;        
 
         if (saProducto.Length == 1)
         { // automatico
@@ -112,9 +121,7 @@ public partial class almacen_traslado : System.Web.UI.Page
         for(int i=0; i<productos.Count; i++) {
 
             IOrderedDictionary data = new OrderedDictionary();
-            Producto producto = (Producto)productos[i];
-
-            producto.unidad = TUnidad.Text;
+            producto = (Producto)productos[i];
 
             data.Add("codigo", producto.codigo);
             data.Add("nombre", producto.nombre);
@@ -124,7 +131,7 @@ public partial class almacen_traslado : System.Web.UI.Page
             if(string.IsNullOrEmpty(producto.vence))
                 data.Add("vence", null);
             else data.Add("vence",  Convert.ToDateTime(producto.vence));
-            data.Add("unidad", TUnidad.Text);
+            data.Add("unidad", producto.unidad);
             data.Add("ubicacion", producto.ubicacion);
             data.Add("nubicacion", producto.NombreUbicacion);
             /*if (sender != BAgregar)
@@ -138,8 +145,16 @@ public partial class almacen_traslado : System.Web.UI.Page
         GProductos.DataBind();
 
         LMensaje.Text = "";
-        TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = TUnidad.Text= "";
+        TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = "";
         TProducto.Focus();
+
+        LVencimiento.CssClass = TVencimiento.CssClass = CAutomatico.Checked ? "hide" : "";
+        LLote.CssClass = TLote.CssClass = CAutomatico.Checked ? "hide" : "";
+        TVencimiento.CssClass += " fecha";
+        TLote.CssClass += " tlote";
+
+        REntero.Enabled = true;
+        RDecimal.Enabled = true;
 
         HProductos.Value = productousado.Serialize();
 
@@ -300,7 +315,8 @@ public partial class almacen_traslado : System.Web.UI.Page
     {
         ProductoUsado productousado = new ProductoUsado(HProductos.Value);
         string vence= e.Values["vence"]==null ? "" : e.Values["vence"].ToString();
-        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), e.Values["lote"].ToString(), vence, Convert.ToInt32(e.Keys["ubicacion"]));
+        string lote = e.Values["lote"] == null ? "" : e.Values["lote"].ToString();
+        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), lote, vence, Convert.ToInt32(e.Keys["ubicacion"]));
         HProductos.Value = productousado.Serialize();
     }
     protected void BActualizar_Click(object sender, EventArgs e)
@@ -316,7 +332,6 @@ public partial class almacen_traslado : System.Web.UI.Page
             TLote.Text = producto.lote;
             TVencimiento.Text = producto.vence;
             TProducto.Text = producto.NombreCompleto;
-            TUnidad.Text = producto.unidad;
             BAgregar_Click(sender, e);
         }
     }

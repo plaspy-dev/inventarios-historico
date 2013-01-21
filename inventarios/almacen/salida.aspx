@@ -14,6 +14,7 @@
     }
 </style>
 <script type="text/javascript">
+    var iniciando=true;
     $(function() {
         if (hasStorage) {
           if(<%= (bool)ViewState["clean"] ? "true" : "false" %>) {
@@ -41,9 +42,14 @@
                 $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").show();
                 $("#automatico1,#automatico2").hide();
             }
+            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>").show();
+            $("#tdescripcion").text("");
             $("#<%= TProductoID.ClientID %>").val("");
             $("#<%= TProducto.ClientID %>").val("").focus();
-        }).change();
+        });
+        if(iniciando)
+            $("#<%= CAutomatico.ClientID %>").change();
+        iniciando=false;
         $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").attr("readonly", true);
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {
@@ -56,15 +62,10 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            if($("#<%= CAutomatico.ClientID %>").is(':checked'))
-                                return {
-                                    id: item.id, value: item.nombre, label: item.nombre, cantidad: item.cantidad, producto: item.nombre, unidad: item.unidad, codigo: item.codigo, descripcion: item.descripcion
-                                };
-                            return {
-                                value: item.nombre,id: item.id +";" + item.lote +";" + item.vence, label: item.ProductoCompleto, cantidad: item.cantidad, lote: item.lote, vence: item.vence, producto: item.nombre, unidad: item.unidad, codigo: item.codigo, descripcion: item.descripcion
-                            }; 
+                            item.label= item.ProductoCompleto;
+                            if(!$("#<%= CAutomatico.ClientID %>").is(':checked'))
+                                item.id= item.id +";" + item.lote +";" + item.vence;
+                            return item;
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -77,17 +78,26 @@
             select: function(event, ui) {
 
                 $("#<%= TProductoID.ClientID %>").val(ui.item.id);
-                $("#<%= TProducto.ClientID %>").val(ui.item.producto);
-                $("#<%= TUnidad.ClientID %>").val(ui.item.unidad);
+                $("#<%= TProducto.ClientID %>").val(ui.item.label);
                 $("#smax").text("Máx: " + ui.item.cantidad + " " + ui.item.unidad);
-                $("#tdescripcion").text(ui.item.descripcion);
+                var descripcion= ui.item.Empresa;
+                if(ui.item.Empresa!="" && ui.item.descripcion!="")
+                    descripcion+=": ";
+                descripcion+= " " + ui.item.descripcion;
+                $("#tdescripcion").text(descripcion);
                 if(!$("#<%= CAutomatico.ClientID %>").is(':checked')) {
                     $("#<%= TLote.ClientID %>").val(ui.item.lote);
                     $("#<%= TVencimiento.ClientID %>").val(ui.item.vence);
+                    ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
+                    ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
                 } else {
-                    $("#<%= TLote.ClientID %>").val(" ");
-                    $("#<%= TVencimiento.ClientID %>").val(" ");
+                    $("#<%= TLote.ClientID %>").val("");
+                    $("#<%= TVencimiento.ClientID %>").val("");
+                    ui.item.nLote>0 ? $("#automatico1,#<%= LLote.ClientID %>").show() : $("#automatico1,#<%= LLote.ClientID %>").hide();
+                    ui.item.nVence>0 ? $("#automatico2,#<%= LVencimiento.ClientID %>").show() : $("#automatico2,#<%= LVencimiento.ClientID %>").hide();
                 }
+                ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
+                ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
                 return false;
             }
         });
@@ -120,32 +130,33 @@
             <td colspan="5" class="tdb">&nbsp;</td>
         </tr>
         <tr>
-            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" />Productos</td>
+            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" />Productos</td>
         </tr>
         <tr>
             <td colspan="5" class="tdl tdr"><asp:Label runat="server" ID="LMensaje" ForeColor="Red"></asp:Label></td>
         </tr>
         <tr>
-            <td class="tdl"></td>
-            <td colspan="4" class="tdr" id="tdescripcion"></td>
-        </tr>
-        <tr>
-            <td class="tdl">Producto<asp:RequiredFieldValidator ControlToValidate="TProductoID" ValidationGroup="producto" ErrorMessage="Por favor ingrese un producto." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td colspan="4" class="tdr"><asp:TextBox ID="TProducto" runat="server" Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
+            <td class="tdl"><asp:CheckBox runat="server" ID="CAutomatico" Text="Automático" Checked="true" /></td>
+            <td align="right"><asp:Label runat="server" ID="LLote" Text="Lote: "></asp:Label></td>
+            <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><span id="automatico1">Automático</span></td>
+            <td align="right"><asp:Label runat="server" ID="LVencimiento" Text="Vence: "></asp:Label></td>
+            <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico2">Automático</span>
+            </td>
         </tr>
         <tr class="GridAltRow">
             <td class="tdl"></td>
-            <td><span id="smax"></span><asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td>Lote</td>
-            <td>Vence</td>
-            <td class="tdr"><asp:CheckBox runat="server" ID="CAutomatico" Text="Automático" Checked="true" /></td>
+            <td colspan="4" class="tdr" id="tdescripcion"></td>
+        </tr>
+        <tr class="GridAltRow">
+            <td class="tdl">Producto<asp:RequiredFieldValidator ControlToValidate="TProductoID" ValidationGroup="producto" ErrorMessage="Por favor ingrese un producto." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td colspan="4" class="tdr"><asp:TextBox ID="TProducto" runat="server" Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
         </tr>
         <tr>
-            <td class="tdl">Cantidad</td>
+            <td class="tdl">Cantidad<asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+                <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator></td>
             <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
-            <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><span id="automatico1">Automático</span></td>
-            <td><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico2">Automático</span>
-            <asp:TextBox ID="TUnidad" runat="server" CssClass="hide"></asp:TextBox></td>
+            <td colspan="2"><span id="smax"></span></td>
             <td class="tdr">
                 <asp:Button ID="BAgregar" runat="server" Text="Agregar" ValidationGroup="producto" onclick="BAgregar_Click" />
                 <asp:Button ID="BActualizar" runat="server" Text="Actualizar" CssClass="hide" CausesValidation="false" onclick="BActualizar_Click" />

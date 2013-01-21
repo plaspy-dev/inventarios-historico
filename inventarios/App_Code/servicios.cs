@@ -48,7 +48,7 @@ public class servicios : System.Web.Services.WebService {
         {
             if (split[i].Length > 0)
             { // verificamos que no este vacio
-                query += String.Format(" AND (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR nombre LIKE '%{0}%' OR descripcion LIKE '%{0}%') ", split[i]);
+                query += String.Format(" AND (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR nombre LIKE '%{0}%' OR empresa LIKE '%{0}%') ", split[i]);
             }
         }
         query += " ORDER BY nombre LIMIT 50;";
@@ -83,7 +83,7 @@ public class servicios : System.Web.Services.WebService {
             if (split[i].Length > 0)
             { // verificamos que no este vacio
                 query += " AND ";
-                query += String.Format(" (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%') ", split[i]);
+                query += String.Format(" (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
             }
         }
         if (auto)
@@ -137,7 +137,7 @@ public class servicios : System.Web.Services.WebService {
             if (split[i].Length > 0)
             { // verificamos que no este vacio
                 query += " AND ";
-                query += String.Format(" (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%') ", split[i]);
+                query += String.Format(" (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
             }
         }
 
@@ -195,7 +195,7 @@ public class servicios : System.Web.Services.WebService {
         {
             if (split[i].Length > 0)
             { // verificamos que no este vacio
-                query += String.Format(" AND (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%') ", split[i]);
+                query += String.Format(" AND (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
             }
         }
         query += " ORDER BY producto.nombre LIMIT 50;";

@@ -88,14 +88,23 @@ public class ProductoUsado
         ArrayList productos = new ArrayList();
         CConector conector = new CConector();
 
-        string szDisponible = conector.QueryString(string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto=" + Query.GetValor(producto) + " AND lote=" + Query.GetValor(lote) + " AND vence=STR_TO_DATE(" + Query.GetValor(vencimiento) + ", '%d/%m/%Y')", almacen));
+        string szLote;
+        if (lote.Length == 0)
+            szLote = "''";
+        else szLote = Query.GetValor(lote);
+        string szVencimiento;
+        if (vencimiento.Length == 0)
+            szVencimiento = "'0000-00-00'";
+        else szVencimiento = "STR_TO_DATE(" + Query.GetValor(vencimiento) + ", '%d/%m/%Y')";
+
+        string szDisponible = conector.QueryString(string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto=" + Query.GetValor(producto) + " AND lote=" + szLote + " AND vence=" + szVencimiento, almacen));
         Decimal dCantidad = Convert.ToDecimal(szDisponible);
         dCantidad -= GetProductoUsado(producto, lote, vencimiento);
 
         if (dCantidad < cantidad)
             return null;
 
-        MySqlDataReader reader = conector.Query(string.Format("SELECT cantidad,ubicacion FROM estado{0} WHERE producto=" + Query.GetValor(producto) + " AND lote=" + Query.GetValor(lote) + " AND vence=STR_TO_DATE(" + Query.GetValor(vencimiento) + ", '%d/%m/%Y')", almacen));
+        MySqlDataReader reader = conector.Query(string.Format("SELECT cantidad,ubicacion FROM estado{0} WHERE producto=" + Query.GetValor(producto) + " AND lote=" + szLote + " AND vence=" + szVencimiento, almacen));
         if (reader != null)
         {
             while (reader.Read())
@@ -107,7 +116,7 @@ public class ProductoUsado
                 try { vence = reader["vence"]; }
                 catch { }
 
-                dCantidad -= GetProductoUsado(producto, reader["lote"].ToString(), CConector.GetFromMySQLDate(vence), ubicacion);
+                dCantidad -= GetProductoUsado(producto, lote, CConector.GetFromMySQLDate(vence), ubicacion);
                 if (dCantidad == 0)
                     continue;
                 if (dCantidad > cantidad)
@@ -116,7 +125,6 @@ public class ProductoUsado
                 cantidad -= dCantidad;
                 if (cantidad == 0)
                     break;
-
             }
         }
 
