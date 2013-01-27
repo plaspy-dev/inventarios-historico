@@ -13,8 +13,7 @@
                 <asp:Panel runat="server" ID="PLogin" DefaultButton="m_BIngresar">
      <table>
         <tr>
-            <td>
-                Email</td>
+            <td>Usuario</td>
             <td>
                 <asp:TextBox ID="m_EUsuario" runat="server"></asp:TextBox>
             </td>

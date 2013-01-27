@@ -70,6 +70,12 @@ public partial class administrador_almacenes : System.Web.UI.Page
 
         conector.Commit();
 
+        MySqlDataReader reader= conector.Query("SELECT id FROM ubicacion WHERE almacen=" + HId.Value + " AND estado IS NULL");
+        if(reader!=null) {
+            while(reader.Read()) // limpiamos el cache de las ubicaciones
+                Almacen.RemoveUbicacion(Convert.ToInt32(reader["id"]));
+        }
+
         if (crearalmacenes)
         {
 

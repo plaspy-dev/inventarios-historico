@@ -21,7 +21,7 @@ public partial class _Default : System.Web.UI.Page
                 Response.Redirect("~/");
                 Response.End();
             }
-            CUsuario usuario = (CUsuario)Usuario.Validate(CConector.GetCookie("usuario"), CConector.GetCookie("contrasena"));
+            CUsuario usuario = (CUsuario)Usuario.Validate();
             if(usuario!=null) {
                 string url = Request.QueryString["from"];
                 if (url == null || url.Length == 0)

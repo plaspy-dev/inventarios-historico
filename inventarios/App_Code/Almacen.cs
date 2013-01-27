@@ -40,28 +40,19 @@ public class Almacen
         return full;
     }
 
-    static public Dictionary<int, string> GetNombreUbicaciones()
-    {
-        Dictionary<int, string> info = (Dictionary<int, string>)HttpContext.Current.Session["almacen_ubicaciones_nombre"];
-        if (info == null)
-            info = new Dictionary<int, string>();
-        return info;
+    static public void RemoveUbicacion(int ubicacion) {
+        if (HttpRuntime.Cache["ubicacion" + ubicacion.ToString()] != null)
+            HttpRuntime.Cache.Remove("ubicacion" + ubicacion.ToString());
     }
     
     static public string GetNombreUbicacion(int ubicacion) {
 
         if (ubicacion==0)
             return "(Ninguna)";
-        Dictionary<int, string> info = GetNombreUbicaciones();
-        string nombre = null;
-        try
-        {
-            nombre = info[ubicacion];
-        }
-        catch
-        {
+        string nombre= (string)HttpRuntime.Cache["ubicacion" + ubicacion.ToString()];
+        if(nombre==null) {
             nombre = new CConector().QueryString("SELECT nombre FROM ubicacion WHERE id=" + Query.GetValor(ubicacion.ToString()));
-            info[ubicacion] = nombre;
+            HttpRuntime.Cache.Insert("ubicacion" + ubicacion.ToString(), nombre, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
         return nombre;
     }

@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-01-21 · Ajustar los campos visibles en movimientos.** Revisa la lógica que muestra y oculta controles de salida, traslado y transformación. Los formularios pueden presentar los campos relacionados con la operación que se está realizando.
+**2013-01-27 · Limpiar la caché al cambiar ubicaciones.** Añade una operación que elimina un nombre de ubicación de la caché y la llama desde la administración del almacén. Así se puede volver a consultar el nombre de la ubicación después de guardar un cambio.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-01-21 · Adjust visible fields on movement forms.** Revise how withdrawal, transfer, and transformation forms show and hide controls. Each form can present fields relevant to the current operation.
+**2013-01-27 · Clear cached warehouse locations after changes.** Add an operation that removes a location name from the cache and call it from warehouse administration. The name can be looked up again after a change is saved.
 
 ### How to explore the source
 
