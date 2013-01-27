@@ -27,10 +27,8 @@ public class CUsuario : Usuario
                 string id = reader["id"].ToString();
                 int grupo= Convert.ToInt32(reader["grupo"]);
 
-                CConector.SetCookie("usuario", usuario);
                 CConector.SetCookie("contrasena", passwd, DateTime.Now.AddDays(2));
                 CConector.SetCookie("usuario", usuario);
-                CConector.SetCookie("password", reader["contrasena"].ToString(), new DateTime().AddDays(3));
 
                 CUsuario pUsuario = new CUsuario(id, reader["nombre"].ToString(), grupo, usuario);
                 pUsuario["almacenes"] = reader["almacenes"].ToString();

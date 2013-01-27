@@ -36,6 +36,12 @@ public class ConectorMS
 			{
 				m_pSQLReader.Close();
 			}
+		}
+		catch
+		{
+		}
+		try
+		{
 			if (m_pSQLConector != null)
 			{
 				m_pSQLConector.Close();
@@ -114,10 +120,16 @@ public class ConectorMS
 		{
 			return -1;
 		}
-		if (m_pSQLReader != null)
+		try
 		{
-			m_pSQLReader.Close();
-			m_pSQLReader = null;
+			if (m_pSQLReader != null)
+			{
+				m_pSQLReader.Close();
+				m_pSQLReader = null;
+			}
+		}
+		catch
+		{
 		}
 		try
 		{
@@ -150,6 +162,13 @@ public class ConectorMS
 		{
 			result = ((sqlDataReader[0].GetType() != typeof(byte[])) ? sqlDataReader[0].ToString() : Encoding.UTF8.GetString((byte[])sqlDataReader[0]));
 		}
+		try
+		{
+			sqlDataReader.Close();
+		}
+		catch
+		{
+		}
 		return result;
 	}
 
@@ -170,10 +189,16 @@ public class ConectorMS
 			return null;
 		}
 		m_szQuery = query;
-		if (m_pSQLReader != null)
+		try
 		{
-			m_pSQLReader.Close();
-			m_pSQLReader = null;
+			if (m_pSQLReader != null)
+			{
+				m_pSQLReader.Close();
+				m_pSQLReader = null;
+			}
+		}
+		catch
+		{
 		}
 		try
 		{

@@ -37,6 +37,12 @@ public class Conector
 			{
 				m_pSQLReader.Close();
 			}
+		}
+		catch
+		{
+		}
+		try
+		{
 			if (m_pSQLConector != null)
 			{
 				m_pSQLConector.Close();
@@ -146,10 +152,16 @@ public class Conector
 		{
 			return -1;
 		}
-		if (m_pSQLReader != null)
+		try
 		{
-			m_pSQLReader.Close();
-			m_pSQLReader = null;
+			if (m_pSQLReader != null)
+			{
+				m_pSQLReader.Close();
+				m_pSQLReader = null;
+			}
+		}
+		catch
+		{
 		}
 		try
 		{
@@ -182,6 +194,13 @@ public class Conector
 		{
 			result = ((mySqlDataReader[0].GetType() != typeof(byte[])) ? mySqlDataReader[0].ToString() : Encoding.UTF8.GetString((byte[])mySqlDataReader[0]));
 		}
+		try
+		{
+			mySqlDataReader.Close();
+		}
+		catch
+		{
+		}
 		return result;
 	}
 
@@ -202,10 +221,16 @@ public class Conector
 			return null;
 		}
 		m_szQuery = query;
-		if (m_pSQLReader != null)
+		try
 		{
-			m_pSQLReader.Close();
-			m_pSQLReader = null;
+			if (m_pSQLReader != null)
+			{
+				m_pSQLReader.Close();
+				m_pSQLReader = null;
+			}
+		}
+		catch
+		{
 		}
 		try
 		{
