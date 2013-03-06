@@ -296,6 +296,7 @@ public partial class almacen_entrada : System.Web.UI.Page
 
         conector.Commit();
         Session["entrada_clean"] = 1;
+        ((ing)Master).SetAlerta("Entrada " + HId.Value + " editada.");
         ((ing)Master).SetResultado("Entrada " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)

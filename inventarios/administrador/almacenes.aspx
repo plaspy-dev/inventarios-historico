@@ -63,7 +63,7 @@
               </td>
           </tr>
           <tr>
-            <td class="tdl tdb">Ubicacion<asp:RequiredFieldValidator ControlToValidate="TUbicacion" ValidationGroup="ubicacion" ErrorMessage="Por favor ingrese una ubicación." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <td class="tdl tdb">Ubicación<asp:RequiredFieldValidator ControlToValidate="TUbicacion" ValidationGroup="ubicacion" ErrorMessage="Por favor ingrese una ubicación." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
             </td>
             <td class="tdb"><asp:TextBox runat="server" ID="TUbicacion"></asp:TextBox></td>
             <td align="left" class="tdr tdb"><asp:Button runat="server" ID="BMas" ValidationGroup="ubicacion" Text="+" onclick="BMas_Click" /></td>

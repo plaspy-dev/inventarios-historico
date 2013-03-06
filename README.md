@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-01-27 · Limpiar la caché al cambiar ubicaciones.** Añade una operación que elimina un nombre de ubicación de la caché y la llama desde la administración del almacén. Así se puede volver a consultar el nombre de la ubicación después de guardar un cambio.
+**2013-03-06 · Incorporar lotes y vencimientos en la consulta.** Amplía los atributos de producto para lote y vencimiento y ajusta las columnas de estado. Esto permite seguir cómo se organizan los detalles del producto en la vista de existencias.
 
 ### Cómo explorar el código
 
@@ -17,7 +17,7 @@ El sitio usa ASP.NET de su época. Revisa las páginas y su código en un entorn
 - [inventarios/Default.aspx](inventarios/Default.aspx)
 - [inventarios/inicio.aspx](inventarios/inicio.aspx)
 - [inventarios/administrador/Default.aspx](inventarios/administrador/Default.aspx)
-- [inventarios/contrasena.aspx](inventarios/contrasena.aspx)
+- [inventarios/error/Default.aspx](inventarios/error/Default.aspx)
 
 ## English
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-01-27 · Clear cached warehouse locations after changes.** Add an operation that removes a location name from the cache and call it from warehouse administration. The name can be looked up again after a change is saved.
+**2013-03-06 · Include lots and expiry in stock lookup.** Extend product attributes for lots and expiry and update stock status columns. Readers can see how product details are organized in the stock view.
 
 ### How to explore the source
 
@@ -34,4 +34,4 @@ The site uses historical ASP.NET. Review its pages and code in a Windows environ
 - [inventarios/Default.aspx](inventarios/Default.aspx)
 - [inventarios/inicio.aspx](inventarios/inicio.aspx)
 - [inventarios/administrador/Default.aspx](inventarios/administrador/Default.aspx)
-- [inventarios/contrasena.aspx](inventarios/contrasena.aspx)
+- [inventarios/error/Default.aspx](inventarios/error/Default.aspx)

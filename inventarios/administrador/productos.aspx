@@ -136,7 +136,7 @@
       <tr>
         <td>
             <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" EmptyDataText="No se encontraron productos"
-                DataKeyNames="id" DataSourceID="SResultados" 
+                DataKeyNames="id" DataSourceID="SResultados" AllowSorting="true"
                 onselectedindexchanged="GResultado_SelectedIndexChanged" AllowPaging="true" PageSize="50" >
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -176,6 +176,7 @@
                             AND (@codigo='_' OR codigo LIKE CONCAT('%', @codigo,'%'))
                             AND (@descripcion='_' OR descripcion LIKE CONCAT('%', @descripcion,'%'))
                         ))
+                        ORDER BY codigo,nombre
                         " 
                 DeleteCommand="UPDATE producto SET estado=-1 WHERE id=@id" >
                 <SelectParameters>

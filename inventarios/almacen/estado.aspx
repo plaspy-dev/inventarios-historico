@@ -1,4 +1,4 @@
-<%@ Page Title="Estado" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="estado.aspx.cs" Inherits="almacen_estado" %>
+ï»¿<%@ Page Title="Estado" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="estado.aspx.cs" Inherits="almacen_estado" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 
@@ -36,7 +36,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Máxima</td>
+                    <td>MÃ¡xima</td>
                     <td id="tmaxima" align="right"></td>
                 </tr>
                 <tr>
@@ -68,10 +68,10 @@
         <tr>
             <td>Vence</td>
             <td>Nombre</td>
-            <td>Ubicación</td>
+            <td>UbicaciÃ³n</td>
             <td></td>
             <td><asp:CheckBox runat="server" ID="CTodosAlmacenes" Text="Todos los almacenes" /></td>
-            <td><asp:CheckBox runat="server" ID="CAlmacen" Text="Ver almacén" CssClass="hide" /></td>
+            <td><asp:CheckBox runat="server" ID="CAlmacen" Text="Ver almacÃ©n" CssClass="hide" /></td>
         </tr>
         <tr>
             <td>
@@ -117,20 +117,20 @@
         <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
         <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
         <Columns>
-            <asp:HyperLinkField HeaderText="Código" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="codigo" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
+            <asp:HyperLinkField HeaderText="CÃ³digo" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="codigo" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
             <asp:HyperLinkField HeaderText="Producto" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="nombre" SortExpression="nombre" />
             <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="empresa" SortExpression="empresa" />
-            <asp:HyperLinkField HeaderText="Descripción" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="descripcion" SortExpression="descripcion" />
+            <asp:HyperLinkField HeaderText="DescripciÃ³n" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="descripcion" SortExpression="descripcion" />
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
             <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" />
             <asp:BoundField HeaderText="Un." DataField="unidad" SortExpression="unidad" />
-            <asp:TemplateField HeaderText="Ubicación" SortExpression="ubicacion">
+            <asp:TemplateField HeaderText="UbicaciÃ³n" SortExpression="ubicacion">
                 <ItemTemplate>
                     <asp:LinkButton runat="server" ID="LUbicacion" CommandName="Select" Text='<%# Eval("ubicacion") %>'></asp:LinkButton>
                 </ItemTemplate>
             </asp:TemplateField>
-            <asp:BoundField HeaderText="Almacén" DataField="almacen" SortExpression="almacen" />
+            <asp:BoundField HeaderText="AlmacÃ©n" DataField="almacen" SortExpression="almacen" />
         </Columns>
     </asp:GridView>
     <div style="text-align: right;">
@@ -149,13 +149,14 @@
                         LEFT JOIN almacen ON (almacen.id={1})
                         WHERE 
                         (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=estado{0}.vence)
+                        AND (@todos=1 OR estado{0}.cantidad>0)
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
                         AND (@nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
                             OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
                         GROUP BY producto.id HAVING (@todos=1 OR SUM(estado{0}.cantidad)>0)
-                        ORDER BY producto.nombre">
+                        ORDER BY producto.codigo,producto.nombre">
                  <SelectParameters>
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
@@ -183,8 +184,8 @@
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
                             OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
-                        GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence
-                        ORDER BY producto.nombre,estado{0}.lote,estado{0}.vence">
+                        GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.ubicacion
+                        ORDER BY producto.codigo,producto.nombre,estado{0}.lote,estado{0}.vence">
                  <SelectParameters>
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
@@ -208,6 +209,7 @@
         <Columns>
             <asp:BoundField HeaderText="Fecha" DataField="fecha" SortExpression="fecha" DataFormatString="{0:d}" />
             <asp:BoundField HeaderText="Concepto" DataField="concepto" SortExpression="concepto" />
+            <asp:BoundField HeaderText="Documento" DataField="documento" SortExpression="documento" />
             <asp:BoundField HeaderText="Entrada" DataField="entrada" SortExpression="entrada" ItemStyle-HorizontalAlign="Right" />
             <asp:BoundField HeaderText="Salida" DataField="salida" SortExpression="salida" ItemStyle-HorizontalAlign="Right" />
             <asp:BoundField HeaderText="Saldo" DataField="saldo" SortExpression="saldo" ItemStyle-HorizontalAlign="Right" />
@@ -218,7 +220,7 @@
         ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
         SelectCommand="(
                     SELECT 1 AS tipo,entrada{0}.fecha,entrada_items{0}.cantidad AS entrada,NULL AS salida,NULL AS saldo,entrada{0}.id AS concepto 
-                    ,entrada_items{0}.ingreso
+                    ,entrada_items{0}.ingreso,entrada{0}.documento
                     FROM entrada_items{0}
                     LEFT JOIN entrada{0} ON (entrada{0}.id=entrada_items{0}.entrada)
                     WHERE producto=@producto
@@ -226,7 +228,7 @@
                     AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=entrada_items{0}.vence)
                 ) UNION ALL (
                     SELECT 2 AS tipo,traslado{0}.envio AS fecha,NULL AS entrada,traslado_items{0}.cantidad AS salida,NULL AS saldo,traslado{0}.id AS concepto  
-                    ,traslado_items{0}.ingreso
+                    ,traslado_items{0}.ingreso,traslado{0}.documento
                     FROM traslado_items{0}
                     LEFT JOIN traslado{0} ON (traslado{0}.id=traslado_items{0}.traslado)
                     WHERE 
@@ -235,7 +237,7 @@
                     AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=traslado_items{0}.vence)
                 ) UNION ALL (
                     SELECT 3 AS tipo,salida{0}.fecha AS fecha,NULL AS entrada,salida_items{0}.cantidad AS salida,NULL AS saldo,salida{0}.id AS concepto  
-                    ,salida_items{0}.ingreso
+                    ,salida_items{0}.ingreso,salida{0}.documento
                     FROM salida_items{0}
                     LEFT JOIN salida{0} ON (salida{0}.id=salida_items{0}.salida)
                     WHERE 
@@ -244,7 +246,7 @@
                     AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=salida_items{0}.vence)
                 ) UNION ALL (
                     SELECT 4 AS tipo,ingreso AS fecha,NULL AS entrada,cantidad AS salida,NULL AS saldo,id AS concepto  
-                    ,ingreso
+                    ,ingreso,'' AS documento
                     FROM transformacion_salida{0}
                     WHERE 
                     producto=@producto
@@ -252,7 +254,7 @@
                     AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=vence)
                 ) UNION ALL (
                     SELECT 5 AS tipo,ingreso AS fecha,cantidad AS entrada,NULL AS salida,NULL AS saldo,id AS concepto  
-                    ,ingreso
+                    ,ingreso,'' AS documento
                     FROM transformacion_entrada{0}
                     WHERE 
                     producto=@producto

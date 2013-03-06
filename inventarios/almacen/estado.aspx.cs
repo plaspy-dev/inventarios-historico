@@ -43,8 +43,8 @@ public partial class almacen_estado : System.Web.UI.Page
                 + " FROM ("
                 + SResultados.SelectCommand;
             if(CAlmacen.Checked)
-                SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence,almacen ORDER BY nombre,lote,vence,almacen";
-            else SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence ORDER BY nombre,lote,vence";
+                SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence,almacen ORDER BY codigo,nombre,lote,vence,almacen";
+            else SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence ORDER BY codigo,nombre,lote,vence";
 
 
             original1 = original1.Replace("estado0.", "")
@@ -80,12 +80,12 @@ public partial class almacen_estado : System.Web.UI.Page
                 for(int i=GKardex.Rows.Count-1; i>=0; i--) {
                     try
                     {
-                        saldo -= Convert.ToDecimal(GKardex.Rows[i].Cells[3].Text);
+                        saldo -= Convert.ToDecimal(GKardex.Rows[i].Cells[4].Text);
                     } catch {}
                     try {
-                        saldo += Convert.ToDecimal(GKardex.Rows[i].Cells[2].Text);
+                        saldo += Convert.ToDecimal(GKardex.Rows[i].Cells[3].Text);
                     } catch { }
-                    GKardex.Rows[i].Cells[4].Text= saldo.ToString();
+                    GKardex.Rows[i].Cells[5].Text= saldo.ToString();
                 }
             } else {
                 PKardex.Visible = false;

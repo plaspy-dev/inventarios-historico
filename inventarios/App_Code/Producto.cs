@@ -194,10 +194,22 @@ public class Producto
                 producto.descripcion = reader["descripcion"].ToString();
                 producto.codigo = reader["codigo"].ToString();
                 producto.unidad = reader["unidad"].ToString();
-                producto.nVence = Convert.ToInt32(reader["vence"]);
-                producto.nLote = Convert.ToInt32(reader["lote"]);
-                producto.nSerial = Convert.ToInt32(reader["serial"]);
-                producto.nNumero = Convert.ToInt32(reader["entero"]);
+                try
+                {
+                    producto.nVence = Convert.ToInt32(reader["vence"]);
+                } catch { producto.nVence = 0; }
+                try
+                {
+                    producto.nLote = Convert.ToInt32(reader["lote"]);
+                }catch { producto.nLote = 0; }
+                try
+                {
+                    producto.nSerial = Convert.ToInt32(reader["serial"]);
+                } catch { producto.nSerial = 0;  }
+                try
+                {
+                    producto.nNumero = Convert.ToInt32(reader["entero"]);
+                }catch { producto.nNumero = 0; }
                 producto.Empresa = reader["empresa"].ToString();
             }
             HttpRuntime.Cache.Insert("producto" + id, producto, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);

@@ -217,6 +217,7 @@ public partial class almacen_salida : System.Web.UI.Page
 
         conector.Commit();
         Session["salida_clean"] = 1;
+        ((ing)Master).SetAlerta("Remisión " + HId.Value + " editada.");
         ((ing)Master).SetResultado("Remisión " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)

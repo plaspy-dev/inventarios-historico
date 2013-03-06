@@ -304,6 +304,7 @@ public partial class almacen_traslado : System.Web.UI.Page
 
         conector.Commit();
         Session["traslado_clean"] = 1;
+        ((ing)Master).SetAlerta("Traslado " + HId.Value + " editada.");
         ((ing)Master).SetResultado("Traslado " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)
