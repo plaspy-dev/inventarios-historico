@@ -15,7 +15,12 @@
             } else {
             $("#<%= HProductos.ClientID %>").val(localStorage.entrada);
               if($("#<%= HProductos.ClientID %>").val().length) {
-                $("#<%= BActualizar.ClientID %>").click();
+                if(confirm("¿Se ha encontrado una entrada sin terminar desea continuarla?")) {
+                    $("#<%= BActualizar.ClientID %>").click();
+                } else {
+                    localStorage.salida=null;
+                    $("#<%= HProductos.ClientID %>").val("");
+                }
               }
             }
         }
@@ -23,6 +28,7 @@
     addFunctionToStart(function() {
         if (hasStorage) 
           localStorage.entrada = $("#<%= HProductos.ClientID %>").val();
+        $("#<%= BAceptar.ClientID %>").click(function() { window.onbeforeunload = null; });
           
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {

@@ -34,30 +34,30 @@
         <table border="0" cellpadding="0" cellspacing="0" class="cxc">
       <!-- fwtable fwsrc="template.png" fwpage="Página 1" fwbase="template.jpg" fwstyle="Dreamweaver" fwdocid = "528861927" fwnested="0" -->
       <tr>
-        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="51" height="1" border="0" id="undefined_2" /></td>
-        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="817" height="1" border="0" id="undefined_2" /></td>
-        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="43" height="1" border="0" id="undefined_2" /></td>
-        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="1" height="1" border="0" id="undefined_2" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="51" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="817" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="43" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="1" /></td>
         </tr>
       <tr>
-        <td><img name="template_r1_c1" src="img/img/template_r1_c1.jpg" width="51" height="42" border="0" id="template_r1_c1" alt="" /></td>
-        <td width="100%" background="img/img/template_r1_c2.jpg" valign="top" align="right"><asp:Label runat="server" ID="LUsuario" CssClass="usuario"></asp:Label></td>
-        <td><img name="template_r1_c3" src="img/img/template_r1_c3.jpg" width="43" height="42" border="0" id="template_r1_c3" alt="" /></td>
-        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="1" height="42" border="0" id="undefined_2" /></td>
+        <td><asp:Image ID="Image1" runat="server" ImageUrl="~/img/img/template_r1_c1.jpg" Width="51" Height="42" /></td>
+        <td width="100%" class="bg2" valign="top" align="right"><asp:Label runat="server" ID="LUsuario" CssClass="usuario"></asp:Label></td>
+        <td><asp:Image ID="Image2" runat="server" ImageUrl="~/img/img/template_r1_c3.jpg" Width="43" Height="42" /></td>
+        <td><asp:Image ID="Image3" runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="42" /></td>
         </tr>
       <tr class="cxc">
-        <td background="img/img/template_r2_c1.jpg"></td>
-        <td style="background: #FFF url(img/img/template_r2_c2.jpg) no-repeat" class="cxc" valign="top">
+        <td class="bg3"></td>
+        <td class="bg4" valign="top">
             <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
           </asp:ContentPlaceHolder></td>
-          <td background="img/img/template_r2_c3.jpg"></td>
+          <td class="bg5"></td>
         <td background="img/img/spacer.gif"></td>
         </tr>
       <tr>
-        <td><img name="template_r3_c1" src="img/img/template_r3_c1.jpg" width="51" height="49" border="0" id="template_r3_c1" alt="" /></td>
-        <td background="img/img/template_r3_c2.jpg"></td>
-        <td><img name="template_r3_c3" src="img/img/template_r3_c3.jpg" width="43" height="49" border="0" id="template_r3_c3" alt="" /></td>
-        <td><img src="img/img/spacer.gif" alt="" name="undefined_2" width="1" height="49" border="0" id="undefined_2" /></td>
+        <td><asp:Image ID="Image4" runat="server" ImageUrl="~/img/img/template_r3_c1.jpg" Width="51" Height="49" /></td>
+        <td class="bg6"></td>
+        <td><asp:Image ID="Image5" runat="server" ImageUrl="~/img/img/template_r3_c3.jpg" Width="43" Height="49" /></td>
+        <td><asp:Image ID="Image6" runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="49" /></td>
         </tr>
       </table></td>
   </tr>

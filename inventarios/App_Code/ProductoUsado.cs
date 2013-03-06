@@ -29,7 +29,7 @@ public class ProductoUsado
         }
         else
         {
-            productosserializados = HttpUtility.HtmlDecode(productosserializados);
+            productosserializados = Crypt.DesencriptarDES(productosserializados, System.Environment.GetEnvironmentVariable("INVENTORY_PRODUCT_KEY"));
             StringReader builder = new StringReader(productosserializados);
             XmlSerializer s = new XmlSerializer(typeof(List<Producto>));
             pProductos = (List<Producto>)s.Deserialize(builder);
@@ -47,7 +47,7 @@ public class ProductoUsado
             s.Serialize(writer, pProductos);
         }
         string myXml = builder.ToString();
-        return HttpUtility.HtmlEncode(myXml);
+        return Crypt.EncriptarDES(myXml, System.Environment.GetEnvironmentVariable("INVENTORY_PRODUCT_KEY"));
     }
 
     public List<Producto> GetProductosUsados()

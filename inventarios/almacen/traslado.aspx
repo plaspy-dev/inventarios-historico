@@ -22,7 +22,12 @@
             } else {
             $("#<%= HProductos.ClientID %>").val(localStorage.traslado);
               if($("#<%= HProductos.ClientID %>").val().length) {
-                $("#<%= BActualizar.ClientID %>").click();
+                if(confirm("¿Se ha encontrado un traslado sin terminar desea continuarla?")) {
+                    $("#<%= BActualizar.ClientID %>").click();
+                } else {
+                    localStorage.salida=null;
+                    $("#<%= HProductos.ClientID %>").val("");
+                }
               }
             }
         }
@@ -31,6 +36,7 @@
 
         if (hasStorage) 
           localStorage.traslado = $("#<%= HProductos.ClientID %>").val();
+        $("#<%= BAceptar.ClientID %>").click(function() { window.onbeforeunload = null; });
         $("#<%= TNumero.ClientID %>").change(function() {
             $.goURL("ti=" + $(this).val());
         });

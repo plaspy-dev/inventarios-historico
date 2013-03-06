@@ -22,7 +22,12 @@
             } else {
             $("#<%= HProductos.ClientID %>").val(localStorage.salida);
               if($("#<%= HProductos.ClientID %>").val().length) {
-                $("#<%= BActualizar.ClientID %>").click();
+                if(confirm("¿Se ha encontrado una salida sin terminar desea continuarla?")) {
+                    $("#<%= BActualizar.ClientID %>").click();
+                } else {
+                    localStorage.salida=null;
+                    $("#<%= HProductos.ClientID %>").val("");
+                }
               }
             }
         }
@@ -31,6 +36,7 @@
 
         if (hasStorage) 
           localStorage.salida = $("#<%= HProductos.ClientID %>").val();
+        $("#<%= BAceptar.ClientID %>").click(function() { window.onbeforeunload = null; });
         $("#<%= TNumero.ClientID %>").change(function() {
             $.goURL("si=" + $(this).val());
         });
@@ -96,8 +102,10 @@
                     ui.item.nLote>0 ? $("#automatico1,#<%= LLote.ClientID %>").show() : $("#automatico1,#<%= LLote.ClientID %>").hide();
                     ui.item.nVence>0 ? $("#automatico2,#<%= LVencimiento.ClientID %>").show() : $("#automatico2,#<%= LVencimiento.ClientID %>").hide();
                 }
-                ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
-                ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
+                if(typeof ValidatorEnable ==="function") {
+                    ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
+                    ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
+                }
                 return false;
             }
         });

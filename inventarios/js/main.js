@@ -57,13 +57,12 @@ function obs() {
     var retorno = true;
     if (hiddenButton == this)
         return false;
-    window.onbeforeunload = null;
-    if (this.ejecutar != undefined) {
-        if (this.ejecutar.toString().indexOf("function") != 0)
-            retorno = eval(this.ejecutar);
-        else retorno = this.ejecutar();
+    if (typeof this.ejecutar !== 'undefined') {
+        if (typeof this.ejecutar === 'function')
+            retorno = this.ejecutar();
+        else retorno = eval(this.ejecutar);
     }
-    if (retorno && Page_IsValid) {
+    if ((typeof retorno === 'undefined' || retorno) && (typeof Page_IsValid === 'undefined' || Page_IsValid || typeof this.ejecutar === 'undefined')) {
         hiddenButton = this;
         $(this).hide();
         $(this).after('<input type="button" id="dummybutton" disabled="disabled" value="' + $(this).val() + '" class="' + $(this).attr('class') + '" />');
@@ -133,7 +132,9 @@ function inicio() {
             //                    });
             //                });
             //            }
-            $(this).unbind('click').attr("onclick", "").click(obs);
+            $(this)
+            // .unbind('click')
+            .attr("onclick", "").click(obs);
         }
     });
 

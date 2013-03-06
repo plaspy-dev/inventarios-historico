@@ -46,6 +46,12 @@ public partial class ing : System.Web.UI.MasterPage
         {
             LPagina.Text = Page.Title;
         }
+        if (Session["szAlerta"]!=null) {
+            LAlerta.Text = Session["szAlerta"].ToString();
+            Session["szAlerta"] = null;
+        } else {
+            LAlerta.Text = "";
+        }
         usuario.CreateMenu(TMenu, Session["parametros"] == null ? "" : Session["parametros"].ToString());
     }
     public void SetModificacion(string idModificaciones, string id2) {
@@ -55,6 +61,9 @@ public partial class ing : System.Web.UI.MasterPage
     public void SetModificacion(string idModificaciones)
     {
         MModificaciones.IdModificacion = idModificaciones;
+    }
+    public void SetAlerta(string mensaje) {
+        Session["szAlerta"] = mensaje;
     }
     public void SetResultado(String titulo)
     {

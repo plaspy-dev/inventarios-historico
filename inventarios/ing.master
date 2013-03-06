@@ -12,7 +12,6 @@
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-1.9.2.custom.min.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.ui.datepicker-es.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-numeric-min.js"></script>
-    
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/main.js"></script>
     <script type="text/javascript">
         $(function() {
@@ -20,6 +19,20 @@
             $("#<%= DAlmacen.ClientID %>").change(function() {
                 $.goURL("alm=" + $(this).val());
             });
+
+            if ($("#<%= LAlerta.ClientID %>").text().length > 0) {
+
+                $("#dalerta")
+                    .show()
+                    .removeClass("hide")
+                    .dialog({
+                        modal: true,
+                        autoOpen: true,
+                        width: 'auto',
+                        closeOnEscape: true,
+                        buttons: { "Aceptar": function() { $(this).dialog("close"); } }
+                    });
+            }
         });
         addFunctionToStart(function() {
             addDialog("#<%= PAlertas.ClientID %>", "#dAlertas", true);
@@ -181,6 +194,9 @@
           Todos los derechos reservados <strong>SDG LTDA. </strong><br />
           Desarrollado por <a href="http://www.sdg.com.co" target="_blank">Software Developers Group Ltda</a>.</div>    
     </form>    
+    <div class="hide" id="dalerta" title="Alerta" class="hide" >
+        <asp:label runat="server" Id="LAlerta" Text="Mensaje de prueba"></asp:label>
+    </div>
     <script type="text/javascript">
         prm = Sys.WebForms.PageRequestManager.getInstance();
         prm.add_beginRequest(function(sender, args) {
@@ -230,6 +246,9 @@
             }
             ValidatorUpdateIsValid();
         }
+        // arreglo para el mono
+        if (typeof ValidatorEnable === "undefined")
+            ValidatorEnable = function(elemento, enable) { try { elemento._enabled = enable; } catch (e) { } };
     </script>
 </body>
 </html>
