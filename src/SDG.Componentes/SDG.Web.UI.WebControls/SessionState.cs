@@ -125,9 +125,9 @@ internal class SessionState
 					return false;
 				}
 			}
-			catch (MySqlException innerException2)
+			catch (MySqlException innerException)
 			{
-				throw new InvalidOperationException(querys.query + ": Error en la consulta", innerException2);
+				throw new InvalidOperationException(querys.query + ": Error en la consulta", innerException);
 			}
 		}
 		return true;

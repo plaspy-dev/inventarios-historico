@@ -16,6 +16,8 @@ public class Conector
 
 	protected string m_szConexion;
 
+	protected bool m_bTransaccion = false;
+
 	protected MySqlConnection m_pSQLConector;
 
 	protected MySqlDataReader m_pSQLReader;
@@ -31,6 +33,10 @@ public class Conector
 
 	~Conector()
 	{
+		if (m_bTransaccion)
+		{
+			RoolBack();
+		}
 		try
 		{
 			if (m_pSQLReader != null)
@@ -91,8 +97,6 @@ public class Conector
 
 	public void ShowError(string error)
 	{
-		string logs = DateTime.Now.ToString() + " Error[Conector] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
-		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -125,6 +129,9 @@ public class Conector
 				m_szLastError = ex.Message;
 				ShowError(m_szLastError);
 				return false;
+			}
+			catch
+			{
 			}
 		}
 		return true;
@@ -174,6 +181,9 @@ public class Conector
 			num = -1;
 			m_szLastError = ex.Message;
 			ShowError(m_szLastError + "\nEn la consulta:\n" + query);
+		}
+		catch
+		{
 		}
 		if (identity && num != -1)
 		{
@@ -244,6 +254,9 @@ public class Conector
 			m_pSQLReader = null;
 			m_szLastError = ex.Message;
 			ShowError(m_szLastError + "\nEn la consulta:\n" + query);
+		}
+		catch
+		{
 		}
 		return m_pSQLReader;
 	}
@@ -384,6 +397,7 @@ public class Conector
 
 	public static string GetMySQLDateFormat(DateTime fecha, bool horas)
 	{
+		bool flag = 0 == 0;
 		string text = fecha.Year + "-" + fecha.Month.ToString().PadLeft(2, '0') + "-" + fecha.Day.ToString().PadLeft(2, '0');
 		if (horas)
 		{
@@ -460,16 +474,19 @@ public class Conector
 
 	public bool StartTransaction()
 	{
+		m_bTransaccion = true;
 		return QueryMod("START TRANSACTION;") != -1;
 	}
 
 	public bool RoolBack()
 	{
+		m_bTransaccion = false;
 		return QueryMod("ROLLBACK;") != -1;
 	}
 
 	public bool Commit()
 	{
+		m_bTransaccion = false;
 		return QueryMod("COMMIT;") != -1;
 	}
 }

@@ -56,4 +56,40 @@ public class Almacen
         }
         return nombre;
     }
+    static public void RemoveEstado(string estado)
+    {
+        if (HttpRuntime.Cache["estado" + estado] != null)
+            HttpRuntime.Cache.Remove("estado" + estado);
+    }
+
+    static public string GetNombreEstado(int estado)
+    {
+        if (estado == 0)
+            return "(Ninguno)";
+        string nombre = (string)HttpRuntime.Cache["estado" + estado.ToString()];
+        if (nombre == null)
+        {
+            nombre = new CConector().QueryString("SELECT nombre FROM varios WHERE id=" + Query.GetValor(estado.ToString()));
+            HttpRuntime.Cache.Insert("estado" + estado.ToString(), nombre, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        }
+        return nombre;
+    }
+    static public void RemoveTercero(string tercero)
+    {
+        if (HttpRuntime.Cache["tercero" + tercero] != null)
+            HttpRuntime.Cache.Remove("tercero" + tercero);
+    }
+
+    static public string GetNombreTercero(string tercero)
+    {
+        if (string.IsNullOrEmpty(tercero) || tercero == "0")
+            return "";
+        string nombre = (string)HttpRuntime.Cache["tercero" + tercero];
+        if (nombre == null)
+        {
+            nombre = new CConector().QueryString("SELECT IF(identificacion IS NULL,nombre, CONCAT(identificacion,'-',nombre)) FROM tercero WHERE id=" + Query.GetValor(tercero));
+            HttpRuntime.Cache.Insert("tercero" + tercero, nombre, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        }
+        return nombre;
+    }
 }

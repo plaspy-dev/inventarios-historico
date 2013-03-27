@@ -41,22 +41,51 @@
             $.goURL("si=" + $(this).val());
         });
         $("#<%= CAutomatico.ClientID %>").change(function() {
-            if($(this).is(':checked')) {
-                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").hide();
-                $("#automatico1,#automatico2").show();
+            if($(this).is(':checked')) {    
+                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").hide();
+                $("#automatico1,#automatico2,#serialautomatico,#estadoautomatico").show();
             } else { 
-                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").show();
-                $("#automatico1,#automatico2").hide();
+                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").show();
+                $("#automatico1,#automatico2,#serialautomatico,#estadoautomatico").hide();
             }
-            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>").show();
-            $("#tdescripcion").text("");
+            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>,#<%= LSerial.ClientID %>,#<%= LEstado.ClientID %>").show();
             $("#<%= TProductoID.ClientID %>").val("");
+            $("#tdescripcion").text("");
             $("#<%= TProducto.ClientID %>").val("").focus();
         });
         if(iniciando)
             $("#<%= CAutomatico.ClientID %>").change();
         iniciando=false;
-        $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").attr("readonly", true);
+        $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").attr("readonly", true);
+        $("#<%= TTercero.ClientID %>").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "../webservices/servicios.asmx/GetTercero",
+                    data: "{ 'q': '" + request.term + "', tipo: 1 }",
+                    dataType: "json",
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    dataFilter: function(data) { return data; },
+                    success: function(data) {
+                        response($.map(data.d, function(item) {
+                            item.label= item.value;
+                            return item;
+                        }))
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus);
+                    }
+                });
+            },
+            autoFocus: true,
+            minLength: 3,
+            select: function(event, ui) {
+
+                $("#<%= TTerceroID.ClientID %>").val(ui.item.item);
+                $("#<%= TTercero.ClientID %>").val(ui.item.value);
+                return false;
+            }
+        });
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -70,7 +99,7 @@
                         response($.map(data.d, function(item) {
                             item.label= item.ProductoCompleto;
                             if(!$("#<%= CAutomatico.ClientID %>").is(':checked'))
-                                item.id= item.id +";" + item.lote +";" + item.vence;
+                                item.id= item.id +";" + item.lote +";" + item.vence + ";" + item.estado + ";" + item.serial;
                             return item;
                         }))
                     },
@@ -94,18 +123,25 @@
                 if(!$("#<%= CAutomatico.ClientID %>").is(':checked')) {
                     $("#<%= TLote.ClientID %>").val(ui.item.lote);
                     $("#<%= TVencimiento.ClientID %>").val(ui.item.vence);
+                    $("#<%= TSerial.ClientID %>").val(ui.item.serial);
+                    $("#<%= TEstado.ClientID %>").val(ui.item.szEstado);
                     ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
                     ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
+                    ui.item.nSerial>0 ? $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").show() : $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").hide();
+                    ui.item.nEstado>0 ? $("#<%= TEstado.ClientID %>,#<%= LEstado.ClientID %>").show() : $("#<%= TEstado.ClientID %>,#<%= LEstado.ClientID %>").hide();
                 } else {
                     $("#<%= TLote.ClientID %>").val("");
                     $("#<%= TVencimiento.ClientID %>").val("");
+                    $("#<%= TSerial.ClientID %>").val("");
+                    $("#<%= TEstado.ClientID %>").val("");
                     ui.item.nLote>0 ? $("#automatico1,#<%= LLote.ClientID %>").show() : $("#automatico1,#<%= LLote.ClientID %>").hide();
                     ui.item.nVence>0 ? $("#automatico2,#<%= LVencimiento.ClientID %>").show() : $("#automatico2,#<%= LVencimiento.ClientID %>").hide();
+                    ui.item.nSerial>0 ? $("#serialautomatico,#<%= LSerial.ClientID %>").show() : $("#serialautomatico,#<%= LSerial.ClientID %>").hide();
+                    ui.item.nEstado>0 ? $("#estadoautomatico,#<%= LEstado.ClientID %>").show() : $("#estadoautomatico,#<%= LEstado.ClientID %>").hide();
                 }
-                if(typeof ValidatorEnable ==="function") {
-                    ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
-                    ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
-                }
+                
+                ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
+                ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
                 return false;
             }
         });
@@ -130,6 +166,10 @@
             <td></td>
         </tr>
         <tr>
+            <td>Cliente</td>
+            <td colspan="3"><asp:TextBox runat="server" ID="TTercero" Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TTerceroID" CssClass="hide"></asp:TextBox></td>
+        </tr>
+        <tr>
             <td colspan="2">Documento equivalente<asp:RequiredFieldValidator ControlToValidate="TDocumento" ErrorMessage="Por favor ingrese un documento." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
             <td colspan="2"><asp:TextBox runat="server" ID="TDocumento" Width="98%"></asp:TextBox>
             </td>
@@ -150,6 +190,13 @@
             <td align="right"><asp:Label runat="server" ID="LVencimiento" Text="Vence: "></asp:Label></td>
             <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico2">Automático</span>
             </td>
+        </tr>
+        <tr>
+            <td class="tdl">&nbsp;</td>
+            <td align="right"><asp:Label runat="server" ID="LSerial" Text="Serial:"></asp:Label></td>
+            <td><asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><span id="serialautomatico">Automático</span></td>
+            <td align="right"><asp:Label runat="server" ID="LEstado" Text="Estado:"></asp:Label></td>
+            <td class="tdr"><asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><span id="estadoautomatico">Automático</span></td>
         </tr>
         <tr class="GridAltRow">
             <td class="tdl"></td>
@@ -173,7 +220,7 @@
         <tr>
             <td colspan="5" align="center" class="tdl tdb tdr">
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
-                    DataKeyNames="id,producto,ubicacion" DataSourceID="SProductos" 
+                    DataKeyNames="id,producto,ubicacion,estado" DataSourceID="SProductos" 
                     onselectedindexchanged="GProductos_SelectedIndexChanged" 
                     EmptyDataText="No hay productos" onrowdeleted="GProductos_RowDeleted" >
                     <RowStyle CssClass="GridRow"></RowStyle>
@@ -190,7 +237,9 @@
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
+                        <asp:BoundField DataField="szSerial" HeaderText="Serial" SortExpression="szSerial" />
                         <asp:BoundField DataField="nubicacion" HeaderText="Ubicación" SortExpression="nubicacion" />
+                        <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" />
                     </Columns>
                 </asp:GridView>
                 <sdg:customdatasource ID="SProductos" runat="server" 
@@ -198,12 +247,14 @@
                     SelectCommand="SELECT salida_items{0}.id,salida_items{0}.producto,salida_items{0}.cantidad,salida_items{0}.lote
                             ,IF(salida_items{0}.vence='0000-00-00',NULL,salida_items{0}.vence) AS vence
                             ,producto.nombre,producto.unidad,producto.codigo,salida_items{0}.ubicacion,IFNULL(ubicacion.nombre,'(Ninguna)') AS nubicacion
+                            ,salida_items{0}.szSerial,salida_items{0}.estado,estado.nombre AS szEstado
                             FROM salida_items{0}
                             LEFT JOIN producto ON (producto.id=salida_items{0}.producto)
                             LEFT JOIN ubicacion ON (ubicacion.id=salida_items{0}.ubicacion)
+                            LEFT JOIN varios AS estado ON (estado.id=salida_items{0}.estado)
                             WHERE salida_items{0}.salida=@salida;" 
-                    InsertCommand="INSERT INTO salida_items{0} (salida,producto,cantidad,lote,vence,ingreso,ubicacion) VALUES (@rsalida, @producto,@cantidad,@lote,@vence,SYSDATE(),@ubicacion)"
-                    UpdateCommand="UPDATE salida_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion WHERE id=@id"
+                    InsertCommand="INSERT INTO salida_items{0} (salida,producto,cantidad,lote,vence,ingreso,ubicacion,szSerial,estado) VALUES (@rsalida, @producto,@cantidad,@lote,@vence,SYSDATE(),@ubicacion,@szSerial,@estado)"
+                    UpdateCommand="UPDATE salida_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion,szSerial=@szSerial,estado=@estado WHERE id=@id"
                     DeleteCommand="DELETE FROM salida_items{0} WHERE id=@id" >
                     <SelectParameters>
                         <asp:ControlParameter ControlID="TNumero" Name="salida" PropertyName="Text" />

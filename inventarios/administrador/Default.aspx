@@ -80,8 +80,8 @@
             <asp:SqlDataSource ID="SResultados" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT id, nombre, descripcion FROM varios WHERE tipo=@tipo AND szReservado IS NULL" 
-                DeleteCommand="UPDATE varios SET szReservado=-1 WHERE id=@id" >
+                SelectCommand="SELECT id, nombre, descripcion FROM varios WHERE tipo=@tipo AND estado IS NULL" 
+                DeleteCommand="UPDATE varios SET estado=-1 WHERE id=@id" >
                 <SelectParameters>
                     <asp:QueryStringParameter QueryStringField="tipo" Name="tipo" Type="Int32" DefaultValue="1" />
                 </SelectParameters>

@@ -15,6 +15,8 @@ public class ConectorMS
 
 	protected string m_szConexion;
 
+	public bool m_bTransaccion = false;
+
 	protected SqlConnection m_pSQLConector;
 
 	protected SqlDataReader m_pSQLReader;
@@ -30,6 +32,10 @@ public class ConectorMS
 
 	~ConectorMS()
 	{
+		if (m_bTransaccion)
+		{
+			RoolBack();
+		}
 		try
 		{
 			if (m_pSQLReader != null)
@@ -59,8 +65,6 @@ public class ConectorMS
 
 	public void ShowError(string error)
 	{
-		string logs = DateTime.Now.ToString() + " Error[ConectorMS] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "'\r\n" + m_szQuery + "\r\n";
-		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -93,6 +97,9 @@ public class ConectorMS
 				m_szLastError = ex.Message;
 				ShowError(m_szLastError);
 				return false;
+			}
+			catch
+			{
 			}
 		}
 		return true;
@@ -142,6 +149,9 @@ public class ConectorMS
 			num = -1;
 			m_szLastError = ex.Message;
 			ShowError(m_szLastError + "\nEn la consulta:\n" + query);
+		}
+		catch
+		{
 		}
 		if (identity && num != -1)
 		{
@@ -212,6 +222,9 @@ public class ConectorMS
 			m_pSQLReader = null;
 			m_szLastError = ex.Message;
 			ShowError(m_szLastError + "\nEn la consulta:\n" + query);
+		}
+		catch
+		{
 		}
 		return m_pSQLReader;
 	}
@@ -301,16 +314,19 @@ public class ConectorMS
 
 	public bool StartTransaction()
 	{
+		m_bTransaccion = true;
 		return QueryMod("BEGIN TRANSACTION;") != -1;
 	}
 
 	public bool RoolBack()
 	{
+		m_bTransaccion = false;
 		return QueryMod("ROLLBACK") != -1;
 	}
 
 	public bool Commit()
 	{
+		m_bTransaccion = false;
 		return QueryMod("COMMIT;") != -1;
 	}
 }

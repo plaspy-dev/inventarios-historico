@@ -50,9 +50,10 @@ public partial class administrador_Default : System.Web.UI.Page
             GResultado.Columns[1].Visible = usuario.CanDelete();
             GResultado.Columns[0].Visible = usuario.CanUpdate();
 
-            TreeNode parent = Add("Prueba");
+            TreeNode parent = Add("Productos");
 
-            Add("Prueba", 1, parent);
+            Add("Grupos", 1, parent);
+            Add("Estados", 2, parent);
 
             /*TreeNode parent = Add("Hoja de ingreso");
 
@@ -138,6 +139,8 @@ public partial class administrador_Default : System.Web.UI.Page
             HId.Value = res.ToString();
         if (conector.InsertModificacion(HId.Value) == -1)
             return;
+
+        Almacen.RemoveEstado(HId.Value);
         Session["szMensaje"] = mensaje;
         Response.Redirect(Request.Url.AbsolutePath + "?tipo=" + HTipo.Value);
     }

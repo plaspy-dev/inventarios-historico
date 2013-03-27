@@ -26,6 +26,10 @@
       <titulo>Transformaciones</titulo>
       <url>~/administrador/transformaciones.aspx</url>
     </pagina>
+    <pagina>
+      <titulo>Terceros</titulo>
+      <url>~/administrador/terceros.aspx</url>
+    </pagina>    
   </seccion>
   <seccion>
     <titulo>Almacen</titulo>
@@ -48,6 +52,10 @@
     <pagina>
       <titulo>Transformaciones</titulo>
       <url>~/almacen/transformaciones.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Informes</titulo>
+      <url>~/almacen/informes.aspx</url>
     </pagina>
   </seccion>
 </paginas>
