@@ -42,13 +42,13 @@
         });
         $("#<%= CAutomatico.ClientID %>").change(function() {
             if($(this).is(':checked')) {    
-                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").hide();
-                $("#automatico1,#automatico2").show();
+                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").hide();
+                $("#automatico1,#automatico2,#serialautomatico,#estadoautomatico").show();
             } else { 
-                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").show();
-                $("#automatico1,#automatico2").hide();
+                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").show();
+                $("#automatico1,#automatico2,#serialautomatico,#estadoautomatico").hide();
             }
-            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>").show();
+            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>,#<%= LSerial.ClientID %>,#<%= LEstado.ClientID %>").show();
             $("#<%= TProductoID.ClientID %>").val("");
             $("#tdescripcion").text("");
             $("#<%= TProducto.ClientID %>").val("").focus();
@@ -56,7 +56,7 @@
         if(iniciando)
             $("#<%= CAutomatico.ClientID %>").change();
         iniciando=false;
-        $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>").attr("readonly", true);
+        $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").attr("readonly", true);
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -70,7 +70,7 @@
                         response($.map(data.d, function(item) {
                             item.label= item.ProductoCompleto;
                             if(!$("#<%= CAutomatico.ClientID %>").is(':checked'))
-                                item.id= item.id +";" + item.lote +";" + item.vence;
+                                item.id= item.id +";" + item.lote +";" + item.vence + ";" + item.estado + ";" + item.serial;
                             return item;
                         }))
                     },
@@ -94,13 +94,21 @@
                 if(!$("#<%= CAutomatico.ClientID %>").is(':checked')) {
                     $("#<%= TLote.ClientID %>").val(ui.item.lote);
                     $("#<%= TVencimiento.ClientID %>").val(ui.item.vence);
+                    $("#<%= TSerial.ClientID %>").val(ui.item.serial);
+                    $("#<%= TEstado.ClientID %>").val(ui.item.szEstado);
                     ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
                     ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
+                    ui.item.nSerial>0 ? $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").show() : $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").hide();
+                    ui.item.nEstado>0 ? $("#<%= TEstado.ClientID %>,#<%= LEstado.ClientID %>").show() : $("#<%= TEstado.ClientID %>,#<%= LEstado.ClientID %>").hide();
                 } else {
                     $("#<%= TLote.ClientID %>").val("");
                     $("#<%= TVencimiento.ClientID %>").val("");
+                    $("#<%= TSerial.ClientID %>").val("");
+                    $("#<%= TEstado.ClientID %>").val("");
                     ui.item.nLote>0 ? $("#automatico1,#<%= LLote.ClientID %>").show() : $("#automatico1,#<%= LLote.ClientID %>").hide();
                     ui.item.nVence>0 ? $("#automatico2,#<%= LVencimiento.ClientID %>").show() : $("#automatico2,#<%= LVencimiento.ClientID %>").hide();
+                    ui.item.nSerial>0 ? $("#serialautomatico,#<%= LSerial.ClientID %>").show() : $("#serialautomatico,#<%= LSerial.ClientID %>").hide();
+                    ui.item.nEstado>0 ? $("#estadoautomatico,#<%= LEstado.ClientID %>").show() : $("#estadoautomatico,#<%= LEstado.ClientID %>").hide();
                 }
                 ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
                 ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
@@ -170,6 +178,13 @@
             <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico2">Automático</span>
             </td>
         </tr>
+        <tr>
+            <td class="tdl">&nbsp;</td>
+            <td align="right"><asp:Label runat="server" ID="LSerial" Text="Serial:"></asp:Label></td>
+            <td><asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><span id="serialautomatico">Automático</span></td>
+            <td align="right"><asp:Label runat="server" ID="LEstado" Text="Estado:"></asp:Label></td>
+            <td class="tdr"><asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><span id="estadoautomatico">Automático</span></td>
+        </tr>
         <tr class="GridAltRow">
             <td class="tdl"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" /></td>
             <td colspan="4" class="tdr" id="tdescripcion"></td>
@@ -193,7 +208,7 @@
         <tr>
             <td colspan="5" align="center" class="tdl tdb tdr">
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
-                    DataKeyNames="id,producto,ubicacion" DataSourceID="SProductos" 
+                    DataKeyNames="id,producto,ubicacion,estado" DataSourceID="SProductos" 
                     onselectedindexchanged="GProductos_SelectedIndexChanged" 
                     EmptyDataText="No hay productos" onrowdeleted="GProductos_RowDeleted" >
                     <RowStyle CssClass="GridRow"></RowStyle>
@@ -210,7 +225,9 @@
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
+                        <asp:BoundField DataField="szSerial" HeaderText="Serial" SortExpression="szSerial" />
                         <asp:BoundField DataField="nubicacion" HeaderText="Ubicación" SortExpression="nubicacion" />
+                        <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" />
                     </Columns>
                 </asp:GridView>
                 <sdg:customdatasource ID="SProductos" runat="server" 
@@ -218,12 +235,14 @@
                     SelectCommand="SELECT traslado_items{0}.id,traslado_items{0}.producto,traslado_items{0}.cantidad,traslado_items{0}.lote
                             ,IF(traslado_items{0}.vence='0000-00-00',NULL,traslado_items{0}.vence) AS vence
                             ,producto.nombre,producto.unidad,producto.codigo,traslado_items{0}.ubicacion,IFNULL(ubicacion.nombre,'(Ninguna)') AS nubicacion
+                            ,traslado_items{0}.szSerial,traslado_items{0}.estado,estado.nombre AS szEstado
                             FROM traslado_items{0}
                             LEFT JOIN producto ON (producto.id=traslado_items{0}.producto)
                             LEFT JOIN ubicacion ON (ubicacion.id=traslado_items{0}.ubicacion)
+                            LEFT JOIN varios AS estado ON (estado.id=traslado_items{0}.estado)
                             WHERE traslado_items{0}.traslado=@traslado;" 
-                    InsertCommand="INSERT INTO traslado_items{0} (traslado,producto,cantidad,lote,vence,ingreso,ubicacion) VALUES (@rtraslado, @producto,@cantidad,@lote,@vence,SYSDATE(),@ubicacion)"
-                    UpdateCommand="UPDATE traslado_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion WHERE id=@id"
+                    InsertCommand="INSERT INTO traslado_items{0} (traslado,producto,cantidad,lote,vence,ingreso,ubicacion,szSerial,estado) VALUES (@rtraslado, @producto,@cantidad,@lote,@vence,SYSDATE(),@ubicacion,@szSerial,@estado)"
+                    UpdateCommand="UPDATE traslado_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion,szSerial=@szSerial,estado=@estado WHERE id=@id"
                     DeleteCommand="DELETE FROM traslado_items{0} WHERE id=@id" >
                     <SelectParameters>
                         <asp:ControlParameter ControlID="TNumero" Name="traslado" PropertyName="Text" />

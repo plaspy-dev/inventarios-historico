@@ -25,6 +25,7 @@ public class Producto
     protected int _nLote = -1;
     protected int _nVence = -1;
     protected int _nNumero= -1;
+    protected int _nEstado = -1;
     protected string _Empresa;
 
     public String id { set; get; }
@@ -32,7 +33,13 @@ public class Producto
     public String vence { set; get; }
     public Decimal cantidad { set; get; }
     public string serial { set; get; }
+    public int estado { set; get; }
     public int ubicacion { set; get; }
+
+    [XmlIgnore]
+    public string szEstado { get {
+        return Almacen.GetNombreEstado(estado);
+    }}
 
     [XmlIgnore]
     public string Empresa
@@ -58,6 +65,20 @@ public class Producto
             if (_nNumero == -1 && !string.IsNullOrEmpty(id))
                 _nNumero = GetProducto(id).nNumero;
             return _nNumero;
+        }
+    }
+    [XmlIgnore]
+    public int nEstado
+    {
+        set
+        {
+            _nEstado = value;
+        }
+        get
+        {
+            if (_nEstado == -1 && !string.IsNullOrEmpty(id))
+                _nEstado = GetProducto(id)._nEstado;
+            return _nEstado;
         }
     }
     [XmlIgnore]
@@ -160,6 +181,10 @@ public class Producto
             if (!string.IsNullOrEmpty(lote))
                 completo += " (" + lote + ")";
             completo += " " + vence;
+            if (!string.IsNullOrEmpty(serial))
+                completo += " - " + serial;
+            if(estado!=0) 
+                completo += " [" + szEstado +"]";
             return completo.Trim();
         }
     }
@@ -185,6 +210,7 @@ public class Producto
             query += "serial";
             query += "empresa";
             query += "entero";
+            query += "nEstado";
 
             MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
             if (reader != null && reader.Read())
@@ -210,6 +236,11 @@ public class Producto
                 {
                     producto.nNumero = Convert.ToInt32(reader["entero"]);
                 }catch { producto.nNumero = 0; }
+                try
+                {
+                    producto.nEstado = Convert.ToInt32(reader["nEstado"]);
+                }
+                catch { producto.nEstado = 0; }
                 producto.Empresa = reader["empresa"].ToString();
             }
             HttpRuntime.Cache.Insert("producto" + id, producto, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
@@ -220,6 +251,7 @@ public class Producto
     public Producto()
     {
         ubicacion = 0;
+        estado = 0;
         serial = "";
     }
 
@@ -236,8 +268,10 @@ public class Producto
         nLote= producto.nLote;
         nSerial = producto.nSerial;
         nNumero = producto.nNumero;
+        nEstado = producto.nEstado;
 
         ubicacion = 0;
+        estado = 0;
         serial = "";
     }
 
@@ -252,6 +286,7 @@ public class Producto
         unidad = _unidad;
         descripcion = _descripcion;
         ubicacion=0;
+        estado = 0;
         serial="";
     }
 
@@ -264,6 +299,7 @@ public class Producto
         unidad = _unidad;
         descripcion = _descripcion;
         ubicacion=0;
+        estado = 0;
         serial="";
     }
 
@@ -276,16 +312,18 @@ public class Producto
         unidad = _unidad;
         descripcion = _descripcion;
         ubicacion=0;
+        estado = 0;
         serial="";
     }
 
-    public Producto(String _producto, Decimal _cantidad, String _lote, String _fecha, int _ubicacion)
+    public Producto(String _producto, Decimal _cantidad, String _lote, String _fecha, int _ubicacion, string _serial, int _estado)
     {
         id = _producto;
         cantidad = _cantidad;
         lote = _lote;
         vence = _fecha;
         ubicacion = _ubicacion;
-        serial="";
+        estado = _estado;
+        serial=_serial;
     }
 }

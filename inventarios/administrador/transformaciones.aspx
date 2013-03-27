@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="transformaciones.aspx.cs" Inherits="administrador_transformaciones" %>
+﻿<%@ Page Title="Transformaciones" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="transformaciones.aspx.cs" Inherits="administrador_transformaciones" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 <script type="text/javascript">
@@ -15,11 +15,8 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            return {
-                                value: item.producto, label: item.nombre, unidad: item.unidad, codigo: item.codigo
-                            }
+                            item.label = item.ProductoCompleto;
+                            return item;
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -51,11 +48,8 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            if (item.codigo && item.codigo != "")
-                                item.nombre = item.codigo + " - " + item.nombre;
-                            return {
-                                value: item.producto, label: item.nombre, unidad: item.unidad, codigo: item.codigo
-                            }
+                            item.label = item.ProductoCompleto;
+                            return item;
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -159,8 +153,7 @@
                             ,producto1.nombre AS producto1nombre,producto2.nombre AS producto2nombre,transformacion.proporcion
                             FROM transformacion
                             LEFT JOIN producto AS producto1 ON (producto1.id=transformacion.producto1)
-                            LEFT JOIN producto AS producto2 ON (producto2.id=transformacion.producto2)
-                            ;" 
+                            LEFT JOIN producto AS producto2 ON (producto2.id=transformacion.producto2);"
                 DeleteCommand="DELETE FROM transformacion WHERE producto1=@producto1 AND producto2=@producto2" >
                 <SelectParameters>
                 </SelectParameters>

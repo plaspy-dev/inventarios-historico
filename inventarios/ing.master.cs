@@ -63,7 +63,9 @@ public partial class ing : System.Web.UI.MasterPage
         MModificaciones.IdModificacion = idModificaciones;
     }
     public void SetAlerta(string mensaje) {
-        Session["szAlerta"] = mensaje;
+        if (!ScriptManager.GetCurrent(Page).IsInAsyncPostBack)
+            LAlerta.Text = mensaje;
+        else Session["szAlerta"] = mensaje;
     }
     public void SetResultado(String titulo)
     {

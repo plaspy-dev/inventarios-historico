@@ -19,6 +19,8 @@ public partial class administrador_productos : System.Web.UI.Page
             DLote.SelectedValue = "1";
             DVence.SelectedValue = "1";
             DCantidades.SelectedValue = "0";
+            DSerial.SelectedValue = "0";
+            DEstado.SelectedValue = "2";
 
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
@@ -37,6 +39,9 @@ public partial class administrador_productos : System.Web.UI.Page
                 query += "lote";
                 query += "empresa";
                 query += "entero";
+                query += "nEstado";
+                query += "serial";
+                query += "grupo";
                 query += "id";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
@@ -51,6 +56,11 @@ public partial class administrador_productos : System.Web.UI.Page
                     DVence.SelectedValue = reader["vence"].ToString();
                     DLote.SelectedValue = reader["lote"].ToString();
                     DCantidades.SelectedValue = reader["entero"].ToString();
+                    DSerial.SelectedValue = reader["serial"].ToString();
+                    DEstado.SelectedValue = reader["nEstado"].ToString();
+                    CConector.SelectInDropDown(DGrupo, reader["grupo"]);
+
+                    ViewState["codigo"] = TCodigo.Text;
 
                     ((ing)Master).SetModificacion(HId.Value);
                     BAceptar.Enabled = usuario.CanUpdate();
@@ -63,10 +73,22 @@ public partial class administrador_productos : System.Web.UI.Page
     {
         if (!IsValid)
             return;
+        
         Query query = new Query("producto");
-        CConector conector = CConector.GetConector();
+        CConector conector = new CConector();
         string szQuery;
         string mensaje;
+
+        string codigo = "";
+        if (!string.IsNullOrEmpty((string)ViewState["codigo"]))
+            codigo= ViewState["codigo"].ToString();
+
+        if(TCodigo.Text !=codigo
+            && conector.QueryString("SELECT id FROM producto WHERE codigo=" + Query.GetValor(TCodigo.Text) + " AND estado IS NULL").Length>0) {
+            ((ing)Master).SetAlerta("Ya existe un producto con código " + TCodigo.Text + ". Presione aceptar para continuar con este código.");
+            ViewState["codigo"] = TCodigo.Text;
+            return;
+        }
 
         query["nombre"] = TNombre.Text;
         query["descripcion"] = TDescripcion.Text;
@@ -76,6 +98,9 @@ public partial class administrador_productos : System.Web.UI.Page
         query["lote"] = DLote.SelectedValue;
         query["empresa"] = TEmpresa.Text;
         query["entero"] = DCantidades.SelectedValue;
+        query["grupo"] = DGrupo.SelectedValue;
+        query["nEstado"] = DEstado.SelectedValue;
+        query["serial"] = DSerial.SelectedValue;
 
         if (HId.Value.Length == 0)
         {

@@ -19,7 +19,9 @@
             $("#<%= DAlmacen.ClientID %>").change(function() {
                 $.goURL("alm=" + $(this).val());
             });
-
+        });
+        addFunctionToStart(function() {
+            addDialog("#<%= PAlertas.ClientID %>", "#dAlertas", true);
             if ($("#<%= LAlerta.ClientID %>").text().length > 0) {
 
                 $("#dalerta")
@@ -32,10 +34,7 @@
                         closeOnEscape: true,
                         buttons: { "Aceptar": function() { $(this).dialog("close"); } }
                     });
-            }
-        });
-        addFunctionToStart(function() {
-            addDialog("#<%= PAlertas.ClientID %>", "#dAlertas", true);
+        }
         });
     </script>
     <asp:ContentPlaceHolder id="head" runat="server">
@@ -193,10 +192,14 @@
     <div id="footer">Carrera 23 No. 80-58 PBX:(057+1)702 7022 Bogotá,Colombia<br />
           Todos los derechos reservados <strong>SDG LTDA. </strong><br />
           Desarrollado por <a href="https://service.example.invalid" target="_blank">Software Developers Group Ltda</a>.</div>    
-    </form>    
+          <asp:UpdatePanel ID="UpdatePanel1" runat="server" UpdateMode="Always" runat="server">
+    <ContentTemplate>
     <div class="hide" id="dalerta" title="Alerta" class="hide" >
         <asp:label runat="server" Id="LAlerta" Text="Mensaje de prueba"></asp:label>
     </div>
+    </ContentTemplate>
+    </asp:UpdatePanel>
+    </form>
     <script type="text/javascript">
         prm = Sys.WebForms.PageRequestManager.getInstance();
         prm.add_beginRequest(function(sender, args) {

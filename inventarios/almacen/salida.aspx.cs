@@ -46,6 +46,7 @@ public partial class almacen_salida : System.Web.UI.Page
                 query += "observaciones";
                 query += "fecha";
                 query += "documento";
+                query += "tercero";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["si"])));
                 if (reader != null && reader.Read())
@@ -55,6 +56,8 @@ public partial class almacen_salida : System.Web.UI.Page
                     TObservaciones.Text = reader["observaciones"].ToString();
                     TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
                     TDocumento.Text = reader["documento"].ToString();
+                    TTerceroID.Text = reader["tercero"].ToString();
+                    TTercero.Text = Almacen.GetNombreTercero(reader["tercero"].ToString());
 
                     TProducto.Focus();
                     GProductos.Columns[0].Visible = usuario.CanDelete();
@@ -80,8 +83,16 @@ public partial class almacen_salida : System.Web.UI.Page
         Producto producto = new Producto(saProducto[0]);
         LVencimiento.CssClass = TVencimiento.CssClass = producto.nVence > 0 ? "" : "hide";
         LLote.CssClass = TLote.CssClass = producto.nLote > 0 ? "" : "hide";
+        LEstado.CssClass = TEstado.CssClass = producto.nEstado > 0 ? "" : "hide";
+        LSerial.CssClass = TSerial.CssClass = producto.nSerial > 0 ? "" : "hide";
+
+        if(CAutomatico.Checked)
+            TSerial.CssClass = TEstado.CssClass = TLote.CssClass = TVencimiento.CssClass = "hide";
+
         TVencimiento.CssClass += " fecha";
         TLote.CssClass += " tlote";
+        TEstado.CssClass += " tlote";
+        TSerial.CssClass += " tlote";
 
         REntero.Enabled = producto.nNumero == 1;
         RDecimal.Enabled = producto.nNumero != 1;
@@ -99,7 +110,7 @@ public partial class almacen_salida : System.Web.UI.Page
         }
         else
         { // manual
-            productos = productousado.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2]);
+            productos = productousado.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4]);
         }
         if (productos == null)
         {
@@ -119,6 +130,9 @@ public partial class almacen_salida : System.Web.UI.Page
             data.Add("lote", producto.lote);
             data.Add("ubicacion", producto.ubicacion);
             data.Add("nubicacion", producto.NombreUbicacion);
+            data.Add("szSerial", producto.serial);
+            data.Add("estado", producto.estado);
+            data.Add("szEstado", producto.szEstado);
 
             if (string.IsNullOrEmpty(producto.vence))
                 data.Add("vence", null);
@@ -134,13 +148,18 @@ public partial class almacen_salida : System.Web.UI.Page
         GProductos.DataBind();
 
         LMensaje.Text = "";
-        TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = "";
+        TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = TSerial.Text = TEstado.Text = "";
         TProducto.Focus();
 
         LVencimiento.CssClass = TVencimiento.CssClass = CAutomatico.Checked ? "hide" : "";
         LLote.CssClass = TLote.CssClass = CAutomatico.Checked ? "hide" : "";
+        LSerial.CssClass = TSerial.CssClass = CAutomatico.Checked ? "hide" : "";
+        LEstado.CssClass = TEstado.CssClass = CAutomatico.Checked ? "hide" : "";
+
         TVencimiento.CssClass += " fecha";
         TLote.CssClass += " tlote";
+        TSerial.CssClass += " tlote";
+        TEstado.CssClass += " tlote";
 
         REntero.Enabled = true;
         RDecimal.Enabled = true;
@@ -176,6 +195,7 @@ public partial class almacen_salida : System.Web.UI.Page
         query["observaciones"] = TObservaciones.Text;
         query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
         query["documento"] = TDocumento.Text;
+        query["tercero"] = TTerceroID.Text;
 
         conector.StartTransaction();
         bool existe = HId.Value.Length != 0;
@@ -230,9 +250,11 @@ public partial class almacen_salida : System.Web.UI.Page
         ProductoUsado productousado = new ProductoUsado(HProductos.Value);
         string vence = e.Values["vence"] == null ? "" : e.Values["vence"].ToString();
         string lote = e.Values["lote"] == null ? "" : e.Values["lote"].ToString();
-        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), lote, vence, Convert.ToInt32(e.Keys["ubicacion"]));
+        string serial = e.Values["szSerial"] == null ? "" : e.Values["szSerial"].ToString();
+        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), lote, vence, Convert.ToInt32(e.Keys["ubicacion"]), Convert.ToInt32(e.Keys["estado"]), serial);
         HProductos.Value = productousado.Serialize();
     }
+
     protected void BActualizar_Click(object sender, EventArgs e)
     {
         ProductoUsado productousado = new ProductoUsado(HProductos.Value);
@@ -246,6 +268,8 @@ public partial class almacen_salida : System.Web.UI.Page
             TLote.Text = producto.lote;
             TVencimiento.Text = producto.vence;
             TProducto.Text = producto.NombreCompleto;
+            TEstado.Text = producto.szEstado;
+            TSerial.Text = producto.serial;
             BAgregar_Click(sender, e);
         }
     }
