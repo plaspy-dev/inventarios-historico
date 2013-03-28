@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Globalization;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
 
@@ -42,7 +43,9 @@ public partial class administrador_productos : System.Web.UI.Page
                 query += "nEstado";
                 query += "serial";
                 query += "grupo";
+                query += "costo";
                 query += "id";
+                query += "diasvencimiento";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
                 if(reader!=null && reader.Read()) {
@@ -58,12 +61,16 @@ public partial class administrador_productos : System.Web.UI.Page
                     DCantidades.SelectedValue = reader["entero"].ToString();
                     DSerial.SelectedValue = reader["serial"].ToString();
                     DEstado.SelectedValue = reader["nEstado"].ToString();
+                    TCosto.Text = Convert.ToDecimal(reader["costo"]).ToString(CultureInfo.InvariantCulture);
+                    TDiasVencimiento.Text = reader["diasvencimiento"].ToString();
                     CConector.SelectInDropDown(DGrupo, reader["grupo"]);
 
                     ViewState["codigo"] = TCodigo.Text;
 
                     ((ing)Master).SetModificacion(HId.Value);
                     BAceptar.Enabled = usuario.CanUpdate();
+                    GCostos.DataBind();
+                    PCostos.Visible = GCostos.Rows.Count > 0;
                 }
             }
         }
@@ -101,6 +108,8 @@ public partial class administrador_productos : System.Web.UI.Page
         query["grupo"] = DGrupo.SelectedValue;
         query["nEstado"] = DEstado.SelectedValue;
         query["serial"] = DSerial.SelectedValue;
+        query["costo"] = TCosto.Text;
+        query["diasvencimiento"]= TDiasVencimiento.Text;
 
         if (HId.Value.Length == 0)
         {

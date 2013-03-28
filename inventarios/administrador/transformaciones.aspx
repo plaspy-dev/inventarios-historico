@@ -8,7 +8,7 @@
             source: function(request, response) {
                 $.ajax({
                     url: "../webservices/servicios.asmx/GetProducto",
-                    data: "{ 'q': '" + request.term + "' }",
+                    data: "{ 'q': '" + request.term + "', 'p': null }",
                     dataType: "json",
                     type: "POST",
                     contentType: "application/json; charset=utf-8",
@@ -41,7 +41,7 @@
             source: function(request, response) {
                 $.ajax({
                     url: "../webservices/servicios.asmx/GetProducto",
-                    data: "{ 'q': '" + request.term + "' }",
+                    data: "{ 'q': '" + request.term + "', 'p': null }",
                     dataType: "json",
                     type: "POST",
                     contentType: "application/json; charset=utf-8",

@@ -14,9 +14,9 @@ public partial class almacen_estado : System.Web.UI.Page
     {
         ((ing)Master).CheckAlmacen();
 
-        GResultados.Columns[8].Visible = !CTodosAlmacenes.Checked;
-        GResultados.Columns[9].Visible = !CTodosAlmacenes.Checked;
-        GResultados.Columns[10].Visible= CTodosAlmacenes.Checked && CAlmacen.Checked;
+        Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !CTodosAlmacenes.Checked;
+        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !CTodosAlmacenes.Checked;
+        Utilidades.GetGridColumn(GResultados, "Almacén").Visible= CTodosAlmacenes.Checked && CAlmacen.Checked;
 
         SKardex.SelectCommand = String.Format(SKardex.SelectCommand, ((ing)Master).GetAlmacen());
         SUbicacion.SelectCommand = String.Format(SUbicacion.SelectCommand, ((ing)Master).GetAlmacen());
@@ -100,8 +100,9 @@ public partial class almacen_estado : System.Web.UI.Page
     protected void BBuscar_Click(object sender, EventArgs e)
     {
         GResultados.DataSourceID = CDetallado.Checked ? "SResultados1" : "SResultados";
-        GResultados.Columns[4].Visible = CDetallado.Checked;
-        GResultados.Columns[5].Visible = CDetallado.Checked;
+        
+        Utilidades.GetGridColumn(GResultados, "Lote").Visible = CDetallado.Checked;
+        Utilidades.GetGridColumn(GResultados, "Vence").Visible = CDetallado.Checked;
 
         if(Utilidades.GetRowsCount(GResultados, LTotal)>0) {
 
@@ -148,39 +149,26 @@ public partial class almacen_estado : System.Web.UI.Page
         if (!IsValid)
             return;
 
-        string almacen= ((ing)Master).GetAlmacen();
         string []detalle = DProductoUbicaciones.SelectedValue.Split(';');
-        string producto = detalle[0];
-        string vence = CConector.GetMySQLDateFormat(detalle[1]);
-        string lote = detalle[2];
-        string ubicacion = detalle[3];
-        string serial = detalle[5];
-        string estado = detalle[6];
 
-        if (vence.Length == 0)
-            vence = "0000-00-00";
-        vence = Query.GetValor(vence);
-        if (lote.Length == 0)
-            vence = "''";
-        else lote= Query.GetValor(lote);
-        if (serial.Length == 0)
-            serial = "''";
-        else serial = Query.GetValor(serial);
+        Producto producto = new Producto(detalle[0]);
+        producto.vence= detalle[1];
+        producto.lote= detalle[2];
+        producto.ubicacion= Convert.ToInt32(detalle[3]);
+        producto.serial= detalle[5];
+        producto.estado=Convert.ToInt32(detalle[6]);
+        producto.Ingreso = true;
+
+        producto.cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
 
         CConector conector = new CConector();
         conector.StartTransaction();
 
-        // descontamos del producto original
-        if (conector.QueryMod(string.Format("UPDATE estado{0} SET cantidad=cantidad-{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={6} AND ubicacion={5} AND estado={7};"
-            ,almacen, TCantidad.Text, producto, lote, vence, ubicacion, serial, estado)) == -1)
+        if (!producto.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
             return;
 
-        // insertmaos la nueva posicion con la nueva ubicacion.
-        if (conector.QueryMod(string.Format("UPDATE estado{0} SET cantidad=cantidad+{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={6} AND ubicacion={5} AND estado={7};"
-            , almacen, TCantidad.Text, producto, lote, vence, DNuevaUbicacion.SelectedValue, serial, estado)) == -1)
-            return;
-        if (conector.QueryMod(string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad, szSerial, ubicacion, estado, modificacion) VALUES ({2}, {3}, {4}, {1}, {6}, {5},{7}, SYSDATE());"
-            , almacen, TCantidad.Text, producto, lote, vence, DNuevaUbicacion.SelectedValue, serial, estado)) == -1)
+        producto.ubicacion = Convert.ToInt32(DNuevaUbicacion.SelectedValue);
+        if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
             return;
 
         conector.Commit();
@@ -191,7 +179,7 @@ public partial class almacen_estado : System.Web.UI.Page
 
     protected void GResultados_SelectedIndexChanged(object sender, EventArgs e)
     {
-        ViewState["producto"]= ((HyperLink)GResultados.SelectedRow.Cells[1].Controls[0]).Text;
+        ViewState["producto"] = ((HyperLink)GResultados.SelectedRow.Cells[Utilidades.GetGridColumnIndex(GResultados, "Producto")].Controls[0]).Text;
         DProductoUbicaciones.Items.Clear();
         ArrayList productos;
 
@@ -227,7 +215,7 @@ public partial class almacen_estado : System.Web.UI.Page
             GridViewRow gvr = (GridViewRow)(((LinkButton)e.CommandSource).NamingContainer);
             GResultados.SelectedIndex= gvr.RowIndex;
 
-            ViewState["producto"] = ((HyperLink)GResultados.SelectedRow.Cells[1].Controls[0]).Text;
+            ViewState["producto"] = ((HyperLink)GResultados.SelectedRow.Cells[Utilidades.GetGridColumnIndex(GResultados, "Producto")].Controls[0]).Text;
             DProductoEstado.Items.Clear();
             ArrayList productos;
 
@@ -272,39 +260,26 @@ public partial class almacen_estado : System.Web.UI.Page
         if (!IsValid)
             return;
 
-        string almacen = ((ing)Master).GetAlmacen();
         string[] detalle = DProductoEstado.SelectedValue.Split(';');
-        string producto = detalle[0];
-        string vence = CConector.GetMySQLDateFormat(detalle[1]);
-        string lote = detalle[2];
-        string estado = detalle[3];
-        string serial = detalle[5];
-        string ubicacion = detalle[6];
 
-        if (vence.Length == 0)
-            vence = "0000-00-00";
-        vence = Query.GetValor(vence);
-        if (lote.Length == 0)
-            vence = "''";
-        else lote= Query.GetValor(lote);
-        if (serial.Length == 0)
-            serial = "''";
-        else serial= Query.GetValor(serial);
+        Producto producto = new Producto(detalle[0]);
+        producto.vence = detalle[1];
+        producto.lote = detalle[2];
+        producto.ubicacion = Convert.ToInt32(detalle[6]);
+        producto.serial = detalle[5];
+        producto.estado = Convert.ToInt32(detalle[3]);
+        producto.Ingreso = true;
+
+        producto.cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
 
         CConector conector = new CConector();
         conector.StartTransaction();
 
-        // descontamos del producto original
-        if (conector.QueryMod(string.Format("UPDATE estado{0} SET cantidad=cantidad-{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={6} AND estado={5} AND ubicacion={7};"
-            , almacen, TEstadoCantidad.Text, producto, lote, vence, estado, serial, ubicacion)) == -1)
+        if (!producto.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
             return;
 
-        // insertmaos la nueva posicion con la nueva ubicacion.
-        if (conector.QueryMod(string.Format("UPDATE estado{0} SET cantidad=cantidad+{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={6} AND estado={5} AND ubicacion={7};"
-            , almacen, TEstadoCantidad.Text, producto, lote, vence, DNuevoEstado.SelectedValue, serial, ubicacion)) == -1)
-            return;
-        if (conector.QueryMod(string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad, szSerial, estado, ubicacion, modificacion) VALUES ({2}, {3}, {4}, {1}, {6}, {5}, {7},SYSDATE());"
-            , almacen, TEstadoCantidad.Text, producto, lote, vence, DNuevoEstado.SelectedValue, serial, ubicacion)) == -1)
+        producto.estado= Convert.ToInt32(DNuevoEstado.SelectedValue);
+        if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
             return;
 
         conector.Commit();

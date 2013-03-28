@@ -15,10 +15,6 @@ public partial class almacen_transformaciones : System.Web.UI.Page
     {
         ((ing)Master).CheckAlmacen();
 
-        /*SProductos.SelectCommand = string.Format(SProductos.SelectCommand, ((ing)Master).GetAlmacen());
-        SProductos.UpdateCommand = string.Format(SProductos.UpdateCommand, ((ing)Master).GetAlmacen());
-        SProductos.DeleteCommand = string.Format(SProductos.DeleteCommand, ((ing)Master).GetAlmacen());*/
-
         if (!IsPostBack)
         {
             TNumero.Focus();
@@ -161,8 +157,6 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             return;
 
         string id = "";
-        Query salida = new Query("transformacion_salida" + ((ing)Master).GetAlmacen());
-        Query entrada = new Query("transformacion_entrada" + ((ing)Master).GetAlmacen());
         CConector conector = new CConector();
         conector.StartTransaction();
 
@@ -177,6 +171,7 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             try
             {
                 proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto1=" + Query.GetValor(producto[0]) + " AND producto2=" + Query.GetValor(TProductoID2.Text)));
+                proporcion = 1 / proporcion;
             }
             catch { }
             if (proporcion == -1)
@@ -184,7 +179,6 @@ public partial class almacen_transformaciones : System.Web.UI.Page
                 try
                 {
                     proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto2=" + Query.GetValor(producto[0]) + " AND producto1=" + Query.GetValor(TProductoID2.Text)));
-                    proporcion = 1 / proporcion;
                 }
                 catch { }
             }
@@ -219,41 +213,38 @@ public partial class almacen_transformaciones : System.Web.UI.Page
 
         for (int i = 0; i < productos.Count; i++)
         {
+            Producto info = (Producto)productos[i];
+            info.Ingreso = true;
+
+            Query salida = info.GetQuery("transformacion_salida" + ((ing)Master).GetAlmacen());
+
             salida["observaciones"] = TObservaciones.Text;
-            salida["producto"] = ((Producto)productos[i]).id;
-            salida["cantidad"] = ((Producto)productos[i]).cantidad.ToString(CultureInfo.InvariantCulture);
-            salida["lote"] = ((Producto)productos[i]).lote;
-            salida["vence"] = CConector.GetMySQLDateFormat(((Producto)productos[i]).vence);
-            salida["szSerial"] = ((Producto)productos[i]).serial;
-            salida["estado"] = ((Producto)productos[i]).estado.ToString();
-            salida["ingreso"] = "SYSDATE()";
             
             int res = conector.QueryMod(salida.GetInsert(), true);
             if (res == -1)
                 return;
             id = res.ToString();
+            if (!info.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                return;
 
-            entrada["id"] = id;
-            entrada["producto"] = TProductoID2.Text;
-            entrada["cantidad"] = (((Producto)productos[i]).cantidad/proporcion).ToString(CultureInfo.InvariantCulture);
-            entrada["ingreso"] = "SYSDATE()";
+            info.id= TProductoID2.Text;
+            info.cantidad*= proporcion;
 
             if (!CAutomatico2.Checked)
             {
-                entrada["lote"] = TLote2.Text;
-                entrada["vence"] = CConector.GetMySQLDateFormat(TVencimiento2.Text);
-                entrada["szSerial"]=TSerial2.Text;
-                entrada["estado"]=DEstado2.SelectedValue;
-            }
-            else
-            {
-                entrada["lote"] = ((Producto)productos[i]).lote;
-                entrada["vence"] = CConector.GetMySQLDateFormat(((Producto)productos[i]).vence);
-                entrada["szSerial"] = ((Producto)productos[i]).serial;
-                entrada["estado"] = ((Producto)productos[i]).estado.ToString();
+                info.lote= TLote2.Text;
+                info.vence= TVencimiento2.Text;
+                info.serial= TSerial2.Text;
+                info.estado= Convert.ToInt32(DEstado2.SelectedValue);
             }
 
+            Query entrada = info.GetQuery("transformacion_entrada" + ((ing)Master).GetAlmacen());
+            entrada["id"] = id;
+            
             if (conector.QueryMod(entrada.GetInsert(), true) == -1)
+                return;
+
+            if (!info.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
                 return;
 
             if (conector.InsertModificacion(id, ((ing)Master).GetAlmacen()) == -1)

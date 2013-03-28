@@ -178,7 +178,7 @@
             <td colspan="5" class="tdb">&nbsp;</td>
         </tr>
         <tr>
-            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" />Productos</td>
+            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" /><asp:HiddenField runat="server" ID="HUsado" />Productos</td>
         </tr>
         <tr>
             <td colspan="5" class="tdl tdr"><asp:Label runat="server" ID="LMensaje" ForeColor="Red"></asp:Label></td>
@@ -220,9 +220,9 @@
         <tr>
             <td colspan="5" align="center" class="tdl tdb tdr">
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
-                    DataKeyNames="id,producto,ubicacion,estado" DataSourceID="SProductos" 
+                    DataKeyNames="IdGrid,id,ubicacion,estado" 
                     onselectedindexchanged="GProductos_SelectedIndexChanged" 
-                    EmptyDataText="No hay productos" onrowdeleted="GProductos_RowDeleted" >
+                    EmptyDataText="No hay productos" onrowdeleting="GProductos_RowDeleting" >
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
                     <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -237,29 +237,11 @@
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
-                        <asp:BoundField DataField="szSerial" HeaderText="Serial" SortExpression="szSerial" />
-                        <asp:BoundField DataField="nubicacion" HeaderText="Ubicación" SortExpression="nubicacion" />
+                        <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
+                        <asp:BoundField DataField="NombreUbicacion" HeaderText="Ubicación" SortExpression="NombreUbicacion" />
                         <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" />
                     </Columns>
                 </asp:GridView>
-                <sdg:customdatasource ID="SProductos" runat="server" 
-                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                    SelectCommand="SELECT salida_items{0}.id,salida_items{0}.producto,salida_items{0}.cantidad,salida_items{0}.lote
-                            ,IF(salida_items{0}.vence='0000-00-00',NULL,salida_items{0}.vence) AS vence
-                            ,producto.nombre,producto.unidad,producto.codigo,salida_items{0}.ubicacion,IFNULL(ubicacion.nombre,'(Ninguna)') AS nubicacion
-                            ,salida_items{0}.szSerial,salida_items{0}.estado,estado.nombre AS szEstado
-                            FROM salida_items{0}
-                            LEFT JOIN producto ON (producto.id=salida_items{0}.producto)
-                            LEFT JOIN ubicacion ON (ubicacion.id=salida_items{0}.ubicacion)
-                            LEFT JOIN varios AS estado ON (estado.id=salida_items{0}.estado)
-                            WHERE salida_items{0}.salida=@salida;" 
-                    InsertCommand="INSERT INTO salida_items{0} (salida,producto,cantidad,lote,vence,ingreso,ubicacion,szSerial,estado) VALUES (@rsalida, @producto,@cantidad,@lote,@vence,SYSDATE(),@ubicacion,@szSerial,@estado)"
-                    UpdateCommand="UPDATE salida_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion,szSerial=@szSerial,estado=@estado WHERE id=@id"
-                    DeleteCommand="DELETE FROM salida_items{0} WHERE id=@id" >
-                    <SelectParameters>
-                        <asp:ControlParameter ControlID="TNumero" Name="salida" PropertyName="Text" />
-                    </SelectParameters>
-                </sdg:customdatasource>
             </td>
         </tr>
         <tr>

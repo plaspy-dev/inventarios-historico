@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-03-27 · Añadir informes y revisar la administración del almacén.** Incorpora una página de informes con parámetros, reajusta la configuración de almacenes y amplía controles de productos. Las consultas de inventario pueden organizarse en un formulario que usa filtros propios.
+**2013-03-28 · Revisar entradas y traslados de mercancía.** Actualiza los controladores de entradas y traslados y añade rutinas que recuperan valores de producto. El código puede asociar el movimiento con el artículo y el almacén que intervienen.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-03-27 · Add reports and revise warehouse administration.** Add a report page with parameters, revise warehouse setup, and expand product controls. Inventory queries can be organized in a dedicated filtered form.
+**2013-03-28 · Revise stock receipts and warehouse transfers.** Update receipt and transfer handlers and add routines that retrieve product values. The source can associate each movement with its product and warehouse.
 
 ### How to explore the source
 
