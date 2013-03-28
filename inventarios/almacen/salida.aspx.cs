@@ -16,10 +16,6 @@ public partial class almacen_salida : System.Web.UI.Page
     {
         ((ing)Master).CheckAlmacen();
 
-        SProductos.SelectCommand = string.Format(SProductos.SelectCommand, ((ing)Master).GetAlmacen());
-        SProductos.UpdateCommand = string.Format(SProductos.UpdateCommand, ((ing)Master).GetAlmacen());
-        SProductos.DeleteCommand = string.Format(SProductos.DeleteCommand, ((ing)Master).GetAlmacen());
-
         if (!IsPostBack)
         {
             if (Session["salida_clean"] != null)
@@ -58,6 +54,47 @@ public partial class almacen_salida : System.Web.UI.Page
                     TDocumento.Text = reader["documento"].ToString();
                     TTerceroID.Text = reader["tercero"].ToString();
                     TTercero.Text = Almacen.GetNombreTercero(reader["tercero"].ToString());
+
+
+                    ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+                    query = new Query("salida_items" + ((ing)Master).GetAlmacen());
+
+                    query += "id";
+                    query += "producto";
+                    query += "cantidad";
+                    query += "lote";
+                    query += "vence";
+                    query += "ubicacion";
+                    query += "szSerial";
+                    query += "estado";
+                    query += "ingreso";
+
+                    reader = conector.Query(query.GetSelect("salida=" + HId.Value));
+                    if (reader != null)
+                    {
+                        while (reader.Read())
+                        {
+                            Producto info = new Producto(reader["producto"].ToString());
+
+                            info.IdTabla = reader["id"].ToString();
+                            info.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                            info.lote = reader["lote"].ToString();
+                            info.vence = "";
+                            try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
+                            catch { }
+                            info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
+                            info.serial = reader["szSerial"].ToString();
+                            info.estado = Convert.ToInt32(reader["estado"]);
+                            info.Ingreso = reader["ingreso"].ToString() != "";
+
+                            productoUsado.AddProducto(info);
+                        }
+                    }
+
+                    GProductos.DataSource = productoUsado.GetProductosUsados();
+                    HUsado.Value = productoUsado.SerializeBinary();
+                    GProductos.DataBind();
+
 
                     TProducto.Focus();
                     GProductos.Columns[0].Visible = usuario.CanDelete();
@@ -101,16 +138,18 @@ public partial class almacen_salida : System.Web.UI.Page
         if (!Page.IsValid)
             return;
 
-        ProductoUsado productousado = new ProductoUsado(HProductos.Value);
+        ProductoUsado productousadoNuevo = new ProductoUsado(HProductos.Value);
+        ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+
         ArrayList productos;
 
         if (saProducto.Length == 1)
         { // automatico
-            productos = productousado.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen());
+            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen());
         }
         else
         { // manual
-            productos = productousado.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4]);
+            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4]);
         }
         if (productos == null)
         {
@@ -120,30 +159,12 @@ public partial class almacen_salida : System.Web.UI.Page
 
         for (int i = 0; i < productos.Count; i++)
         {
-            IOrderedDictionary data = new OrderedDictionary();
             producto = (Producto)productos[i];
-
-            data.Add("codigo", producto.codigo);
-            data.Add("nombre", producto.nombre);
-            data.Add("producto", producto.id);
-            data.Add("cantidad", producto.cantidad);
-            data.Add("lote", producto.lote);
-            data.Add("ubicacion", producto.ubicacion);
-            data.Add("nubicacion", producto.NombreUbicacion);
-            data.Add("szSerial", producto.serial);
-            data.Add("estado", producto.estado);
-            data.Add("szEstado", producto.szEstado);
-
-            if (string.IsNullOrEmpty(producto.vence))
-                data.Add("vence", null);
-            else data.Add("vence", Convert.ToDateTime(producto.vence));
-
-            data.Add("unidad", producto.unidad);
-
-            SProductos.GetView().Insert(data, OnDataSourceOperationComplete);
+            productoUsado.AddProducto(producto);
         }
 
 
+        GProductos.DataSource = productoUsado.GetProductosUsados();
         GProductos.SelectedIndex = -1;
         GProductos.DataBind();
 
@@ -164,7 +185,8 @@ public partial class almacen_salida : System.Web.UI.Page
         REntero.Enabled = true;
         RDecimal.Enabled = true;
 
-        HProductos.Value = productousado.Serialize();
+        HProductos.Value = productousadoNuevo.Serialize();
+        HUsado.Value = productoUsado.SerializeBinary();
 
         ScriptManager.RegisterStartupScript(TProducto, typeof(String), "pregunta", "window.onbeforeunload = function() { return '¿Ha realizado cambios, esta seguro de abandonar la pagina?'; };", true);
     }
@@ -225,14 +247,45 @@ public partial class almacen_salida : System.Web.UI.Page
             return;
         }
 
-        string[] productos = SProductos.GetQuerys();
-        for (int i = 0; i < productos.Length; i++)
+
+
+        ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+
+        // eliminamos todos los productos
+        List<Producto> productos = productoUsado.GetProductoEliminado();
+        for (int i = 0; i < productos.Count; i++)
         {
-            if (conector.QueryMod(string.Format(productos[i], ((ing)Master).GetAlmacen()).Replace("@rsalida", HId.Value)) == -1)
-            {
-                LMensaje.Text = conector.GetLastError();
+            if (conector.QueryMod(string.Format("DELETE FROM salida_items{0} WHERE id={1}", ((ing)Master).GetAlmacen(), productos[i].IdTabla)) == -1)
                 return;
+            if (productos[i].Ingreso)
+            {
+                if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                    return;
             }
+        }
+
+        // agregamos los nuevos
+        productos = productoUsado.GetProductosUsados();
+        for (int i = 0; i < productos.Count; i++)
+        {
+            productos[i].Ingreso = true;
+            query = productos[i].GetQuery("salida_items" + ((ing)Master).GetAlmacen());
+            if (string.IsNullOrEmpty(productos[i].IdTabla))
+            {
+                query["salida"] = HId.Value;
+                if (conector.QueryMod(query.GetInsert()) == -1)
+                    return;
+            }
+            else if (productos[i].pProductoAntiguo != null)
+            { // fue actualizado
+                if (conector.QueryMod(query.GetUpdate("id=" + productos[i].IdTabla)) == -1)
+                    return;
+            } else {
+                continue;
+            }
+            if(productos[i].Ingreso)
+                if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                    return;
         }
 
         conector.Commit();
@@ -245,21 +298,12 @@ public partial class almacen_salida : System.Web.UI.Page
         Session["salida_clean"] = 1;
         Response.Redirect(Request.Url.AbsolutePath);
     }
-    protected void GProductos_RowDeleted(object sender, GridViewDeletedEventArgs e)
-    {
-        ProductoUsado productousado = new ProductoUsado(HProductos.Value);
-        string vence = e.Values["vence"] == null ? "" : e.Values["vence"].ToString();
-        string lote = e.Values["lote"] == null ? "" : e.Values["lote"].ToString();
-        string serial = e.Values["szSerial"] == null ? "" : e.Values["szSerial"].ToString();
-        productousado.DeleteProducto(e.Keys["producto"].ToString(), Convert.ToDecimal(e.Values["cantidad"]), lote, vence, Convert.ToInt32(e.Keys["ubicacion"]), Convert.ToInt32(e.Keys["estado"]), serial);
-        HProductos.Value = productousado.Serialize();
-    }
 
     protected void BActualizar_Click(object sender, EventArgs e)
     {
-        ProductoUsado productousado = new ProductoUsado(HProductos.Value);
+        ProductoUsado productousadoNuevo = new ProductoUsado(HProductos.Value);
         HProductos.Value = "";
-        List<Producto> productos = productousado.GetProductosUsados();
+        List<Producto> productos = productousadoNuevo.GetProductosUsados();
         for (int i = 0; i < productos.Count; i++)
         {
             Producto producto = productos[i];
@@ -272,5 +316,28 @@ public partial class almacen_salida : System.Web.UI.Page
             TSerial.Text = producto.serial;
             BAgregar_Click(sender, e);
         }
+    }
+    protected void GProductos_RowDeleting(object sender, GridViewDeleteEventArgs e)
+    {
+        // en la tabla definitiva
+        ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+        Producto producto = productoUsado.GetProducto(Convert.ToInt32(GProductos.DataKeys[e.RowIndex].Values[0]));
+        if (producto == null)
+        {
+            e.Cancel = true;
+            return;
+        }
+
+        // ahora en los temporales
+        ProductoUsado productousadoNuevo = new ProductoUsado(HProductos.Value);
+        productousadoNuevo.DeleteProducto(producto.id, producto.cantidad, producto.lote, producto.vence, producto.ubicacion, producto.estado, producto.serial);
+        HProductos.Value = productousadoNuevo.Serialize();
+
+
+        productoUsado.DeleteProducto(producto.IdGrid);
+        GProductos.DataSource = productoUsado.GetProductosUsados();
+        GProductos.DataBind();
+        HUsado.Value = productoUsado.SerializeBinary();
+        e.Cancel = true;
     }
 }

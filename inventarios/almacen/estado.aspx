@@ -177,7 +177,7 @@
     <asp:GridView ID="GResultados" runat="server" DataSourceID="SResultados" 
         AutoGenerateColumns="False" EmptyDataText="No se encontraron productos" 
         AllowPaging="True" PageSize="50" AllowSorting="True" 
-        DataKeyNames="producto,lote,vence,ubicacion" 
+        DataKeyNames="producto,lote,vence,ubicacion,estado" 
         onselectedindexchanged="GResultados_SelectedIndexChanged" 
         onrowcommand="GResultados_RowCommand" >
         <RowStyle CssClass="GridRow"></RowStyle>
@@ -194,6 +194,7 @@
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
             <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" />
+            <asp:BoundField HeaderText="Costo" DataField="costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
             <asp:BoundField HeaderText="Un." DataField="unidad" SortExpression="unidad" />
             <asp:TemplateField HeaderText="Ubicación" SortExpression="ubicacion">
                 <ItemTemplate>
@@ -216,7 +217,7 @@
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa
                         ,producto.unidad,producto.codigo,producto.descripcion,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
-                        ,'' AS lote,'' AS vence,'' AS szSerial
+                        ,'' AS lote,'' AS vence,'' AS szSerial,estado{0}.costo AS costo
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
                         ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado
                         FROM estado{0} 
@@ -250,7 +251,7 @@
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT estado{0}.producto,estado{0}.lote
                         ,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence
-                        ,estado{0}.cantidad,producto.nombre,producto.empresa,estado{0}.szSerial
+                        ,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa,estado{0}.szSerial,estado{0}.costo AS costo
                         ,producto.unidad,producto.codigo,producto.descripcion,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
                         ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado
@@ -269,7 +270,7 @@
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
                             OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
-                        GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.ubicacion
+                        GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.ubicacion,estado{0}.estado
                         ORDER BY producto.codigo,producto.nombre,estado{0}.lote,estado{0}.vence">
                  <SelectParameters>
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />

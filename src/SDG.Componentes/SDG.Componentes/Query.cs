@@ -137,13 +137,13 @@ public class Query
 			text += m_saCampos[i];
 		}
 		text += ") VALUES (";
-		for (int i = 0; i < m_saValores.Count; i++)
+		for (int j = 0; j < m_saValores.Count; j++)
 		{
-			if (i != 0)
+			if (j != 0)
 			{
 				text += ",";
 			}
-			text += (((bool)m_baQuoted[i]) ? GetValor(m_saValores[i].ToString()) : m_saValores[i].ToString());
+			text += (((bool)m_baQuoted[j]) ? GetValor(m_saValores[j].ToString()) : m_saValores[j].ToString());
 		}
 		return text + ");";
 	}

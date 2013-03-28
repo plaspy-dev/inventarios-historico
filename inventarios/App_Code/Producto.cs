@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Caching;
 using System.Collections;
+using System.Globalization;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
 using System.IO;
@@ -35,6 +36,18 @@ public class Producto
     public string serial { set; get; }
     public int estado { set; get; }
     public int ubicacion { set; get; }
+    public Decimal Costo { set; get;}
+    public int DiasV { set; get; }
+
+    [XmlIgnore] // este es el ingreso del repuesto
+    public bool Ingreso=false;
+
+    [XmlIgnore]
+    public string IdTabla { set; get; }
+    [XmlIgnore]
+    public int IdGrid { set; get; }
+    [XmlIgnore]
+    public Producto pProductoAntiguo = null;
 
     [XmlIgnore]
     public string szEstado { get {
@@ -188,6 +201,7 @@ public class Producto
             return completo.Trim();
         }
     }
+
     static public void RemoveProducto(string id) {
         if (HttpRuntime.Cache["producto" + id] != null)
             HttpRuntime.Cache.Remove("producto" + id);
@@ -211,6 +225,7 @@ public class Producto
             query += "empresa";
             query += "entero";
             query += "nEstado";
+            query += "diasvencimiento";
 
             MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
             if (reader != null && reader.Read())
@@ -241,11 +256,70 @@ public class Producto
                     producto.nEstado = Convert.ToInt32(reader["nEstado"]);
                 }
                 catch { producto.nEstado = 0; }
+                try {
+                    producto.DiasV = Convert.ToInt32(reader["diasvencimiento"]);
+                }catch { producto.DiasV = 0; }
                 producto.Empresa = reader["empresa"].ToString();
             }
             HttpRuntime.Cache.Insert("producto" + id, producto, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
         return producto;
+    }
+
+    public void DeleteCostoPromedio(string almacen) {
+
+        if (HttpRuntime.Cache["costopromedio" + almacen + "_" + id] != null)
+            HttpRuntime.Cache.Remove("costopromedio" + almacen + "_" + id);
+    }
+
+    public Decimal GetCostoPromedio(string almacen)
+    {
+        Costo = 0;
+        if (HttpRuntime.Cache["costopromedio" + almacen + "_" + id] != null)
+        {
+            Costo = (Decimal)HttpRuntime.Cache["costopromedio" + almacen + "_" + id];
+            return Costo;
+        }
+
+        CConector conector = new CConector();
+        string costo= conector.QueryString(string.Format("SELECT costo FROM estado{0} WHERE producto={1}", almacen, id));
+        try {
+            Costo = Convert.ToDecimal(costo);
+        } catch {}
+        HttpRuntime.Cache.Insert("costopromedio" + almacen + "_" + id, Costo, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        return Costo;
+    }
+
+    public void DeleteCosto(string proveedor)
+    {
+        if (HttpRuntime.Cache["costoproducto" + proveedor + "_" + id] != null)
+            HttpRuntime.Cache.Remove("costoproducto" + proveedor + "_" + id);
+    }
+
+    public Decimal GetCosto(string proveedor)
+    {
+        Costo = 0;
+        if (proveedor == null) // no lo busque
+            return 0;
+        if (HttpRuntime.Cache["costoproducto" + proveedor + "_" + id] != null)
+        {
+            Costo = (Decimal)HttpRuntime.Cache["costoproducto" + proveedor + "_" + id];
+            return Costo;
+        }
+
+        CConector conector = new CConector();
+        string costo = "";
+        if(proveedor.Length!=0) // verificamos que sea el precio de un proveedor
+            costo = conector.QueryString(string.Format("SELECT costo FROM costo_proveedor WHERE producto={1} AND proveedor={0}", proveedor, id));
+        if(costo.Length==0) // usamos el precio establecido para el proveedor
+            costo = conector.QueryString(string.Format("SELECT costo FROM producto WHERE id={0}", id));
+        try
+        {
+            Costo = Convert.ToDecimal(costo);
+        }
+        catch { }
+        HttpRuntime.Cache.Insert("costoproducto" + proveedor + "_" + id, Costo, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        return Costo;
     }
 
     public Producto()
@@ -269,6 +343,8 @@ public class Producto
         nSerial = producto.nSerial;
         nNumero = producto.nNumero;
         nEstado = producto.nEstado;
+        Costo = producto.Costo;
+        DiasV = producto.DiasV;
 
         ubicacion = 0;
         estado = 0;
@@ -325,5 +401,147 @@ public class Producto
         ubicacion = _ubicacion;
         estado = _estado;
         serial=_serial;
+    }
+
+    public bool UpdateCosto(Conector conector, string almacen, string proveedor)
+    {
+        string query = string.Format("UPDATE estado{0} SET costo=(SELECT SUM(cantidad*costo)/SUM(cantidad) FROM entrada_items{0} WHERE producto={1} AND ingreso IS NOT NULL)"
+                + " WHERE producto={1};"
+            , almacen, id);
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        DeleteCostoPromedio(almacen);
+
+        if (proveedor!="-1") {
+            // actualizamos el costo del producto
+            query = string.Format("UPDATE producto SET costo={1} WHERE id={0};"
+                    , id, Costo.ToString(CultureInfo.InvariantCulture));
+            if (conector.QueryMod(query) == -1)
+                return false;
+
+            if (!string.IsNullOrEmpty(proveedor))
+            {
+                query = string.Format("UPDATE costo_proveedor SET costo={2},fecha=SYSDATE() WHERE producto={0} AND proveedor={1};"
+                    , id, proveedor, Costo.ToString(CultureInfo.InvariantCulture));
+                if (conector.QueryMod(query) == -1)
+                    return false;
+                query = string.Format("INSERT IGNORE INTO costo_proveedor (producto,proveedor,costo,fecha) VALUES ({0},{1}, {2},SYSDATE());"
+                    , id, proveedor, Costo.ToString(CultureInfo.InvariantCulture));
+                if (conector.QueryMod(query) == -1)
+                    return false;
+            }
+            DeleteCosto(proveedor);
+        }
+        return true;
+    }
+
+    public bool DeleteProductoFromEstado(Conector conector, string almacen) {
+
+        if (pProductoAntiguo != null)
+        {
+            if (!pProductoAntiguo.AddProductoFromEstado(conector, almacen))
+                return false;
+        }
+        if (!Ingreso)
+            return true;
+
+        string szLote;
+        if (lote.Length == 0)
+            szLote = "''";
+        else szLote = Query.GetValor(lote);
+        string szSerial;
+        if (serial.Length == 0)
+            szSerial = "''";
+        else szSerial = Query.GetValor(serial);
+        string szVencimiento = Conector.GetMySQLDateFormat(vence);
+        if (szVencimiento.Length == 0)
+            szVencimiento = "0000-00-00";
+
+        string query = string.Format("UPDATE estado{0} SET cantidad=cantidad-{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7};"
+            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado);
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        return true;
+    }
+
+    public bool AddProductoFromEstado(Conector conector, string almacen)
+    {
+        if (pProductoAntiguo != null)
+        {
+            if (!pProductoAntiguo.DeleteProductoFromEstado(conector, almacen))
+                return false;
+        }
+        if (!Ingreso)
+            return true;
+
+        string szLote;
+        if (lote.Length == 0)
+            szLote = "''";
+        else szLote = Query.GetValor(lote);
+        string szSerial;
+        if (serial.Length == 0)
+            szSerial = "''";
+        else szSerial = Query.GetValor(serial);
+        string szVencimiento = Conector.GetMySQLDateFormat(vence);
+        if (szVencimiento.Length == 0)
+            szVencimiento = "0000-00-00";
+
+        string query = string.Format("UPDATE estado{0} SET cantidad=cantidad+{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7};"
+            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado);
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        query = string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad,szSerial,ubicacion,estado, modificacion) VALUES ({1}, {2}, {3}, {4}, {5},{6},{7}, SYSDATE());"
+            , almacen, id, szLote, Query.GetValor(szVencimiento), cantidad.ToString(CultureInfo.InvariantCulture), szSerial, ubicacion, estado);
+        if (conector.QueryMod(query) == -1)
+            return false;
+        return true;
+    }
+
+    public Query GetQuery(string tabla) {
+
+        Query query = new Query(tabla);
+
+        string szLote;
+        if (lote.Length == 0)
+            szLote = "''";
+        else szLote = Query.GetValor(lote);
+        string szSerial;
+        if (serial.Length == 0)
+            szSerial = "''";
+        else szSerial = Query.GetValor(serial);
+        string szVencimiento = Conector.GetMySQLDateFormat(vence);
+        if (szVencimiento.Length == 0)
+            szVencimiento = "0000-00-00";
+
+
+        query["producto"]= id.ToString();
+        query["cantidad"]= cantidad.ToString(CultureInfo.InvariantCulture);
+        query["vence"] = szVencimiento;
+        query["ubicacion"]= ubicacion.ToString();
+        query["estado"]= estado.ToString();
+        query["ingreso"] = Ingreso ? "SYSDATE()" : "";
+        query.AddCampo("lote", szLote, false);
+        query.AddCampo("szSerial", szSerial, false);
+
+        return query;
+    }
+    
+    public Producto CopiarProducto() {
+
+        Producto producto = new Producto(id);
+
+        producto.IdTabla = IdTabla;
+        producto.cantidad = cantidad;
+        producto.vence = vence;
+        producto.lote = lote;
+        producto.serial = serial;
+        producto.estado = estado;
+        producto.ubicacion = ubicacion;
+        producto.Ingreso = Ingreso;
+
+        return producto;
     }
 }

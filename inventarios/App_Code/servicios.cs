@@ -74,7 +74,7 @@ public class servicios : System.Web.Services.WebService {
     }
 
     [WebMethod(EnableSession=true)]
-    public List<Producto> GetProducto(String q)
+    public List<Producto> GetProducto(String q, String p)
     {
         List<Producto> lista = new List<Producto>();
         CConector conector = new CConector();
@@ -96,6 +96,7 @@ public class servicios : System.Web.Services.WebService {
             while (reader.Read())
             {
                 Producto info = new Producto(reader["id"].ToString());
+                info.GetCosto(p);
                 lista.Add(info);
             }
             reader.Close();

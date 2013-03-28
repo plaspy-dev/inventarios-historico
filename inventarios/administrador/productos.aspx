@@ -3,36 +3,45 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 
     <script type="text/javascript">
-    addFunctionToStart(function() {
-        $("#<%= TNombre.ClientID %>").autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: "../webservices/servicios.asmx/GetProducto",
-                    data: "{ 'q': '" + request.term + "' }",
-                    dataType: "json",
-                    type: "POST",
-                    contentType: "application/json; charset=utf-8",
-                    dataFilter: function(data) { return data; },
-                    success: function(data) {
-                        response($.map(data.d, function(item) {
-                            item.label = item.ProductoCompleto;
-                            return item;
-                        }))
-                    },
-                    error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(textStatus);
-                    }
-                });
-            },
-            autoFocus: true,
-            minLength: 3,
-            select: function(event, ui) {
+        addFunctionToStart(function() {
+            $("#accordion").accordion({
+                autoHeight: false,
+                navigation: true,
+                collapsible: true,
+                active: false
+            });
+            $("#<%= TNombre.ClientID %>").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "../webservices/servicios.asmx/GetProducto",
+                        data: "{ 'q': '" + request.term + "', 'p': null }",
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        dataFilter: function(data) { return data; },
+                        success: function(data) {
+                            response($.map(data.d, function(item) {
+                                item.label = item.ProductoCompleto;
+                                return item;
+                            }))
+                        },
+                        error: function(XMLHttpRequest, textStatus, errorThrown) {
+                            alert(textStatus);
+                        }
+                    });
+                },
+                autoFocus: true,
+                minLength: 3,
+                select: function(event, ui) {
 
-                $.goURL("pid=" + ui.item.id);
-                return false;
-            }
+                    $.goURL("pid=" + ui.item.id);
+                    return false;
+                }
+            });
+            $("#<%= DVence.ClientID %>").change(function() {
+                $("#<%= TDiasVencimiento.ClientID %>").attr("disabled", $(this).val() == "0");
+            }).change();
         });
-    });
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
@@ -128,7 +137,13 @@
                     <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
                 </asp:DropDownList>
             </td>
-            <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+            <td>
+            <asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+          </tr>
+          <tr>
+              <td>Días para vencimiento</td>
+              <td><asp:TextBox runat="server" ID="TDiasVencimiento" CssClass="entero"></asp:TextBox></td>
+              <td><asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDiasVencimiento" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
           </tr>
           <tr>
             <td>Lote</td>
@@ -165,8 +180,50 @@
             <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
           </tr>
           <tr>
-              <td>
-                  &nbsp;</td>
+            <td>Último Costo</td>
+            <td><asp:TextBox runat="server" ID="TCosto" CssClass="float"></asp:TextBox></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td colspan="3">
+            <asp:Panel runat="server" ID="PCostos" Visible="false">
+            <div id="accordion">
+                    <h3><a href="#">Costos por proveedor</a></h3>
+                    <div class="hide">
+                        <asp:GridView ID="GCostos" runat="server" DataSourceID="SCostos" 
+                            AutoGenerateColumns="false" AllowSorting="True" AllowPaging="true" EmptyDataText="No hay proveedores">
+                            <RowStyle CssClass="GridRow"></RowStyle>
+                            <FooterStyle CssClass="GridFooter"></FooterStyle>
+                            <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                            <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                            <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                            <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                            <Columns>
+                                <asp:BoundField HeaderText="Proveedor" DataField="nombre" SortExpression="nombre" />
+                                <asp:BoundField DataField="fecha" HeaderText="Fecha" SortExpression="fecha" ItemStyle-HorizontalAlign="Right" />
+                                <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
+                            </Columns>
+                        </asp:GridView>
+                        <asp:SqlDataSource ID="SCostos" runat="server"
+                                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                                SelectCommand="select tercero.nombre,costo_proveedor.costo,costo_proveedor.fecha
+                                        FROM costo_proveedor
+                                        LEFT JOIN tercero ON (tercero.id=costo_proveedor.proveedor)
+                                        WHERE costo_proveedor.producto=@producto
+                                        ORDER BY costo_proveedor.fecha DESC
+                                        ;">
+                                <SelectParameters>
+                                    <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="producto" />
+                                </SelectParameters>
+                        </asp:SqlDataSource>
+                    </div>
+                </div>
+                </asp:Panel>
+            </td>
+          </tr>
+          <tr>
+              <td>&nbsp;</td>
               <td align="right">
                   <asp:Button ID="BAceptar" runat="server" onclick="BAceptar_Click" 
                       Text="Aceptar" />
@@ -207,6 +264,7 @@
                     <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                     <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
                     <asp:BoundField DataField="estado" HeaderText="Estado" SortExpression="estado" />
+                    <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SResultados" runat="server" 
@@ -219,6 +277,7 @@
                         ,CASE producto.serial WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS serial
                         ,CASE producto.entero WHEN 1 THEN 'Entero' ELSE 'Decimal' END AS entero
                         ,varios.nombre AS grupo
+                        ,producto.costo
                         FROM producto 
                         LEFT JOIN varios ON (producto.grupo=varios.id)
                         WHERE producto.estado IS NULL

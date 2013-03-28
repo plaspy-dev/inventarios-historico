@@ -186,7 +186,7 @@
             <td class="tdr"><asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><span id="estadoautomatico">Automático</span></td>
         </tr>
         <tr class="GridAltRow">
-            <td class="tdl"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" /></td>
+            <td class="tdl"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" /><asp:HiddenField runat="server" ID="HUsado" /></td>
             <td colspan="4" class="tdr" id="tdescripcion"></td>
         </tr>
         <tr class="GridAltRow">
@@ -208,9 +208,9 @@
         <tr>
             <td colspan="5" align="center" class="tdl tdb tdr">
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
-                    DataKeyNames="id,producto,ubicacion,estado" DataSourceID="SProductos" 
+                    DataKeyNames="IdGrid,id,ubicacion,estado"
                     onselectedindexchanged="GProductos_SelectedIndexChanged" 
-                    EmptyDataText="No hay productos" onrowdeleted="GProductos_RowDeleted" >
+                    EmptyDataText="No hay productos" onrowdeleting="GProductos_RowDeleting" >
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
                     <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -225,29 +225,11 @@
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
-                        <asp:BoundField DataField="szSerial" HeaderText="Serial" SortExpression="szSerial" />
-                        <asp:BoundField DataField="nubicacion" HeaderText="Ubicación" SortExpression="nubicacion" />
+                        <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
+                        <asp:BoundField DataField="NombreUbicacion" HeaderText="Ubicación" SortExpression="NombreUbicacion" />
                         <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" />
                     </Columns>
                 </asp:GridView>
-                <sdg:customdatasource ID="SProductos" runat="server" 
-                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                    SelectCommand="SELECT traslado_items{0}.id,traslado_items{0}.producto,traslado_items{0}.cantidad,traslado_items{0}.lote
-                            ,IF(traslado_items{0}.vence='0000-00-00',NULL,traslado_items{0}.vence) AS vence
-                            ,producto.nombre,producto.unidad,producto.codigo,traslado_items{0}.ubicacion,IFNULL(ubicacion.nombre,'(Ninguna)') AS nubicacion
-                            ,traslado_items{0}.szSerial,traslado_items{0}.estado,estado.nombre AS szEstado
-                            FROM traslado_items{0}
-                            LEFT JOIN producto ON (producto.id=traslado_items{0}.producto)
-                            LEFT JOIN ubicacion ON (ubicacion.id=traslado_items{0}.ubicacion)
-                            LEFT JOIN varios AS estado ON (estado.id=traslado_items{0}.estado)
-                            WHERE traslado_items{0}.traslado=@traslado;" 
-                    InsertCommand="INSERT INTO traslado_items{0} (traslado,producto,cantidad,lote,vence,ingreso,ubicacion,szSerial,estado) VALUES (@rtraslado, @producto,@cantidad,@lote,@vence,SYSDATE(),@ubicacion,@szSerial,@estado)"
-                    UpdateCommand="UPDATE traslado_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion,szSerial=@szSerial,estado=@estado WHERE id=@id"
-                    DeleteCommand="DELETE FROM traslado_items{0} WHERE id=@id" >
-                    <SelectParameters>
-                        <asp:ControlParameter ControlID="TNumero" Name="traslado" PropertyName="Text" />
-                    </SelectParameters>
-                </sdg:customdatasource>
             </td>
         </tr>
         <tr>

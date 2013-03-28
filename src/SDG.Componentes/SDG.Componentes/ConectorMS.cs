@@ -15,7 +15,7 @@ public class ConectorMS
 
 	protected string m_szConexion;
 
-	public bool m_bTransaccion = false;
+	public bool m_bTransaccion;
 
 	protected SqlConnection m_pSQLConector;
 
@@ -65,6 +65,8 @@ public class ConectorMS
 
 	public void ShowError(string error)
 	{
+		string logs = DateTime.Now.ToString() + " Error[ConectorMS] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "'\r\n" + m_szQuery + "\r\n";
+		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;

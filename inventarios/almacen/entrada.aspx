@@ -63,7 +63,7 @@
             source: function(request, response) {
                 $.ajax({
                     url: "../webservices/servicios.asmx/GetProducto",
-                    data: "{ 'q': '" + request.term + "' }",
+                    data: "{ 'q': '" + request.term + "', 'p': '" + $("#<%= TTerceroID.ClientID %>").val() + "' }",
                     dataType: "json",
                     type: "POST",
                     contentType: "application/json; charset=utf-8",
@@ -93,7 +93,16 @@
                 if (ui.item.unidad && ui.item.unidad != "")
                     $("#sunidad").text("(" + ui.item.unidad + ")");
                 else $("#sunidad").text("");
+                $("#<%= TCosto.ClientID %>").val(ui.item.Costo);
                 
+                if(ui.item.DiasV>0) {
+                    var fecha = new Date();
+                    fecha.setDate(fecha.getDate()+ui.item.DiasV);
+                    $("#<%= TVencimiento.ClientID %>").datepicker("setDate", fecha);
+                } else {
+                    $("#<%= TVencimiento.ClientID %>").val("");
+                }
+
                 ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
                 ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
                 ui.item.nSerial>0 ? $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").show() : $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").hide();
@@ -145,7 +154,7 @@
             <td colspan="5" class="tdb">&nbsp;</td>
         </tr>
         <tr>
-            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" />Productos</td>
+            <td colspan="5" class="GridHeader"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" /><asp:HiddenField runat="server" ID="HUsado" />Productos</td>
         </tr>
         <tr>
             <td class="tdl"></td>
@@ -158,27 +167,27 @@
         <tr class="GridAltRow">
             <td class="tdl"></td>
             <td><span id="sunidad"></span></td>
-            <td><asp:Label runat="server" ID="LLote" Text="Lote"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TLote" ValidationGroup="producto" ErrorMessage="Por favor ingrese un lote." ID="RLote" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
-            <td><asp:Label runat="server" ID="LVencimiento" Text="Vence"></asp:Label>
-            <asp:RequiredFieldValidator ControlToValidate="TVencimiento" ValidationGroup="producto" ErrorMessage="Por favor ingrese una fecha." ID="RVencimiento" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator>
-            <asp:RangeValidator ControlToValidate="TVencimiento" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator1" Display="Dynamic" Type="Date">*</asp:RangeValidator>
+            <td><asp:Label runat="server" ID="LCosto" Text="Costo Unitario"></asp:Label>
+            <asp:RequiredFieldValidator ControlToValidate="TCosto" ValidationGroup="producto" ErrorMessage="Por favor ingrese un costo unitario." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator1" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCosto" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
             </td>
-            <td class="tdr"></td>
+            <td><asp:Label runat="server" ID="LLote" Text="Lote"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TLote" ValidationGroup="producto" ErrorMessage="Por favor ingrese un lote." ID="RLote" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
+            <td class="tdr">
+                <asp:Label runat="server" ID="LVencimiento" Text="Vence"></asp:Label>
+                <asp:RequiredFieldValidator ControlToValidate="TVencimiento" ValidationGroup="producto" ErrorMessage="Por favor ingrese una fecha." ID="RVencimiento" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator>
+                <asp:RangeValidator ControlToValidate="TVencimiento" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator1" Display="Dynamic" Type="Date">*</asp:RangeValidator>
+            </td>
         </tr>
         <tr>
             <td class="tdl">Cantidad
-            <asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                <asp:RequiredFieldValidator ControlToValidate="TCantidad" ValidationGroup="producto" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
                 <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
                 <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
             </td>
             <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
+            <td><asp:TextBox runat="server" ID="TCosto" CssClass="float"></asp:TextBox></td>
             <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote"></asp:TextBox></td>
-            <td><asp:TextBox ID="TVencimiento" runat="server" CssClass="fecha"></asp:TextBox>
-            <asp:TextBox ID="TUnidad" runat="server" CssClass="hide"></asp:TextBox>
-            </td>
-            <td class="tdr">
-                
-            </td>
+            <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="fecha"></asp:TextBox></td>
         </tr>
         <tr class="GridAltRow">
             <td class="tdl">
@@ -231,8 +240,9 @@
         <tr>
             <td colspan="5" align="center" class="tdl tdb tdr">
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
-                    DataKeyNames="id,producto,ubicacion,estado" DataSourceID="SProductos" onrowdeleted="GProductos_RowDeleted" 
-                    onselectedindexchanged="GProductos_SelectedIndexChanged" EmptyDataText="No hay productos" >
+                    DataKeyNames="IdGrid,id,ubicacion,estado" 
+                    onselectedindexchanged="GProductos_SelectedIndexChanged" 
+                    EmptyDataText="No hay productos" onrowdeleting="GProductos_RowDeleting" >
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
                     <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -245,12 +255,13 @@
                         <asp:BoundField DataField="codigo" HeaderText="Código" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="Costo" HeaderText="Costo" SortExpression="Costo" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
-                        <asp:BoundField DataField="szSerial" HeaderText="Serial" SortExpression="szSerial" />
-                        <asp:BoundField DataField="nubicacion" HeaderText="Ubicación" SortExpression="nubicacion" />
-                        <asp:TemplateField HeaderText="Ubicación">
+                        <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
+                        <asp:BoundField DataField="NombreUbicacion" HeaderText="Ubicación" SortExpression="NombreUbicacion" />
+                        <asp:TemplateField HeaderText="Ubicación ">
                             <ItemTemplate>
                                 <asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
                                    DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id" SelectedValue='<%# Eval("ubicacion") %>'>
@@ -261,24 +272,6 @@
                         <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" />
                     </Columns>
                 </asp:GridView>
-                <sdg:customdatasource ID="SProductos" runat="server" 
-                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                    SelectCommand="SELECT entrada_items{0}.id,entrada_items{0}.producto,entrada_items{0}.cantidad,entrada_items{0}.lote
-                            ,IF(entrada_items{0}.vence='0000-00-00',NULL,entrada_items{0}.vence) AS vence
-                            ,producto.nombre,producto.unidad,producto.codigo,entrada_items{0}.ubicacion,IFNULL(ubicacion.nombre,'(Ninguna)') AS nubicacion
-                            ,entrada_items{0}.szSerial,entrada_items{0}.estado,estado.nombre AS szEstado
-                            FROM entrada_items{0}
-                            LEFT JOIN producto ON (producto.id=entrada_items{0}.producto)
-                            LEFT JOIN varios AS estado ON (estado.id=entrada_items{0}.estado)
-                            LEFT JOIN ubicacion ON (ubicacion.id=entrada_items{0}.ubicacion)
-                            WHERE entrada_items{0}.entrada=@entrada;" 
-                    InsertCommand="INSERT INTO entrada_items{0} (entrada,producto,cantidad,lote,vence,ubicacion,estado,szSerial) VALUES (@rentrada, @producto,@cantidad,@lote,@vence,@ubicacion,@estado,@szSerial)"
-                    UpdateCommand="UPDATE entrada_items{0} SET producto=@producto,cantidad=@cantidad,lote=@lote,vence=@vence,ubicacion=@ubicacion,estado=@estado,szSerial=@szSerial WHERE id=@id"
-                    DeleteCommand="DELETE FROM entrada_items{0} WHERE id=@id" >
-                    <SelectParameters>
-                        <asp:ControlParameter ControlID="TNumero" Name="entrada" PropertyName="Text" />
-                    </SelectParameters>
-                </sdg:customdatasource>
             </td>
         </tr>
         <tr>

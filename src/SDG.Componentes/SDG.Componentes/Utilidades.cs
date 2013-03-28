@@ -19,6 +19,32 @@ public class Utilidades
 		return string.Format("http{0}://{1}{2}", page.Request.IsSecureConnection ? "s" : "", text, page.ResolveUrl(archivo));
 	}
 
+	public static DataControlField GetGridColumn(GridView grid, string columna)
+	{
+		columna = columna.ToLower();
+		for (int i = 0; i < grid.Columns.Count; i++)
+		{
+			if (grid.Columns[i].HeaderText.ToLower() == columna)
+			{
+				return grid.Columns[i];
+			}
+		}
+		return null;
+	}
+
+	public static int GetGridColumnIndex(GridView grid, string columna)
+	{
+		columna = columna.ToLower();
+		for (int i = 0; i < grid.Columns.Count; i++)
+		{
+			if (grid.Columns[i].HeaderText.ToLower() == columna)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	public static int GetRowsCount(GridView grid, Label label)
 	{
 		int rowsCount = GetRowsCount(grid);
@@ -133,21 +159,21 @@ public class Utilidades
 			text = text + "<td><b>" + grid.Columns[i].HeaderText + "</b></td>";
 		}
 		text += "</tr>";
-		for (int i = 0; i < grid.Rows.Count; i++)
+		for (int j = 0; j < grid.Rows.Count; j++)
 		{
-			GridViewRow gridViewRow = grid.Rows[i];
+			GridViewRow gridViewRow = grid.Rows[j];
 			text += "<tr>";
-			for (int j = 0; j < gridViewRow.Cells.Count; j++)
+			for (int k = 0; k < gridViewRow.Cells.Count; k++)
 			{
 				text += "<td>";
-				if (gridViewRow.Cells[j].HasControls())
+				if (gridViewRow.Cells[k].HasControls())
 				{
-					ControlCollection controls = gridViewRow.Cells[j].Controls;
-					for (int k = 0; k < controls.Count; k++)
+					ControlCollection controls = gridViewRow.Cells[k].Controls;
+					for (int l = 0; l < controls.Count; l++)
 					{
-						if (controls[k] is TextBox)
+						if (controls[l] is TextBox)
 						{
-							string text2 = ((TextBox)controls[k]).Text;
+							string text2 = ((TextBox)controls[l]).Text;
 							if (text2.Length == 0)
 							{
 								text2 = "&nbsp;";
@@ -155,24 +181,24 @@ public class Utilidades
 							text += text2;
 							break;
 						}
-						if (controls[k] is CheckBox)
+						if (controls[l] is CheckBox)
 						{
-							text = ((!((CheckBox)controls[k]).Checked) ? (text + "_ ") : (text + "X "));
-							if (((CheckBox)controls[k]).Text.Length > 0)
+							text = ((!((CheckBox)controls[l]).Checked) ? (text + "_ ") : (text + "X "));
+							if (((CheckBox)controls[l]).Text.Length > 0)
 							{
-								text += ((CheckBox)controls[k]).Text;
+								text += ((CheckBox)controls[l]).Text;
 							}
 							break;
 						}
-						if (controls[k] is LinkButton)
+						if (controls[l] is LinkButton)
 						{
-							text += ((LinkButton)controls[k]).Text;
+							text += ((LinkButton)controls[l]).Text;
 						}
 					}
 				}
 				else
 				{
-					text += gridViewRow.Cells[j].Text;
+					text += gridViewRow.Cells[k].Text;
 				}
 				text += "</td>";
 			}
@@ -283,25 +309,25 @@ public class Utilidades
 			Response.Write("</strong></td>");
 		}
 		Response.Write("</tr>\n");
-		for (int i = 0; i < view.Rows.Count; i++)
+		for (int j = 0; j < view.Rows.Count; j++)
 		{
 			Response.Write("<tr>\n");
-			for (int j = 0; j < view.Columns.Count; j++)
+			for (int k = 0; k < view.Columns.Count; k++)
 			{
 				Response.Write("<td>");
-				if (view.Columns[j].GetType() == typeof(HyperLinkField))
+				if (view.Columns[k].GetType() == typeof(HyperLinkField))
 				{
-					HyperLink hyperLink = (HyperLink)view.Rows[i].Cells[j].Controls[0];
+					HyperLink hyperLink = (HyperLink)view.Rows[j].Cells[k].Controls[0];
 					Response.Write(hyperLink.Text);
 				}
-				else if (view.Columns[j].GetType() == typeof(CheckBoxField))
+				else if (view.Columns[k].GetType() == typeof(CheckBoxField))
 				{
-					CheckBox checkBox = (CheckBox)view.Rows[i].Cells[j].Controls[0];
+					CheckBox checkBox = (CheckBox)view.Rows[j].Cells[k].Controls[0];
 					Response.Write(checkBox.Checked ? "X" : "");
 				}
 				else
 				{
-					Response.Write(view.Rows[i].Cells[j].Text);
+					Response.Write(view.Rows[j].Cells[k].Text);
 				}
 				Response.Write("</td>");
 			}
