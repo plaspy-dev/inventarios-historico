@@ -91,7 +91,7 @@ function inicio() {
     $('.float').numeric({ format: "0.########", buttons: false, minValue: 0 });
 
     // dinero
-    $('.dinero').numeric({ format: "#,000.##", buttons: false, minValue: 0 });
+    $('.dinero').numeric({ format: "#,000.########", buttons: false, minValue: 0 });
 
     $('img[src*="menubg.jpg"]').hover(function() {
         $(this).attr("src", $(this).attr("src").replace("menubg", "menuover"));

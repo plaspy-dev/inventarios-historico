@@ -21,7 +21,7 @@
                         dataFilter: function(data) { return data; },
                         success: function(data) {
                             response($.map(data.d, function(item) {
-                                item.label = item.ProductoCompleto;
+                                item.label = item.ProductoCompleto;x
                                 return item;
                             }))
                         },

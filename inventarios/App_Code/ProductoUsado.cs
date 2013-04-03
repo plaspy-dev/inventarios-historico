@@ -112,6 +112,16 @@ public class ProductoUsado
         return resultado.Sum(p => p.cantidad);
     }
 
+    public Decimal GetTotalProductos()
+    {
+        return pProductos.Sum(p => p.cantidad);
+    }
+
+    public Decimal GetCostoTotal()
+    {
+        return pProductos.Sum(p => p.CostoTotal);
+    }
+
     public Decimal GetProductoUsado(string producto, string lote, string fecha)
     {
         var resultado = from p in pProductos

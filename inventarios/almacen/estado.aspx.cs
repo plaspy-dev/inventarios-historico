@@ -10,12 +10,31 @@ using SDG.Componentes;
 
 public partial class almacen_estado : System.Web.UI.Page
 {
+    protected class Kardex {
+
+        protected decimal _entradas = 0;
+        protected decimal _salidas = 0;
+        protected decimal _saldos = 0;
+
+        public string fecha { get; set; }
+        public bool bEntradas = false;
+        public decimal entradas { get { return _entradas; } set { bEntradas = true; _entradas = value; } }
+        public bool bSalidas = false;
+        public decimal salidas { get { return _salidas; } set { bSalidas = true; _salidas= value; } }
+        public bool bSaldos = false;
+        public decimal saldo { get { return _saldos; } set { bSaldos = true; _saldos= value; } }
+
+        public Kardex(string szFecha) {
+            fecha = szFecha;
+        }
+    }
+
     protected void Page_Load(object sender, EventArgs e)
     {
         ((ing)Master).CheckAlmacen();
 
-        Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !CTodosAlmacenes.Checked;
-        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !CTodosAlmacenes.Checked;
+        Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !CTodosAlmacenes.Checked && CConfiguracion.GetConfiguracion().nUbicacion!=0;
+        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !CTodosAlmacenes.Checked && CConfiguracion.GetConfiguracion().nEstado!=0;
         Utilidades.GetGridColumn(GResultados, "Almacén").Visible= CTodosAlmacenes.Checked && CAlmacen.Checked;
 
         SKardex.SelectCommand = String.Format(SKardex.SelectCommand, ((ing)Master).GetAlmacen());
@@ -68,28 +87,43 @@ public partial class almacen_estado : System.Web.UI.Page
 
         if(!IsPostBack) {
 
+            CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
+
+            // costo
+            Utilidades.GetGridColumn(GResultados, "Costo").Visible = configuracion.nCosto != 0;
+
+            // vencimiento
+            TVence.Visible = LVence.Visible = configuracion.nVence != 0;
+
+            // ubicacion
+            DUbicacion.Visible = LUbicacion.Visible = configuracion.nUbicacion != 0;
+
+            // estado
+            DEstado.Visible = LEstado.Visible = configuracion.nEstado != 0;
+
             CAlmacen.Visible= CTodosAlmacenes.Visible = Usuario.GetUsuario()["almacenes"].IndexOf(",") != -1 || Usuario.GetUsuario()["almacenes"] == "-2";
 
             if(!string.IsNullOrEmpty(Request.QueryString["pid"])) { // Kardex
 
+                Utilidades.GetGridColumn(GKardex, "Costo U.E.").Visible =
+                Utilidades.GetGridColumn(GKardex, "Costo T.E.").Visible =
+                Utilidades.GetGridColumn(GKardex, "Costo U.S.").Visible =
+                Utilidades.GetGridColumn(GKardex, "Costo T.S.").Visible =
+                Utilidades.GetGridColumn(GKardex, "Costo U.").Visible =
+                Utilidades.GetGridColumn(GKardex, "Costo T.").Visible =
+                chart_costos.Visible = 
+                configuracion.nCosto != 0;
+
+                TDesde.Text = DateTime.Now.AddDays(-DateTime.Now.Day+1).ToShortDateString();
+                THasta.Text = DateTime.Now.ToShortDateString();
+
                 PKardex.Visible = true;
                 PBuscar.Visible = false;
                 Page.Title = "Kardex de " + Request.QueryString["n"];
-                if(!string.IsNullOrEmpty(Request.QueryString["l"]) && !string.IsNullOrEmpty(Request.QueryString["v"])) {
+                if(!string.IsNullOrEmpty(Request.QueryString["l"]) && !string.IsNullOrEmpty(Request.QueryString["v"])) 
                     Page.Title +=" (" + Request.QueryString["l"] + ") " + Request.QueryString["v"];
-                }
-                GKardex.DataBind();
-                Decimal saldo = 0;
-                for(int i=GKardex.Rows.Count-1; i>=0; i--) {
-                    try
-                    {
-                        saldo -= Convert.ToDecimal(GKardex.Rows[i].Cells[4].Text);
-                    } catch {}
-                    try {
-                        saldo += Convert.ToDecimal(GKardex.Rows[i].Cells[3].Text);
-                    } catch { }
-                    GKardex.Rows[i].Cells[5].Text= saldo.ToString();
-                }
+
+                BActualizar_Click(sender, e);
             } else {
                 PKardex.Visible = false;
                 PBuscar.Visible = true;
@@ -97,15 +131,28 @@ public partial class almacen_estado : System.Web.UI.Page
             }
         }
     }
+
+    protected Kardex GetFecha(List<Kardex> grafica, string fecha) {
+
+        Kardex kardex = null;
+        List<Kardex> resultado = (from p in grafica where p.fecha==fecha select p).ToList();
+        if (resultado.Count == 0)
+        {
+            kardex = new Kardex(fecha);
+            grafica.Add(kardex);
+        } else kardex = resultado[0];
+        return kardex;
+    }
+
     protected void BBuscar_Click(object sender, EventArgs e)
     {
         GResultados.DataSourceID = CDetallado.Checked ? "SResultados1" : "SResultados";
-        
-        Utilidades.GetGridColumn(GResultados, "Lote").Visible = CDetallado.Checked;
-        Utilidades.GetGridColumn(GResultados, "Vence").Visible = CDetallado.Checked;
+
+        Utilidades.GetGridColumn(GResultados, "Lote").Visible = CDetallado.Checked && CConfiguracion.GetConfiguracion().nLote!=0;
+        Utilidades.GetGridColumn(GResultados, "Vence").Visible = CDetallado.Checked && CConfiguracion.GetConfiguracion().nVence!=0;
 
         if(Utilidades.GetRowsCount(GResultados, LTotal)>0) {
-
+            ((ing)Master).SetPrintFile("estado.html");
         }
     }
     protected void GKardex_RowDataBound(object sender, GridViewRowEventArgs e)
@@ -133,6 +180,10 @@ public partial class almacen_estado : System.Web.UI.Page
                     link.Text = "Transformación No. " + id;
                     link.NavigateUrl = "~/almacen/transformaciones.aspx?tri=" + id;
                     break;
+                case "-1":
+                    e.Row.Cells[0].Text = TDesde.Text;
+                    e.Row.Cells[1].Text = "Corte a " + TDesde.Text;
+                    return;
             }
             e.Row.Cells[1].Controls.Add(link);
         }
@@ -168,6 +219,8 @@ public partial class almacen_estado : System.Web.UI.Page
             return;
 
         producto.ubicacion = Convert.ToInt32(DNuevaUbicacion.SelectedValue);
+        producto.GetCostoPromedio(((ing)Master).GetAlmacen());
+
         if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
             return;
 
@@ -279,6 +332,8 @@ public partial class almacen_estado : System.Web.UI.Page
             return;
 
         producto.estado= Convert.ToInt32(DNuevoEstado.SelectedValue);
+        producto.GetCostoPromedio(((ing)Master).GetAlmacen());
+
         if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
             return;
 
@@ -286,5 +341,126 @@ public partial class almacen_estado : System.Web.UI.Page
         DEstado.Visible = false;
         ViewState["producto"] = null;
         GResultados.SelectedIndex = -1;
+    }
+    protected void BActualizar_Click(object sender, EventArgs e)
+    {
+        if (!IsValid)
+            return;
+
+        GKardex.DataBind();
+        ((ing)Master).SetPrintFile("kardex.html");
+
+        LSalidas.Text = "";
+        LCostos.Text = "";
+        LEntradas.Text = "";
+        LSaldos.Text = "";
+
+        Decimal saldo = 0, entradas = 0, salidas = 0, costosaldo = 0, costoentradas = 0, costosalidas = 0, costop = 0;
+
+        int columnafecha = Utilidades.GetGridColumnIndex(GKardex, "Fecha");
+        int columnasalida = Utilidades.GetGridColumnIndex(GKardex, "Salida");
+        int columnaentrada = Utilidades.GetGridColumnIndex(GKardex, "Entrada");
+        int columnasaldo = Utilidades.GetGridColumnIndex(GKardex, "Saldo");
+        int columnaCostoUEntrada = Utilidades.GetGridColumnIndex(GKardex, "Costo U.E.");
+        int columnaCostoTEntrada = Utilidades.GetGridColumnIndex(GKardex, "Costo T.E.");
+        int columnaCostoTSalida = Utilidades.GetGridColumnIndex(GKardex, "Costo T.S.");
+        int columnaCostoTSaldo = Utilidades.GetGridColumnIndex(GKardex, "Costo T.");
+        int columnaCostoPromedio = Utilidades.GetGridColumnIndex(GKardex, "Costo U.");
+        int columnaCostoUSalida = Utilidades.GetGridColumnIndex(GKardex, "Costo U.S.");
+
+        List<Kardex> grafica = new List<Kardex>();
+
+        Decimal saldoa = 0, costosaldoa = 0;
+
+        if (new Producto(Request.QueryString["pid"]).GetAcumulado(((ing)Master).GetAlmacen(), CConector.GetMySQLDateFormat(TDesde.Text)
+            , ref costosaldoa, ref saldoa, ref costop))
+        {
+            int index = GKardex.Rows.Count - 1;
+            GKardex.Rows[index].Cells[columnaentrada].Text = saldoa.ToString();
+            GKardex.Rows[index].Cells[columnaCostoUEntrada].Text = string.Format("{0:C}", costop);
+            GKardex.Rows[index].Cells[columnaCostoTEntrada].Text = string.Format("{0:C}", costosaldoa);
+            costop = 0;
+        }
+
+        for (int i = GKardex.Rows.Count - 1; i >= 0; i--)
+        {
+
+            string fecha = GKardex.Rows[i].Cells[columnafecha].Text;
+            try
+            {
+                decimal valor = Convert.ToDecimal(GKardex.Rows[i].Cells[columnasalida].Text);
+                salidas += valor;
+                saldo -= valor;
+
+                GetFecha(grafica, fecha).salidas += valor;
+
+                // calculamos el valor a que salio el producto.
+                valor = costop * valor;
+
+                GKardex.Rows[i].Cells[columnaCostoUSalida].Text = string.Format("{0:C}", costop);
+                GKardex.Rows[i].Cells[columnaCostoTSalida].Text = string.Format("{0:C}", valor);
+
+                costosalidas += valor;
+                costop = costosaldo -= valor;
+            }
+            catch { }
+            try
+            {
+                decimal valor = Convert.ToDecimal(GKardex.Rows[i].Cells[columnaentrada].Text);
+                entradas += valor;
+                saldo += valor;
+
+                GetFecha(grafica, fecha).entradas += valor;
+
+                valor = decimal.Parse(GKardex.Rows[i].Cells[columnaCostoTEntrada].Text, NumberStyles.Currency);
+                costoentradas += valor;
+                costosaldo += valor;
+
+                LCostos.Text += string.Format(",['{0}', {1}]"
+                    , fecha
+                    , decimal.Parse(GKardex.Rows[i].Cells[columnaCostoUEntrada].Text, NumberStyles.Currency).ToString(CultureInfo.InvariantCulture));
+            }
+            catch { }
+
+            GetFecha(grafica, fecha).saldo = saldo;
+
+            if (saldo > 0)
+                costop = costosaldo / saldo;
+            GKardex.Rows[i].Cells[columnasaldo].Text = saldo.ToString();
+            GKardex.Rows[i].Cells[columnaCostoTSaldo].Text = string.Format("{0:C}", costosaldo);
+            GKardex.Rows[i].Cells[columnaCostoPromedio].Text = string.Format("{0:C}", costop);
+        }
+
+        for (int i = 0; i < grafica.Count; i++)
+        {
+
+            Kardex kardex = grafica[i];
+            if (kardex.bSalidas)
+                LSalidas.Text += string.Format(",['{0}', {1}]"
+                    , kardex.fecha
+                    , kardex.salidas.ToString(CultureInfo.InvariantCulture)
+                    );
+
+            if (kardex.bEntradas)
+                LEntradas.Text += string.Format(",['{0}', {1}]"
+                    , kardex.fecha
+                    , kardex.entradas.ToString(CultureInfo.InvariantCulture)
+                    );
+            if (kardex.bSaldos)
+                LSaldos.Text += string.Format(",['{0}', {1}]"
+                    , kardex.fecha
+                    , kardex.saldo.ToString(CultureInfo.InvariantCulture)
+                    );
+        }
+
+        // LCostos.Text = ",['2012/02/02', 15.15],['2012/02/01', 16.15]";
+        GKardex.FooterRow.Cells[Utilidades.GetGridColumnIndex(GKardex, "Concepto")].Text = "Total sin acumulado";
+        GKardex.FooterRow.Cells[columnaentrada].Text = string.Format("{0:F}", entradas - saldoa);
+        GKardex.FooterRow.Cells[columnasalida].Text = string.Format("{0:F}", salidas);
+        GKardex.FooterRow.Cells[columnaCostoTEntrada].Text = string.Format("{0:C}", costoentradas - costosaldoa);
+        GKardex.FooterRow.Cells[columnaCostoTSalida].Text = string.Format("{0:C}", costosalidas);
+        //GKardex.FooterRow.Cells[columnasaldo].Text = saldo.ToString();
+        //GKardex.FooterRow.Cells[columnaCostoPromedio].Text = costop.ToString();
+        //GKardex.FooterRow.Cells[columnaCostoTSaldo].Text = string.Format("{0:C}", costosaldo);
     }
 }

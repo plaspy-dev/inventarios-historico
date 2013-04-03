@@ -17,6 +17,25 @@ public partial class almacen_transformaciones : System.Web.UI.Page
 
         if (!IsPostBack)
         {
+            CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
+
+            // lote
+            LLoteA.Visible = TLote.Visible = LLote.Visible = configuracion.nLote != 0;
+            LLoteA2.Visible = TLote2.Visible = LLote2.Visible = configuracion.nLote != 0;
+
+            // vencimiento
+            LVencimientoA.Visible = TVencimiento.Visible = LVencimiento.Visible = configuracion.nVence != 0;
+            LVencimientoA2.Visible = TVencimiento2.Visible = LVencimiento2.Visible = configuracion.nVence != 0;
+
+            // serial
+            LSerialA.Visible = TSerial.Visible = LSerial.Visible = configuracion.nSerial != 0;
+            LSerialA2.Visible = TSerial2.Visible = LSerial2.Visible = configuracion.nSerial != 0;
+
+            // estado
+            LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.nEstado != 0;
+            LEstadoA2.Visible = DEstado2.Visible = LEstado2.Visible = configuracion.nEstado != 0;
+
+
             TNumero.Focus();
             ViewState["almacen"] = ((ing)Master).GetAlmacen();
             CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
@@ -111,10 +130,10 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         string[] producto = TProductoID.Text.Split(';');
         Producto pProducto = new Producto(producto[0]);
 
-        LVencimiento.CssClass = TVencimiento.CssClass = pProducto.nVence > 0 ? "" : "hide";
-        LLote.CssClass = TLote.CssClass = pProducto.nLote > 0 ? "" : "hide";
-        LEstado.CssClass = TEstado.CssClass = pProducto.nEstado > 0 ? "" : "hide";
-        LSerial.CssClass = TSerial.CssClass = pProducto.nSerial > 0 ? "" : "hide";
+        LVencimientoA.CssClass = LVencimiento.CssClass = TVencimiento.CssClass = pProducto.nVence > 0 ? "" : "hide";
+        LLoteA.CssClass= LLote.CssClass = TLote.CssClass = pProducto.nLote > 0 ? "" : "hide";
+        LEstadoA.CssClass= LEstado.CssClass = TEstado.CssClass = pProducto.nEstado > 0 ? "" : "hide";
+        LSerialA.CssClass = LSerial.CssClass = TSerial.CssClass = pProducto.nSerial > 0 ? "" : "hide";
 
         if (CAutomatico.Checked)
             TSerial.CssClass = TEstado.CssClass = TLote.CssClass = TVencimiento.CssClass = "hide";
@@ -122,7 +141,6 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         TVencimiento.CssClass += " fecha";
         TEstado.CssClass += " tlote";
         TSerial.CssClass += " tlote";
-        
 
         REntero.Enabled = pProducto.nNumero == 1;
         RDecimal.Enabled = pProducto.nNumero != 1;
@@ -215,6 +233,7 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         {
             Producto info = (Producto)productos[i];
             info.Ingreso = true;
+            info.GetCostoPromedio(((ing)Master).GetAlmacen());
 
             Query salida = info.GetQuery("transformacion_salida" + ((ing)Master).GetAlmacen());
 

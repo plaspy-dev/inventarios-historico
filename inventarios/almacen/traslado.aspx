@@ -43,10 +43,10 @@
         $("#<%= CAutomatico.ClientID %>").change(function() {
             if($(this).is(':checked')) {    
                 $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").hide();
-                $("#automatico1,#automatico2,#serialautomatico,#estadoautomatico").show();
+                $("#<%= LLoteA.ClientID %>,#<%= LVencimientoA.ClientID %>,#<%= LSerialA.ClientID %>,#<%= LEstadoA.ClientID %>").show();
             } else { 
                 $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").show();
-                $("#automatico1,#automatico2,#serialautomatico,#estadoautomatico").hide();
+                $("#<%= LLoteA.ClientID %>,#<%= LVencimientoA.ClientID %>,#<%= LSerialA.ClientID %>,#<%= LEstadoA.ClientID %>").hide();
             }
             $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>,#<%= LSerial.ClientID %>,#<%= LEstado.ClientID %>").show();
             $("#<%= TProductoID.ClientID %>").val("");
@@ -105,13 +105,13 @@
                     $("#<%= TVencimiento.ClientID %>").val("");
                     $("#<%= TSerial.ClientID %>").val("");
                     $("#<%= TEstado.ClientID %>").val("");
-                    ui.item.nLote>0 ? $("#automatico1,#<%= LLote.ClientID %>").show() : $("#automatico1,#<%= LLote.ClientID %>").hide();
-                    ui.item.nVence>0 ? $("#automatico2,#<%= LVencimiento.ClientID %>").show() : $("#automatico2,#<%= LVencimiento.ClientID %>").hide();
-                    ui.item.nSerial>0 ? $("#serialautomatico,#<%= LSerial.ClientID %>").show() : $("#serialautomatico,#<%= LSerial.ClientID %>").hide();
-                    ui.item.nEstado>0 ? $("#estadoautomatico,#<%= LEstado.ClientID %>").show() : $("#estadoautomatico,#<%= LEstado.ClientID %>").hide();
+                    ui.item.nLote>0 ? $("#<%= LLoteA.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= LLoteA.ClientID %>,#<%= LLote.ClientID %>").hide();
+                    ui.item.nVence>0 ? $("#<%= LVencimientoA.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= LVencimientoA.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
+                    ui.item.nSerial>0 ? $("#<%= LSerialA.ClientID %>,#<%= LSerial.ClientID %>").show() : $("#<%= LSerialA.ClientID %>,#<%= LSerial.ClientID %>").hide();
+                    ui.item.nEstado>0 ? $("#<%= LEstadoA.ClientID %>,#<%= LEstado.ClientID %>").show() : $("#<%= LEstadoA.ClientID %>,#<%= LEstado.ClientID %>").hide();
                 }
-                ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
-                ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
+                try { ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1); } catch (e) {}
+                try { ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1); } catch (e) {}
                 return false;
             }
         });
@@ -130,10 +130,10 @@
             <td>Número</td>
             <td><asp:TextBox runat="server" ID="TNumero" CssClass="likenumero"></asp:TextBox></td>
             <td>Destino
-            <asp:RequiredFieldValidator ControlToValidate="DAlmacen" ErrorMessage="Por favor seleccione un destino." InitialValue="-1" ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <asp:RequiredFieldValidator ControlToValidate="DDestino" ErrorMessage="Por favor seleccione un destino." InitialValue="-1" ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
             </td>
             <td>
-                <asp:DropDownList ID="DAlmacen" runat="server" AppendDataBoundItems="true" 
+                <asp:DropDownList ID="DDestino" runat="server" AppendDataBoundItems="true" 
                     DataSourceID="SAlmacen" DataTextField="nombre" DataValueField="id">
                     <asp:ListItem Text="(Ninguno)" Value="-1"></asp:ListItem>
                     <asp:ListItem Text="(Ajustes)" Value="0"></asp:ListItem>
@@ -173,17 +173,17 @@
         <tr>
             <td class="tdl"><asp:CheckBox runat="server" ID="CAutomatico" Text="Automático" Checked="true" /></td>
             <td align="right"><asp:Label runat="server" ID="LLote" Text="Lote: "></asp:Label></td>
-            <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><span id="automatico1">Automático</span></td>
+            <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LLoteA" Text="Automático"></asp:Label></td>
             <td align="right"><asp:Label runat="server" ID="LVencimiento" Text="Vence: "></asp:Label></td>
-            <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><span id="automatico2">Automático</span>
+            <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><asp:Label runat="server" ID="LVencimientoA" Text="Automático"></asp:Label>
             </td>
         </tr>
         <tr>
-            <td class="tdl">&nbsp;</td>
+            <td class="tdl"></td>
             <td align="right"><asp:Label runat="server" ID="LSerial" Text="Serial:"></asp:Label></td>
-            <td><asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><span id="serialautomatico">Automático</span></td>
+            <td><asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LSerialA" Text="Automático"></asp:Label></td>
             <td align="right"><asp:Label runat="server" ID="LEstado" Text="Estado:"></asp:Label></td>
-            <td class="tdr"><asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><span id="estadoautomatico">Automático</span></td>
+            <td class="tdr"><asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LEstadoA" Text="Automático"></asp:Label></td>
         </tr>
         <tr class="GridAltRow">
             <td class="tdl"><asp:HiddenField runat="server" ID="HProductos" EnableViewState="false" /><asp:HiddenField runat="server" ID="HUsado" /></td>
