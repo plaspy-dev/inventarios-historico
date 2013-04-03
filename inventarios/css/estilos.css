@@ -111,7 +111,7 @@ table .tablecollapse {
     text-align: right;
     background: white url('../img/cal.gif') left center no-repeat;
 }
-.float 
+.float,.dinero
 {
     width: 100px;
     text-align: right;

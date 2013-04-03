@@ -82,7 +82,7 @@ public partial class administrador_almacenes : System.Web.UI.Page
                 return;
             if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE entrada_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	entrada BIGINT UNSIGNED NOT NULL, producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,szSerial VARCHAR(255) DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,estado BIGINT NOT NULL DEFAULT 0,	ingreso DATETIME,   costo DECIMAL(60,15) DEFAULT 0, traslado_items BIGINT UNSIGNED,	FOREIGN KEY (entrada) REFERENCES entrada0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
                 return;
-            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE estado0 (	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE UNSIGNED,	lote VARCHAR(255),	vence DATE,szSerial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,estado BIGINT NOT NULL DEFAULT 0,	modificacion DATETIME, costo DECIMAL(60,15) DEFAULT 0,	cantidadacumulada DOUBLE DEFAULT 0, FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(producto,lote,vence,szSerial, ubicacion,estado)) ENGINE=InnoDB;", HId.Value)) == -1)
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE estado0 (	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE UNSIGNED,	lote VARCHAR(255),	vence DATE,szSerial VARCHAR(255) NOT NULL DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,estado BIGINT NOT NULL DEFAULT 0,	modificacion DATETIME, costo DECIMAL(60,15) DEFAULT 0,	costoacumulado DECIMAL(60,15) DEFAULT 0, FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(producto,lote,vence,szSerial, ubicacion,estado)) ENGINE=InnoDB;", HId.Value)) == -1)
                 return;
             if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE traslado0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	envio DATE,		llegada DATE,	observaciones TEXT,	destino BIGINT UNSIGNED,	entrada BIGINT UNSIGNED,	estado INT,	documento VARCHAR(255), PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
                 return;
@@ -203,7 +203,7 @@ public partial class administrador_almacenes : System.Web.UI.Page
                 conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_salida0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
                 conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_entrada0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
                 conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 DROP cantidadacumulada;", HId.Value));
-
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 ADD costoacumulado DECIMAL(60,15) DEFAULT 0;", HId.Value));
             }
         }
 
@@ -240,6 +240,7 @@ public partial class administrador_almacenes : System.Web.UI.Page
         conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_salida0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
         conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_entrada0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
         conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 DROP cantidadacumulada;", HId.Value));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 ADD costoacumulado DECIMAL(60,15) DEFAULT 0;", HId.Value));
 
         ((ing)Master).SetResultado("Almacenes actualizados");
     }

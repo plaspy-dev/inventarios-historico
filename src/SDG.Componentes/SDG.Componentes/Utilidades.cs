@@ -156,24 +156,31 @@ public class Utilidades
 		text += "<tr>";
 		for (int i = 0; i < grid.Columns.Count; i++)
 		{
-			text = text + "<td><b>" + grid.Columns[i].HeaderText + "</b></td>";
+			if (grid.Columns[i].Visible)
+			{
+				text = text + "<td><b>" + grid.Columns[i].HeaderText + "</b></td>";
+			}
 		}
 		text += "</tr>";
-		for (int j = 0; j < grid.Rows.Count; j++)
+		for (int i = 0; i < grid.Rows.Count; i++)
 		{
-			GridViewRow gridViewRow = grid.Rows[j];
+			GridViewRow gridViewRow = grid.Rows[i];
 			text += "<tr>";
-			for (int k = 0; k < gridViewRow.Cells.Count; k++)
+			for (int j = 0; j < gridViewRow.Cells.Count; j++)
 			{
-				text += "<td>";
-				if (gridViewRow.Cells[k].HasControls())
+				if (!grid.Columns[j].Visible)
 				{
-					ControlCollection controls = gridViewRow.Cells[k].Controls;
-					for (int l = 0; l < controls.Count; l++)
+					continue;
+				}
+				text = ((grid.Columns[j].ItemStyle.HorizontalAlign == HorizontalAlign.Right) ? (text + "<td align=right>") : ((grid.Columns[j].ItemStyle.HorizontalAlign != HorizontalAlign.Center) ? (text + "<td>") : (text + "<td align=center>")));
+				if (gridViewRow.Cells[j].HasControls())
+				{
+					ControlCollection controls = gridViewRow.Cells[j].Controls;
+					for (int k = 0; k < controls.Count; k++)
 					{
-						if (controls[l] is TextBox)
+						if (controls[k] is TextBox)
 						{
-							string text2 = ((TextBox)controls[l]).Text;
+							string text2 = ((TextBox)controls[k]).Text;
 							if (text2.Length == 0)
 							{
 								text2 = "&nbsp;";
@@ -181,24 +188,28 @@ public class Utilidades
 							text += text2;
 							break;
 						}
-						if (controls[l] is CheckBox)
+						if (controls[k] is CheckBox)
 						{
-							text = ((!((CheckBox)controls[l]).Checked) ? (text + "_ ") : (text + "X "));
-							if (((CheckBox)controls[l]).Text.Length > 0)
+							text = ((!((CheckBox)controls[k]).Checked) ? (text + "_ ") : (text + "X "));
+							if (((CheckBox)controls[k]).Text.Length > 0)
 							{
-								text += ((CheckBox)controls[l]).Text;
+								text += ((CheckBox)controls[k]).Text;
 							}
 							break;
 						}
-						if (controls[l] is LinkButton)
+						if (controls[k] is LinkButton)
 						{
-							text += ((LinkButton)controls[l]).Text;
+							text += ((LinkButton)controls[k]).Text;
+						}
+						else if (controls[k] is HyperLink)
+						{
+							text += ((HyperLink)controls[k]).Text;
 						}
 					}
 				}
 				else
 				{
-					text += gridViewRow.Cells[k].Text;
+					text += gridViewRow.Cells[j].Text;
 				}
 				text += "</td>";
 			}
@@ -211,6 +222,10 @@ public class Utilidades
 	{
 		for (int i = 0; i < controles.Count; i++)
 		{
+			if (!controles[i].Visible)
+			{
+				continue;
+			}
 			string iD = controles[i].ID;
 			string newValue = "";
 			if (controles[i].Controls.Count > 0 && controles[i].GetType() != typeof(GridView) && controles[i].GetType() != typeof(CheckBoxList))
@@ -309,25 +324,25 @@ public class Utilidades
 			Response.Write("</strong></td>");
 		}
 		Response.Write("</tr>\n");
-		for (int j = 0; j < view.Rows.Count; j++)
+		for (int i = 0; i < view.Rows.Count; i++)
 		{
 			Response.Write("<tr>\n");
-			for (int k = 0; k < view.Columns.Count; k++)
+			for (int j = 0; j < view.Columns.Count; j++)
 			{
 				Response.Write("<td>");
-				if (view.Columns[k].GetType() == typeof(HyperLinkField))
+				if (view.Columns[j].GetType() == typeof(HyperLinkField))
 				{
-					HyperLink hyperLink = (HyperLink)view.Rows[j].Cells[k].Controls[0];
+					HyperLink hyperLink = (HyperLink)view.Rows[i].Cells[j].Controls[0];
 					Response.Write(hyperLink.Text);
 				}
-				else if (view.Columns[k].GetType() == typeof(CheckBoxField))
+				else if (view.Columns[j].GetType() == typeof(CheckBoxField))
 				{
-					CheckBox checkBox = (CheckBox)view.Rows[j].Cells[k].Controls[0];
+					CheckBox checkBox = (CheckBox)view.Rows[i].Cells[j].Controls[0];
 					Response.Write(checkBox.Checked ? "X" : "");
 				}
 				else
 				{
-					Response.Write(view.Rows[j].Cells[k].Text);
+					Response.Write(view.Rows[i].Cells[j].Text);
 				}
 				Response.Write("</td>");
 			}

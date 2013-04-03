@@ -22,6 +22,7 @@
         });
         addFunctionToStart(function() {
             addDialog("#<%= PAlertas.ClientID %>", "#dAlertas", true);
+            $("#<%= HGuardar.ClientID %>,#<%= HImprimir.ClientID %>").attr("target", "_blank");
             if ($("#<%= LAlerta.ClientID %>").text().length > 0) {
 
                 $("#dalerta")
@@ -34,7 +35,7 @@
                         closeOnEscape: true,
                         buttons: { "Aceptar": function() { $(this).dialog("close"); } }
                     });
-        }
+            }
         });
     </script>
     <asp:ContentPlaceHolder id="head" runat="server">
@@ -96,6 +97,12 @@
                                     <asp:LinkButton ID="HAlertas" runat="server" onclick="HAlertas_Click" CausesValidation="false"></asp:LinkButton>
                                 </li>
                             </span>
+                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
+                                <asp:HyperLink ID="HGuardar" runat="server" Visible="false">Guardar</asp:HyperLink>
+                            </li>
+                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
+                                <asp:HyperLink ID="HImprimir" runat="server" Visible="false">Imprimir</asp:HyperLink>
+                            </li>
                             <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
                                 <asp:HyperLink ID="HContrasena" runat="server" NavigateUrl="~/contrasena.aspx">Contraseña</asp:HyperLink>
                             </li>

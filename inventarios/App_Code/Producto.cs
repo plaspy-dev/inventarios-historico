@@ -48,6 +48,10 @@ public class Producto
     public int IdGrid { set; get; }
     [XmlIgnore]
     public Producto pProductoAntiguo = null;
+    [XmlIgnore]
+    public Decimal CostoTotal {
+        get { return cantidad*Costo; }
+    }
 
     [XmlIgnore]
     public string szEstado { get {
@@ -403,36 +407,85 @@ public class Producto
         serial=_serial;
     }
 
-    public bool UpdateCosto(Conector conector, string almacen, string proveedor)
+    public bool GetAcumulado(string almacen, string desde, ref decimal costoacumulado, ref decimal saldo, ref decimal costop)
     {
-        string query = string.Format("UPDATE estado{0} SET costo=(SELECT SUM(cantidad*costo)/SUM(cantidad) FROM entrada_items{0} WHERE producto={1} AND ingreso IS NOT NULL)"
-                + " WHERE producto={1};"
-            , almacen, id);
+        // iniciamos las variables
+        CConector conector = new CConector();
+        string query = "SET @i=0,@costoacumulado=0,@costop=0,@saldo=0;";
         if (conector.QueryMod(query) == -1)
             return false;
 
-        DeleteCostoPromedio(almacen);
+        // establecemos el costo promedio
+        query = string.Format("SELECT * FROM ("
+            + " SELECT @i:=@i+1 AS c,@costoacumulado:=@costoacumulado+IFNULL(costot,@costop*cantidad) AS costoacumulado,@saldo:=@saldo+cantidad AS saldo,@costop:=@costoacumulado/@saldo AS costop FROM ("
+            + " (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM entrada_items{0} WHERE producto={1} AND DATE(ingreso)<{2} )"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM traslado_items{0} WHERE producto={1} AND DATE(ingreso)<{2} )"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM salida_items{0} WHERE producto={1} AND DATE(ingreso)<{2})"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM transformacion_salida{0} WHERE producto={1} AND DATE(ingreso)<{2})"
+            + " UNION ALL (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM transformacion_entrada{0} WHERE producto={1} AND DATE(ingreso)<{2})"
+            + " ORDER BY ingreso) AS t"
+            + "  ) AS b WHERE c=@i;"
+             , almacen, id, Query.GetValor(desde));
+        MySqlDataReader reader= conector.Query(query);
+        if (reader == null)
+            return false;
+        if(reader.Read()) {
+            costoacumulado = Convert.ToDecimal(reader["costoacumulado"]);
+            costop = Convert.ToDecimal(reader["costop"]);
+            saldo = Convert.ToDecimal(reader["saldo"]);
+        }
+        return true;
+    }
 
-        if (proveedor!="-1") {
-            // actualizamos el costo del producto
-            query = string.Format("UPDATE producto SET costo={1} WHERE id={0};"
-                    , id, Costo.ToString(CultureInfo.InvariantCulture));
+    public bool RecalcularCosto(Conector conector, string almacen) {
+
+        // iniciamos las variables
+        string query = "SET @i=0,@costoacumulado=0,@costop=0,@saldo=0;";
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        // establecemos el costo promedio
+        query = string.Format("SELECT * FROM ("
+            + " SELECT @i:=@i+1 AS c,@costoacumulado:=@costoacumulado+IFNULL(costot,@costop*cantidad) AS costoacumulado,@saldo:=@saldo+cantidad AS saldo,@costop:=@costoacumulado/@saldo AS costop FROM ("
+            + " (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM entrada_items{0} WHERE producto={1} )"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM traslado_items{0} WHERE producto={1} )"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM salida_items{0} WHERE producto={1})"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM transformacion_salida{0} WHERE producto={1})"
+            + " UNION ALL (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM transformacion_entrada{0} WHERE producto={1})"
+            + " ORDER BY ingreso) AS t"
+            + "  ) AS b WHERE c=@i;"
+             , almacen, id);
+        if (conector.Query(query) == null)
+            return false;
+
+        query = string.Format("UPDATE estado{0} SET costo=@costop,costoacumulado=@costoacumulado WHERE producto={1};"
+             , almacen, id);
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        return true;
+    }
+
+    public bool UpdateCosto(Conector conector, string almacen, string proveedor)
+    {        
+        // actualizamos el costo del producto
+        string query = string.Format("UPDATE producto SET costo={1} WHERE id={0};"
+                , id, Costo.ToString(CultureInfo.InvariantCulture));
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        if (!string.IsNullOrEmpty(proveedor))
+        {
+            query = string.Format("UPDATE costo_proveedor SET costo={2},fecha=SYSDATE() WHERE producto={0} AND proveedor={1};"
+                , id, proveedor, Costo.ToString(CultureInfo.InvariantCulture));
             if (conector.QueryMod(query) == -1)
                 return false;
-
-            if (!string.IsNullOrEmpty(proveedor))
-            {
-                query = string.Format("UPDATE costo_proveedor SET costo={2},fecha=SYSDATE() WHERE producto={0} AND proveedor={1};"
-                    , id, proveedor, Costo.ToString(CultureInfo.InvariantCulture));
-                if (conector.QueryMod(query) == -1)
-                    return false;
-                query = string.Format("INSERT IGNORE INTO costo_proveedor (producto,proveedor,costo,fecha) VALUES ({0},{1}, {2},SYSDATE());"
-                    , id, proveedor, Costo.ToString(CultureInfo.InvariantCulture));
-                if (conector.QueryMod(query) == -1)
-                    return false;
-            }
-            DeleteCosto(proveedor);
+            query = string.Format("INSERT IGNORE INTO costo_proveedor (producto,proveedor,costo,fecha) VALUES ({0},{1}, {2},SYSDATE());"
+                , id, proveedor, Costo.ToString(CultureInfo.InvariantCulture));
+            if (conector.QueryMod(query) == -1)
+                return false;
         }
+        DeleteCosto(proveedor);
         return true;
     }
 
@@ -463,6 +516,12 @@ public class Producto
         if (conector.QueryMod(query) == -1)
             return false;
 
+        // actualizamos el costo acumulado
+        query = string.Format("UPDATE estado{0} SET costoacumulado=costoacumulado-({2}*costo) WHERE producto={1};"
+            , almacen, id, cantidad.ToString(CultureInfo.InvariantCulture));
+        if (conector.QueryMod(query) == -1)
+            return false;
+
         return true;
     }
 
@@ -488,15 +547,26 @@ public class Producto
         if (szVencimiento.Length == 0)
             szVencimiento = "0000-00-00";
 
-        string query = string.Format("UPDATE estado{0} SET cantidad=cantidad+{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7};"
+        string query = string.Format("UPDATE estado{0} SET cantidad=cantidad+{1},modificacion=SYSDATE()"
+                                    + " WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7};"
             , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado);
         if (conector.QueryMod(query) == -1)
             return false;
 
-        query = string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad,szSerial,ubicacion,estado, modificacion) VALUES ({1}, {2}, {3}, {4}, {5},{6},{7}, SYSDATE());"
+        query = string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad,szSerial,ubicacion,estado, modificacion) "
+            + " VALUES ({1}, {2}, {3}, {4}, {5},{6},{7}, SYSDATE());"
             , almacen, id, szLote, Query.GetValor(szVencimiento), cantidad.ToString(CultureInfo.InvariantCulture), szSerial, ubicacion, estado);
         if (conector.QueryMod(query) == -1)
             return false;
+
+        // actualizamos el costo promedio y el costo acumulado
+        query = string.Format("UPDATE estado{0},(SELECT MAX(costoacumulado)+({2}*{3}) AS costoa,SUM(cantidad) AS cantidad FROM estado{0} WHERE producto={1}) AS t"
+                + " SET costoacumulado=t.costoa,costo=t.costoa/t.cantidad WHERE producto={1};"
+            , almacen, id, cantidad.ToString(CultureInfo.InvariantCulture), Costo.ToString(CultureInfo.InvariantCulture));
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        DeleteCostoPromedio(almacen);
         return true;
     }
 
@@ -516,13 +586,14 @@ public class Producto
         if (szVencimiento.Length == 0)
             szVencimiento = "0000-00-00";
 
-
         query["producto"]= id.ToString();
         query["cantidad"]= cantidad.ToString(CultureInfo.InvariantCulture);
         query["vence"] = szVencimiento;
         query["ubicacion"]= ubicacion.ToString();
         query["estado"]= estado.ToString();
         query["ingreso"] = Ingreso ? "SYSDATE()" : "";
+        query["costo"] = Costo.ToString(CultureInfo.InvariantCulture);
+
         query.AddCampo("lote", szLote, false);
         query.AddCampo("szSerial", szSerial, false);
 
@@ -541,6 +612,7 @@ public class Producto
         producto.estado = estado;
         producto.ubicacion = ubicacion;
         producto.Ingreso = Ingreso;
+        producto.Costo = Costo;
 
         return producto;
     }

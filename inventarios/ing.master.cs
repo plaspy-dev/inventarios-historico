@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -36,6 +37,62 @@ public partial class ing : System.Web.UI.MasterPage
                     HAlertas.Text += " Traslados pendientes";
                 }
             }
+
+            HGuardar.NavigateUrl= HImprimir.NavigateUrl = Request.Url.AbsolutePath + Request.Url.Query;
+            HImprimir.NavigateUrl += Request.Url.Query.Length == 0 ? "?p=1" : "&p=1";
+            HGuardar.NavigateUrl += Request.Url.Query.Length == 0 ? "?e=1" : "&e=1";
+
+            HGuardar.Visible = HImprimir.Visible = !string.IsNullOrEmpty((string)ViewState["printfile"]) && usuario.CanPrint();
+
+            if (!string.IsNullOrEmpty((string)ViewState["printfile"]) && usuario.CanPrint()) {
+
+                if (Request.QueryString["p"] == "1")
+                {
+
+                    StreamReader reader = new StreamReader(Server.MapPath(ViewState["printfile"].ToString()));
+                    string Contenido = reader.ReadToEnd();
+                    reader.Close();
+
+                    Contenido = Utilidades.ReplaceContenido(Page.Controls, Contenido);
+                    // agregamos el script para imprimir
+#if DEBUG
+                Contenido= Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {}</script></body>");
+                // contenido= contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.name=='popup')return;var venImp = window.open('../imp.htm', 'popup');venImp.document.write(document.documentElement.innerHTML);venImp.document.close();if(venImp.print) {venImp.print();}window.history.back();}</script></body>");
+#else
+                    Contenido = Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.print) {window.print();}window.close();}</script></body>");
+                    // contenido = contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.name=='popup')return;var venImp = window.open('../imp.htm', 'popup');venImp.document.write(document.documentElement.innerHTML);venImp.document.close();if(venImp.print) {venImp.print();venImp.close();}window.history.back();}</script></body>");
+#endif
+                    // llamamos a la pagina cliente
+                    /*if (_ImprimirClicked != null)
+                    {
+                        _ImprimirClicked(this, evento);
+                    }*/
+                    Response.Clear();
+                    Response.Write(Contenido);
+                    Response.End();
+                }
+                else if (Request.QueryString["e"] == "1")
+                {
+
+                    StreamReader reader = new StreamReader(Server.MapPath(ViewState["printfile"].ToString()));
+                    string Contenido = reader.ReadToEnd();
+                    reader.Close();
+
+                    Contenido = Utilidades.ReplaceContenido(Page.Controls, Contenido);
+
+                    /*if (_ImprimirClicked != null)
+                    {
+                        _ImprimirClicked(this, evento);
+                    }*/
+
+                    Response.Clear();
+                    Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(Page.Title) + ".xls");
+                    Response.ContentType = "application/vnd.ms-excel";
+                    Response.ContentEncoding = System.Text.Encoding.GetEncoding("utf-8");
+                    Response.Write(Contenido);
+                    Response.End();
+                }
+            }
         }
         if (Session["szMensaje"] != null)
         {
@@ -53,6 +110,9 @@ public partial class ing : System.Web.UI.MasterPage
             LAlerta.Text = "";
         }
         usuario.CreateMenu(TMenu, Session["parametros"] == null ? "" : Session["parametros"].ToString());
+    }
+    public void SetPrintFile(string archivo) {
+        ViewState["printfile"] = archivo;
     }
     public void SetModificacion(string idModificaciones, string id2) {
         

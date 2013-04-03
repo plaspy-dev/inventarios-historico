@@ -29,7 +29,11 @@
     <pagina>
       <titulo>Terceros</titulo>
       <url>~/administrador/terceros.aspx</url>
-    </pagina>    
+    </pagina>
+    <pagina>
+      <titulo>Configuración</titulo>
+      <url>~/administrador/configuracion.aspx</url>
+    </pagina>
   </seccion>
   <seccion>
     <titulo>Almacen</titulo>

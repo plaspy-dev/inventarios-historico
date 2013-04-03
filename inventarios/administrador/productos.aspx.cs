@@ -17,11 +17,13 @@ public partial class administrador_productos : System.Web.UI.Page
         {
             CUsuario usuario = (CUsuario)Usuario.GetUsuario();
 
-            DLote.SelectedValue = "1";
-            DVence.SelectedValue = "1";
-            DCantidades.SelectedValue = "0";
-            DSerial.SelectedValue = "0";
-            DEstado.SelectedValue = "2";
+            CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
+
+            DCantidades.SelectedValue = configuracion.nCantidad.ToString();
+            DVence.SelectedValue = configuracion.nVence.ToString();
+            DLote.SelectedValue = configuracion.nLote.ToString();
+            DSerial.SelectedValue = configuracion.nSerial.ToString();
+            DEstado.SelectedValue = configuracion.nEstado.ToString();
 
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();

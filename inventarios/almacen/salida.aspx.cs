@@ -18,6 +18,30 @@ public partial class almacen_salida : System.Web.UI.Page
 
         if (!IsPostBack)
         {
+
+            CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
+
+            // lote
+            Utilidades.GetGridColumn(GProductos, "Lote").Visible =
+            LLoteA.Visible = TLote.Visible = LLote.Visible = configuracion.nLote != 0;
+
+            // vencimiento
+            Utilidades.GetGridColumn(GProductos, "Vence").Visible =
+            LVencimientoA.Visible = TVencimiento.Visible = LVencimiento.Visible = configuracion.nVence != 0;
+
+            // serial
+            Utilidades.GetGridColumn(GProductos, "Serial").Visible =
+            LSerialA.Visible = TSerial.Visible = LSerial.Visible = configuracion.nSerial != 0;
+
+            // ubicacion
+            Utilidades.GetGridColumn(GProductos, "Ubicación").Visible =
+            configuracion.nUbicacion != 0;
+
+            // estado
+            Utilidades.GetGridColumn(GProductos, "Estado").Visible =
+            LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.nEstado != 0;
+
+
             if (Session["salida_clean"] != null)
             {
 
@@ -48,6 +72,7 @@ public partial class almacen_salida : System.Web.UI.Page
                 if (reader != null && reader.Read())
                 {
                     HId.Value = TNumero.Text = reader["id"].ToString();
+                    ((ing)Master).SetPrintFile("salida.html");
                     ((ing)Master).SetModificacion(HId.Value, ((ing)Master).GetAlmacen());
                     TObservaciones.Text = reader["observaciones"].ToString();
                     TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
@@ -68,6 +93,7 @@ public partial class almacen_salida : System.Web.UI.Page
                     query += "szSerial";
                     query += "estado";
                     query += "ingreso";
+                    query += "costo";
 
                     reader = conector.Query(query.GetSelect("salida=" + HId.Value));
                     if (reader != null)
@@ -86,6 +112,7 @@ public partial class almacen_salida : System.Web.UI.Page
                             info.serial = reader["szSerial"].ToString();
                             info.estado = Convert.ToInt32(reader["estado"]);
                             info.Ingreso = reader["ingreso"].ToString() != "";
+                            info.Costo = Convert.ToDecimal(reader["costo"]);
 
                             productoUsado.AddProducto(info);
                         }
@@ -118,10 +145,10 @@ public partial class almacen_salida : System.Web.UI.Page
     {
         string[] saProducto = TProductoID.Text.Split(';');
         Producto producto = new Producto(saProducto[0]);
-        LVencimiento.CssClass = TVencimiento.CssClass = producto.nVence > 0 ? "" : "hide";
-        LLote.CssClass = TLote.CssClass = producto.nLote > 0 ? "" : "hide";
-        LEstado.CssClass = TEstado.CssClass = producto.nEstado > 0 ? "" : "hide";
-        LSerial.CssClass = TSerial.CssClass = producto.nSerial > 0 ? "" : "hide";
+        LVencimientoA.CssClass= LVencimiento.CssClass = TVencimiento.CssClass = producto.nVence > 0 ? "" : "hide";
+        LLoteA.CssClass= LLote.CssClass = TLote.CssClass = producto.nLote > 0 ? "" : "hide";
+        LEstadoA.CssClass = LEstado.CssClass = TEstado.CssClass = producto.nEstado > 0 ? "" : "hide";
+        LSerialA.CssClass= LSerial.CssClass = TSerial.CssClass = producto.nSerial > 0 ? "" : "hide";
 
         if(CAutomatico.Checked)
             TSerial.CssClass = TEstado.CssClass = TLote.CssClass = TVencimiento.CssClass = "hide";
@@ -172,10 +199,10 @@ public partial class almacen_salida : System.Web.UI.Page
         TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = TSerial.Text = TEstado.Text = "";
         TProducto.Focus();
 
-        LVencimiento.CssClass = TVencimiento.CssClass = CAutomatico.Checked ? "hide" : "";
-        LLote.CssClass = TLote.CssClass = CAutomatico.Checked ? "hide" : "";
-        LSerial.CssClass = TSerial.CssClass = CAutomatico.Checked ? "hide" : "";
-        LEstado.CssClass = TEstado.CssClass = CAutomatico.Checked ? "hide" : "";
+        LVencimientoA.CssClass = LVencimiento.CssClass = TVencimiento.CssClass = CAutomatico.Checked ? "hide" : "";
+        LLoteA.CssClass = LLote.CssClass = TLote.CssClass = CAutomatico.Checked ? "hide" : "";
+        LSerialA.CssClass = LSerial.CssClass = TSerial.CssClass = CAutomatico.Checked ? "hide" : "";
+        LEstadoA.CssClass= LEstado.CssClass = TEstado.CssClass = CAutomatico.Checked ? "hide" : "";
 
         TVencimiento.CssClass += " fecha";
         TLote.CssClass += " tlote";
@@ -269,7 +296,11 @@ public partial class almacen_salida : System.Web.UI.Page
         for (int i = 0; i < productos.Count; i++)
         {
             productos[i].Ingreso = true;
+            if (string.IsNullOrEmpty(productos[i].IdTabla))
+                productos[i].GetCostoPromedio(((ing)Master).GetAlmacen()).ToString(CultureInfo.InvariantCulture);
+
             query = productos[i].GetQuery("salida_items" + ((ing)Master).GetAlmacen());
+
             if (string.IsNullOrEmpty(productos[i].IdTabla))
             {
                 query["salida"] = HId.Value;

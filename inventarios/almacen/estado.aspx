@@ -110,11 +110,11 @@
 <asp:Panel runat="server" ID="PBuscar" DefaultButton="BBuscar">
     <table>
         <tr>
-            <td>Vence</td>
+            <td><asp:Label runat="server" ID="LVence" Text="Vence"></asp:Label></td>
             <td>Nombre</td>
-            <td>Ubicación</td>
+            <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
             <td>Grupo</td>
-            <td>Estado</td>
+            <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label></td>
             <td></td>
             <td><asp:CheckBox runat="server" ID="CTodosAlmacenes" Text="Todos los almacenes" /></td>
             <td><asp:CheckBox runat="server" ID="CAlmacen" Text="Ver almacén" CssClass="hide" /></td>
@@ -194,7 +194,7 @@
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
             <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" />
-            <asp:BoundField HeaderText="Costo" DataField="costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
+            <asp:BoundField HeaderText="Costo" DataField="costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
             <asp:BoundField HeaderText="Un." DataField="unidad" SortExpression="unidad" />
             <asp:TemplateField HeaderText="Ubicación" SortExpression="ubicacion">
                 <ItemTemplate>
@@ -282,11 +282,68 @@
                  </SelectParameters>
     </asp:SqlDataSource>
     </asp:Panel>
-<asp:Panel runat="server" ID="PKardex">
+<asp:Panel runat="server" ID="PKardex" DefaultButton="BActualizar">
     <a href="estado.aspx"><< Estado</a><br /><br />
+    <table>
+        <tr>
+            <td>Desde
+            <asp:RequiredFieldValidator ControlToValidate="TDesde" ErrorMessage="Por favor ingrese una fecha." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <asp:RangeValidator ControlToValidate="TDesde" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator3" Display="Dynamic" Type="Date">*</asp:RangeValidator>
+            </td>
+            <td><asp:TextBox runat="server" ID="TDesde" CssClass="fecha"></asp:TextBox></td>
+            <td>Hasta
+            <asp:RequiredFieldValidator ControlToValidate="TDesde" ErrorMessage="Por favor ingrese una fecha." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <asp:RangeValidator ControlToValidate="TDesde" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator2" Display="Dynamic" Type="Date">*</asp:RangeValidator>
+            </td>
+            <td><asp:TextBox runat="server" ID="THasta" CssClass="fecha"></asp:TextBox></td>
+            <td><asp:Button runat="server" ID="BActualizar" Text="Actualizar" 
+                    onclick="BActualizar_Click" /></td>
+        </tr>
+    </table>
+    <div id="accordion">
+        <h3><a href="#">Gráficas</a></h3>
+        <div>
+            <div id="chart_entradas" style="width: 1000px; height: 300px;"></div>
+            <div id="chart_salidas" style="width: 1000px; height: 300px;"></div>
+            <div id="chart_saldos" style="width: 1000px; height: 300px;"></div>
+            <div runat="server" id="chart_costos" style="width: 1000px; height: 300px;"></div>
+        </div>
+    </div>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", { packages: ["corechart"] });
+        google.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = google.visualization.arrayToDataTable([['Fecha', 'Costo']<asp:Literal runat="server" ID="LCostos"></asp:Literal>]);
+            var options = { title: 'Costos' };
+            var chart = new google.visualization.AreaChart(document.getElementById('<%= chart_costos.ClientID %>'));
+            chart.draw(data, options);
+            
+            data = google.visualization.arrayToDataTable([['Fecha', 'Cantidad']<asp:Literal runat="server" ID="LEntradas"></asp:Literal>]);
+            options = { title: 'Entradas' };
+            chart = new google.visualization.AreaChart(document.getElementById('chart_entradas'));
+            chart.draw(data, options);
+            
+            data = google.visualization.arrayToDataTable([['Fecha', 'Cantidad']<asp:Literal runat="server" ID="LSalidas"></asp:Literal>]);
+            options = { title: 'Salidas' };
+            chart = new google.visualization.AreaChart(document.getElementById('chart_salidas'));
+            chart.draw(data, options);
+            
+            data = google.visualization.arrayToDataTable([['Fecha', 'Cantidad']<asp:Literal runat="server" ID="LSaldos"></asp:Literal>]);
+            options = { title: 'Saldos' };
+            chart = new google.visualization.AreaChart(document.getElementById('chart_saldos'));
+            chart.draw(data, options);
+            $("#accordion").accordion({
+                autoHeight: false,
+                navigation: true,
+                collapsible: true,
+                active: false
+            });
+        }
+    </script>
     <asp:GridView ID="GKardex" runat="server" DataSourceID="SKardex" 
         AutoGenerateColumns="False" EmptyDataText="No se encontraron productos" 
-        AllowPaging="True" PageSize="50" AllowSorting="True" 
+        AllowPaging="True" PageSize="50" AllowSorting="False" ShowFooter="true"
         onrowdatabound="GKardex_RowDataBound" >
         <RowStyle CssClass="GridRow"></RowStyle>
         <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -296,11 +353,17 @@
         <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
         <Columns>
             <asp:BoundField HeaderText="Fecha" DataField="fecha" SortExpression="fecha" DataFormatString="{0:d}" />
-            <asp:BoundField HeaderText="Concepto" DataField="concepto" SortExpression="concepto" />
+            <asp:BoundField HeaderText="Concepto" DataField="concepto" SortExpression="concepto" ItemStyle-Wrap="false" />
             <asp:BoundField HeaderText="Documento" DataField="documento" SortExpression="documento" />
-            <asp:BoundField HeaderText="Entrada" DataField="entrada" SortExpression="entrada" ItemStyle-HorizontalAlign="Right" />
-            <asp:BoundField HeaderText="Salida" DataField="salida" SortExpression="salida" ItemStyle-HorizontalAlign="Right" />
+            <asp:BoundField HeaderText="Entrada" DataField="entrada" SortExpression="entrada" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
+            <asp:BoundField HeaderText="Costo U.E." DataField="costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" ItemStyle-Wrap="false" />
+            <asp:BoundField HeaderText="Costo T.E." DataField="costot" SortExpression="costot" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" FooterStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" FooterStyle-Wrap="false" />
+            <asp:BoundField HeaderText="Salida" DataField="salida" SortExpression="salida" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
+            <asp:BoundField HeaderText="Costo U.S." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
+            <asp:BoundField HeaderText="Costo T.S." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" FooterStyle-Wrap="false" />
             <asp:BoundField HeaderText="Saldo" DataField="saldo" SortExpression="saldo" ItemStyle-HorizontalAlign="Right" />
+            <asp:BoundField HeaderText="Costo U." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
+            <asp:BoundField HeaderText="Costo T." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
         </Columns>
     </asp:GridView>
     <asp:SqlDataSource ID="SKardex" runat="server" 
@@ -309,50 +372,67 @@
         SelectCommand="(
                     SELECT 1 AS tipo,entrada{0}.fecha,entrada_items{0}.cantidad AS entrada,NULL AS salida,NULL AS saldo,entrada{0}.id AS concepto 
                     ,entrada_items{0}.ingreso,entrada{0}.documento
+                    ,entrada_items{0}.costo AS costo
+                    ,entrada_items{0}.costo*entrada_items{0}.cantidad AS costot
+                    ,NULL AS valor
                     FROM entrada_items{0}
                     LEFT JOIN entrada{0} ON (entrada{0}.id=entrada_items{0}.entrada)
                     WHERE producto=@producto
-                    AND (@lote=' ' OR @lote=entrada_items{0}.lote)
-                    AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=entrada_items{0}.vence)
+                    AND DATE(ingreso) BETWEEN STR_TO_DATE(@desde, '%d/%m/%Y') AND STR_TO_DATE(@hasta, '%d/%m/%Y')
                 ) UNION ALL (
                     SELECT 2 AS tipo,traslado{0}.envio AS fecha,NULL AS entrada,traslado_items{0}.cantidad AS salida,NULL AS saldo,traslado{0}.id AS concepto  
                     ,traslado_items{0}.ingreso,traslado{0}.documento
+                    ,NULL AS costo
+                    ,NULL AS costot
+                    ,NULL AS valor
                     FROM traslado_items{0}
                     LEFT JOIN traslado{0} ON (traslado{0}.id=traslado_items{0}.traslado)
                     WHERE 
                     producto=@producto
-                    AND (@lote=' ' OR @lote=traslado_items{0}.lote)
-                    AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=traslado_items{0}.vence)
+                    AND DATE(ingreso) BETWEEN STR_TO_DATE(@desde, '%d/%m/%Y') AND STR_TO_DATE(@hasta, '%d/%m/%Y')
                 ) UNION ALL (
                     SELECT 3 AS tipo,salida{0}.fecha AS fecha,NULL AS entrada,salida_items{0}.cantidad AS salida,NULL AS saldo,salida{0}.id AS concepto  
                     ,salida_items{0}.ingreso,salida{0}.documento
+                    ,NULL AS costo
+                    ,NULL AS costot
+                    ,NULL AS valor
                     FROM salida_items{0}
                     LEFT JOIN salida{0} ON (salida{0}.id=salida_items{0}.salida)
                     WHERE 
                     producto=@producto
-                    AND (@lote=' ' OR @lote=salida_items{0}.lote)
-                    AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=salida_items{0}.vence)
+                    AND DATE(ingreso) BETWEEN STR_TO_DATE(@desde, '%d/%m/%Y') AND STR_TO_DATE(@hasta, '%d/%m/%Y')
                 ) UNION ALL (
                     SELECT 4 AS tipo,ingreso AS fecha,NULL AS entrada,cantidad AS salida,NULL AS saldo,id AS concepto  
                     ,ingreso,'' AS documento
+                    ,NULL AS costo
+                    ,NULL AS costot
+                    ,NULL AS valor
                     FROM transformacion_salida{0}
                     WHERE 
                     producto=@producto
-                    AND (@lote=' ' OR @lote=lote)
-                    AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=vence)
+                    AND DATE(ingreso) BETWEEN STR_TO_DATE(@desde, '%d/%m/%Y') AND STR_TO_DATE(@hasta, '%d/%m/%Y')
                 ) UNION ALL (
                     SELECT 5 AS tipo,ingreso AS fecha,cantidad AS entrada,NULL AS salida,NULL AS saldo,id AS concepto  
                     ,ingreso,'' AS documento
+                    ,costo AS costo
+                    ,costo*cantidad AS costot
+                    ,NULL AS valor
                     FROM transformacion_entrada{0}
                     WHERE 
                     producto=@producto
-                    AND (@lote=' ' OR @lote=lote)
-                    AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=vence)
-                ) ORDER BY ingreso DESC;">
+                    AND DATE(ingreso) BETWEEN STR_TO_DATE(@desde, '%d/%m/%Y') AND STR_TO_DATE(@hasta, '%d/%m/%Y')
+                ) UNION ALL (
+                    SELECT -1 AS tipo, NULL AS fecha, NULL AS cantidad, NULL AS salida, NULL AS saldo, NULL AS concepto
+                    ,'0000-00-00 00:00:00' AS ingreso,'' AS documento
+                    ,NULL AS costo
+                    ,NULL AS costot
+                    ,NULL AS valor
+                )
+                ORDER BY ingreso DESC;">
          <SelectParameters>
             <asp:QueryStringParameter Name="producto" QueryStringField="pid" />
-            <asp:QueryStringParameter Name="lote" QueryStringField="l" DefaultValue=" " />
-            <asp:QueryStringParameter Name="vence" QueryStringField="v" DefaultValue=" " />
+            <asp:ControlParameter ControlID="TDesde" Name="desde" PropertyName="Text" />
+            <asp:ControlParameter ControlID="THasta" Name="hasta" PropertyName="Text" />
          </SelectParameters>
     </asp:SqlDataSource>
 </asp:Panel>

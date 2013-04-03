@@ -17,8 +17,8 @@
               if($("#<%= HProductos.ClientID %>").val().length) {
                 if(confirm("¿Se ha encontrado una entrada sin terminar desea continuarla?")) {
                     $("#<%= BActualizar.ClientID %>").click();
-                } else {
-                    localStorage.salida=null;
+                } else {localStorage
+                    .salida=null;
                     $("#<%= HProductos.ClientID %>").val("");
                 }
               }
@@ -93,7 +93,7 @@
                 if (ui.item.unidad && ui.item.unidad != "")
                     $("#sunidad").text("(" + ui.item.unidad + ")");
                 else $("#sunidad").text("");
-                $("#<%= TCosto.ClientID %>").val(ui.item.Costo);
+                $("#<%= TCosto.ClientID %>").numeric("value",ui.item.Costo);
                 
                 if(ui.item.DiasV>0) {
                     var fecha = new Date();
@@ -108,12 +108,12 @@
                 ui.item.nSerial>0 ? $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").show() : $("#<%= TSerial.ClientID %>,#<%= LSerial.ClientID %>").hide();
                 ui.item.nEstado>0 ? $("#<%= DEstado.ClientID %>,#<%= LEstado.ClientID %>").show() : $("#<%= DEstado.ClientID %>,#<%= LEstado.ClientID %>").hide();
                 
-                ValidatorEnable($("#<%= RVencimiento.ClientID %>")[0], ui.item.nVence==1);
-                ValidatorEnable($("#<%= RLote.ClientID %>")[0], ui.item.nLote==1);
-                ValidatorEnable($("#<%= RSerial.ClientID %>")[0], ui.item.nSerial==1);
-                ValidatorEnable($("#<%= REstado.ClientID %>")[0], ui.item.nEstado==1);
-                ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1);
-                ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1);
+                try { ValidatorEnable($("#<%= RVencimiento.ClientID %>")[0], ui.item.nVence==1); } catch (e) {}
+                try { ValidatorEnable($("#<%= RLote.ClientID %>")[0], ui.item.nLote==1); } catch (e) {}
+                try { ValidatorEnable($("#<%= RSerial.ClientID %>")[0], ui.item.nSerial==1); } catch (e) {}
+                try { ValidatorEnable($("#<%= REstado.ClientID %>")[0], ui.item.nEstado==1); } catch (e) {}
+                try { ValidatorEnable($("#<%= REntero.ClientID %>")[0], ui.item.nNumero==1); } catch (e) {}
+                try { ValidatorEnable($("#<%= RDecimal.ClientID %>")[0], ui.item.nNumero!=1); } catch (e) {}
                 return false;
             }
         });
@@ -168,8 +168,8 @@
             <td class="tdl"></td>
             <td><span id="sunidad"></span></td>
             <td><asp:Label runat="server" ID="LCosto" Text="Costo Unitario"></asp:Label>
-            <asp:RequiredFieldValidator ControlToValidate="TCosto" ValidationGroup="producto" ErrorMessage="Por favor ingrese un costo unitario." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
-            <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator1" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCosto" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+            <asp:RequiredFieldValidator ControlToValidate="TCosto" ValidationGroup="producto" ErrorMessage="Por favor ingrese un costo unitario." ID="RCosto" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <asp:RegularExpressionValidator ValidationExpression="^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*(?:\.[0-9]+)?$" ID="RCostoF" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCosto" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
             </td>
             <td><asp:Label runat="server" ID="LLote" Text="Lote"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TLote" ValidationGroup="producto" ErrorMessage="Por favor ingrese un lote." ID="RLote" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
             <td class="tdr">
@@ -185,7 +185,7 @@
                 <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
             </td>
             <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
-            <td><asp:TextBox runat="server" ID="TCosto" CssClass="float"></asp:TextBox></td>
+            <td><asp:TextBox runat="server" ID="TCosto" CssClass="dinero"></asp:TextBox></td>
             <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote"></asp:TextBox></td>
             <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="fecha"></asp:TextBox></td>
         </tr>
@@ -193,7 +193,7 @@
             <td class="tdl">
                 &nbsp;</td>
             <td><asp:Label runat="server" ID="LSerial" Text="Serial"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TSerial" ValidationGroup="producto" ErrorMessage="Por favor ingrese un serial." ID="RSerial" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
-            <td>Ubicación</td>
+            <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
             <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label><asp:RequiredFieldValidator InitialValue="0" ControlToValidate="DEstado" ValidationGroup="producto" ErrorMessage="Por favor seleccione un estado." ID="REstado" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
             <td class="tdr">
                 &nbsp;</td>
@@ -242,7 +242,7 @@
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
                     DataKeyNames="IdGrid,id,ubicacion,estado" 
                     onselectedindexchanged="GProductos_SelectedIndexChanged" 
-                    EmptyDataText="No hay productos" onrowdeleting="GProductos_RowDeleting" >
+                    EmptyDataText="No hay productos" onrowdeleting="GProductos_RowDeleting" ShowFooter="true" >
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
                     <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -255,7 +255,8 @@
                         <asp:BoundField DataField="codigo" HeaderText="Código" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" />
-                        <asp:BoundField DataField="Costo" HeaderText="Costo" SortExpression="Costo" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="Costo" HeaderText="Costo U." SortExpression="Costo" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="CostoTotal" HeaderText="Costo T." SortExpression="CostoTotal" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
@@ -273,6 +274,9 @@
                     </Columns>
                 </asp:GridView>
             </td>
+        </tr>
+        <tr>
+            <td colspan="5" align="right"><asp:Label runat="server" ID="LTotal"></asp:Label></td>
         </tr>
         <tr>
             <td colspan="5">&nbsp;</td>

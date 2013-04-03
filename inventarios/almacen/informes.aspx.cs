@@ -53,7 +53,7 @@ public partial class almacen_informes : System.Web.UI.Page
 
         if (Utilidades.GetRowsCount(GResultados, LTotal) > 0)
         {
-
+            ((ing)Master).SetPrintFile("informes.html");
         }
     }
     protected void GResultados_SelectedIndexChanged(object sender, EventArgs e)
