@@ -16,7 +16,7 @@ public class Conector
 
 	protected string m_szConexion;
 
-	protected bool m_bTransaccion = false;
+	protected bool m_bTransaccion;
 
 	protected MySqlConnection m_pSQLConector;
 
@@ -97,6 +97,8 @@ public class Conector
 
 	public void ShowError(string error)
 	{
+		string logs = DateTime.Now.ToString() + " Error[Conector] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
+		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -397,7 +399,6 @@ public class Conector
 
 	public static string GetMySQLDateFormat(DateTime fecha, bool horas)
 	{
-		bool flag = 0 == 0;
 		string text = fecha.Year + "-" + fecha.Month.ToString().PadLeft(2, '0') + "-" + fecha.Day.ToString().PadLeft(2, '0');
 		if (horas)
 		{

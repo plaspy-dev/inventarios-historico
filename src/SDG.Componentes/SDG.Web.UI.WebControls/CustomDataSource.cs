@@ -179,7 +179,17 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	public string ModifyTable => (ParentDataSource.Length == 0) ? ID : ParentDataSource;
+	public string ModifyTable
+	{
+		get
+		{
+			if (ParentDataSource.Length != 0)
+			{
+				return ParentDataSource;
+			}
+			return ID;
+		}
+	}
 
 	protected override DataSourceView GetView(string viewName)
 	{

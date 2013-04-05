@@ -21,6 +21,7 @@ public class CConfiguracion
     public int nSerial = 2;
     public int nUbicacion = 2;
     public int nEstado = 2;
+    public int nDiasVencimiento = 5;
 
 	public CConfiguracion()
 	{

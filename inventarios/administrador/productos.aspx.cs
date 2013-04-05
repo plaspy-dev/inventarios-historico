@@ -72,7 +72,7 @@ public partial class administrador_productos : System.Web.UI.Page
                     ((ing)Master).SetModificacion(HId.Value);
                     BAceptar.Enabled = usuario.CanUpdate();
                     GCostos.DataBind();
-                    PCostos.Visible = GCostos.Rows.Count > 0;
+                    PCostos.Visible = CConfiguracion.GetConfiguracion().nCosto!=0 && GCostos.Rows.Count > 0;
                 }
             }
         }
@@ -87,6 +87,8 @@ public partial class administrador_productos : System.Web.UI.Page
         CConector conector = new CConector();
         string szQuery;
         string mensaje;
+
+        conector.StartTransaction();
 
         string codigo = "";
         if (!string.IsNullOrEmpty((string)ViewState["codigo"]))
@@ -110,7 +112,8 @@ public partial class administrador_productos : System.Web.UI.Page
         query["grupo"] = DGrupo.SelectedValue;
         query["nEstado"] = DEstado.SelectedValue;
         query["serial"] = DSerial.SelectedValue;
-        query["costo"] = TCosto.Text;
+        query["costo"] = TCosto.Text.Length == 0 ? "" :
+            decimal.Parse(TCosto.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
         query["diasvencimiento"]= TDiasVencimiento.Text;
 
         if (HId.Value.Length == 0)
@@ -130,6 +133,32 @@ public partial class administrador_productos : System.Web.UI.Page
             HId.Value = res.ToString();
         if (conector.InsertModificacion(HId.Value) == -1)
             return;
+
+        if (conector.QueryMod("DELETE FROM maximo_minimo WHERE producto=" + HId.Value) == -1)
+            return;
+
+        query = new Query("maximo_minimo");
+        query["producto"]= HId.Value;
+
+        for (int i = 0; i < GAlmacenes.Rows.Count; i++ ) {
+
+            Alertas.RemoveAlertas(GAlmacenes.DataKeys[i].Value.ToString());
+
+            TextBox maximo= (TextBox)GAlmacenes.Rows[i].FindControl("TMaximo");
+            TextBox minimo = (TextBox)GAlmacenes.Rows[i].FindControl("TMinimo");
+
+            if(maximo.Text.Length>0 || minimo.Text.Length>0) {
+
+                query["almacen"] = GAlmacenes.DataKeys[i].Value.ToString();
+                query["maximo"] = maximo.Text;
+                query["minimo"] = minimo.Text;
+
+                if(conector.QueryMod(query.GetInsert())==-1)
+                    return;
+            }
+        }
+
+        conector.Commit();
         Producto.RemoveProducto(HId.Value);
         ((ing)Master).SetResultado(mensaje);
     }

@@ -404,6 +404,8 @@ public partial class almacen_traslado : System.Web.UI.Page
         }
 
         conector.Commit();
+        Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
+        Alertas.RemoveAlertas(DDestino.SelectedValue);
         Session["traslado_clean"] = 1;
         ((ing)Master).SetAlerta("Traslado " + HId.Value + " editada.");
         ((ing)Master).SetResultado("Traslado " + HId.Value + " editada.");

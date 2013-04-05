@@ -2,21 +2,36 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Entrada</title>
+<title>Traslado</title>
 </head>
 <body>
-<table class="tablecollapse">
+<table>
+	<tr>
+          <td width="133"><img src="../img/logo.png" width="133" height="66" alt="logo" /></td>
+          <td>&nbsp;</td>
+          <td align="right">
+          <table width="100%" cellpadding="0" cellspacing="0">
+          	<tr>
+            	<td>&nbsp;</td>
+            	<td width="1px" align="left" nowrap="nowrap">Traslado <strong><br />
+          </strong>Número</td>
+            </tr>
+          </table>
+          </td>
+          <td width="1" align="right" nowrap="nowrap"><strong>$DAlmacen$<br />
+          $TNumero$</strong></td>
+        </tr>
         <tr>
-          <td colspan="4">Traslado de Almacén <strong>$DAlmacen$</strong></td>
+          <td colspan="4"><hr /></td>
         </tr>
         <tr>
           <td colspan="4">&nbsp;</td>
         </tr>
         <tr>
-            <td>Número</td>
-            <td><strong>$TNumero$</strong></td>
             <td>Destino</td>
             <td><strong>$DDestino$</strong></td>
+            <td></td>
+            <td></td>
         </tr>
         <tr>
           <td>Envío</td>
@@ -25,17 +40,14 @@
           <td><strong>$TLlegada$</strong></td>
         </tr>
         <tr>
-            <td colspan="2">Documento equivalente</td>
-            <td colspan="2"><strong>$TDocumento$</strong></td>
+            <td nowrap="nowrap">Documento equivalente</td>
+            <td colspan="3"><strong>$TDocumento$</strong></td>
         </tr>
         <tr>
             <td colspan="4" class="tdb">&nbsp;</td>
         </tr>
         <tr>
-            <td colspan="4" class="GridHeader">Productos</td>
-        </tr>
-        <tr>
-            <td colspan="4" align="center" class="tdl tdb tdr">
+            <td colspan="4" class="tdl tdb tdr">
             	$GProductos$
             </td>
         </tr>

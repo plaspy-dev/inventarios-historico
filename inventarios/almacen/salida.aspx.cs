@@ -320,6 +320,7 @@ public partial class almacen_salida : System.Web.UI.Page
         }
 
         conector.Commit();
+        Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
         Session["salida_clean"] = 1;
         ((ing)Master).SetAlerta("Remisión " + HId.Value + " editada.");
         ((ing)Master).SetResultado("Remisión " + HId.Value + " editada.");

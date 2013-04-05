@@ -18,11 +18,15 @@ public partial class administrador_configuracion : System.Web.UI.Page
             DSerial.SelectedValue = configuracion.nSerial.ToString();
             DEstado.SelectedValue = configuracion.nEstado.ToString();
             DUbicacion.SelectedValue = configuracion.nUbicacion.ToString();
+            TDiasVencimiento.Text = configuracion.nDiasVencimiento.ToString();
         }
     }
 
     protected void BAceptar_Click(object sender, EventArgs e)
     {
+        if (!IsValid)
+            return;
+
         CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
         configuracion.nCosto= Convert.ToInt32(DCostos.SelectedValue);
@@ -32,8 +36,12 @@ public partial class administrador_configuracion : System.Web.UI.Page
         configuracion.nSerial= Convert.ToInt32(DSerial.SelectedValue);
         configuracion.nEstado= Convert.ToInt32(DEstado.SelectedValue);
         configuracion.nUbicacion = Convert.ToInt32(DUbicacion.SelectedValue);
+        configuracion.nDiasVencimiento = Convert.ToInt32(configuracion.nDiasVencimiento);
 
-        LMensaje.Text = configuracion.SaveConfiguracion() ? "Configuración guardada" : "Error guardando la configuración";
+        if(configuracion.SaveConfiguracion()) {
+            LMensaje.Text =  "Configuración guardada";
+            Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
+        } else LMensaje.Text =  "Error guardando la configuración";
     }
 
     protected void BCancelar_Click(object sender, EventArgs e)

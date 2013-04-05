@@ -22,6 +22,12 @@
         });
         addFunctionToStart(function() {
             addDialog("#<%= PAlertas.ClientID %>", "#dAlertas", true);
+            var el = $("#limprimir");
+            if (el.html().length == 0)
+                el.hide();
+            el = $("#lguardar");
+            if (el.html().length == 0)
+                el.hide();
             $("#<%= HGuardar.ClientID %>,#<%= HImprimir.ClientID %>").attr("target", "_blank");
             if ($("#<%= LAlerta.ClientID %>").text().length > 0) {
 
@@ -61,7 +67,7 @@
                 <ContentTemplate>
                 <asp:Panel runat="server" ID="PAlertas" Visible="false">
                     <div class="hide" id="dAlertas" title="Alertas" >
-                        <asp:GridView ID="GAlertas" runat="server" AutoGenerateColumns="False" 
+                        <asp:GridView ID="GAlertas" runat="server" AutoGenerateColumns="False" DataKeyNames="id"
                             DataSourceID="SAlertas" EmptyDataText="No se encontraron alertas" ShowHeader="false">
                             <RowStyle CssClass="GridRow"></RowStyle>
                             <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -71,38 +77,35 @@
                             <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                             <Columns>
                                 <asp:HyperLinkField DataTextField="nombre" HeaderText="Nombre" DataNavigateUrlFields="id" ItemStyle-HorizontalAlign="Left"
-                                    DataNavigateUrlFormatString="~/almacen/entrada.aspx?ei={0}" SortExpression="id" ItemStyle-Wrap="false" />
+                                    DataNavigateUrlFormatString="" SortExpression="id" ItemStyle-Wrap="false" />
                             </Columns>
                         </asp:GridView>
                         <asp:SqlDataSource ID="SAlertas" runat="server" 
                             ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                             ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                            SelectCommand="SELECT CAST(CONCAT('Entrada No. ', entrada{0}.id, ' desde ', IFNULL(almacen.nombre,'(Ajustes)')) AS CHAR) AS nombre,entrada{0}.id,IFNULL(almacen.nombre,'(Ajustes)') AS almacen FROM entrada{0}
-                                    LEFT JOIN almacen ON (almacen.id=entrada{0}.desde)
-                                    WHERE entrada{0}.fecha IS NULL;">
+                            SelectCommand="">
                         </asp:SqlDataSource>
                         <button style="display: none !important;"></button>
                     </div>
                 </asp:Panel>
-                    <div class="alertas">
-                        <div class="ui-tabs">
-                            <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-corner-all" style="float:right!important;line-height: 0.6;">
-                            </ul>
-                        </div>
-                    </div>
                     <div class="ui-tabs">
                          <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-corner-all" style="float:right!important;line-height: 0.6;" id="uMenu">
                             <span class=alertas>
+                                <asp:Repeater runat="server" ID="RAlertas">
+                                    <ItemTemplate>
+                                        <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
+                                            <asp:LinkButton Text='<%# Eval("Nombre") + " (" + Eval("Numero") + ")" %>' runat="server" ID="LAlerta" 
+                                                CausesValidation="false" OnClick="OnAlerta_Click" 
+                                                CommandName='<%# Eval("SelectCommand") %>' CommandArgument='<%# Eval("URL") %>'></asp:LinkButton>
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
                                 <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
                                     <asp:LinkButton ID="HAlertas" runat="server" onclick="HAlertas_Click" CausesValidation="false"></asp:LinkButton>
                                 </li>
                             </span>
-                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
-                                <asp:HyperLink ID="HGuardar" runat="server" Visible="false">Guardar</asp:HyperLink>
-                            </li>
-                            <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
-                                <asp:HyperLink ID="HImprimir" runat="server" Visible="false">Imprimir</asp:HyperLink>
-                            </li>
+                            <li id="lguardar" class="ui-state-default ui-corner-top" style="margin-right: 1px;" ><asp:HyperLink ID="HGuardar" runat="server" Visible="false">Guardar</asp:HyperLink></li>
+                            <li id="limprimir" class="ui-state-default ui-corner-top" style="margin-right: 1px;" ><asp:HyperLink ID="HImprimir" runat="server" Visible="false">Imprimir</asp:HyperLink></li>
                             <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
                                 <asp:HyperLink ID="HContrasena" runat="server" NavigateUrl="~/contrasena.aspx">Contraseña</asp:HyperLink>
                             </li>

@@ -10,7 +10,7 @@ public class Grupo
 {
 	protected ArrayList m_aURLs;
 
-	protected bool m_bInicio = false;
+	protected bool m_bInicio;
 
 	protected bool m_bNativo = true;
 

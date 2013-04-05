@@ -272,6 +272,7 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         }
 
         conector.Commit();
+        Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
         ((ing)Master).SetAlerta("Transformación " + HId.Value + " editada.");
         ((ing)Master).SetResultado("Transformación " + id + " editada.");
     }
