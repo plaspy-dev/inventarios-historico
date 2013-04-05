@@ -16,12 +16,20 @@ public class CConfiguracion
 {
     public int nCosto=2;
     public int nCantidad=0;
-    public int nLote = 2;
-    public int nVence = 2;
-    public int nSerial = 2;
     public int nUbicacion = 2;
-    public int nEstado = 2;
     public int nDiasVencimiento = 5;
+
+    // 
+    public bool bVencimiento = true;
+    public bool bLote = true;
+    public bool bSerial = true;
+    public bool bEstado = true;
+
+    // configuracion productos
+    public int nProductoLote = 2;
+    public int nProductoVence = 2;
+    public int nProductoSerial = 2;
+    public int nProductoEstado = 2;
 
 	public CConfiguracion()
 	{

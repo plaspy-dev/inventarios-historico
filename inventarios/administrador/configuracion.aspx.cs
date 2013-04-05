@@ -13,12 +13,19 @@ public partial class administrador_configuracion : System.Web.UI.Page
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
             DCostos.SelectedValue = configuracion.nCosto.ToString();
             DCantidades.SelectedValue= configuracion.nCantidad.ToString();
-            DVence.SelectedValue = configuracion.nVence.ToString();
-            DLote.SelectedValue = configuracion.nLote.ToString();
-            DSerial.SelectedValue = configuracion.nSerial.ToString();
-            DEstado.SelectedValue = configuracion.nEstado.ToString();
             DUbicacion.SelectedValue = configuracion.nUbicacion.ToString();
+
+            DVence.SelectedValue = configuracion.nProductoVence.ToString();
+            DLote.SelectedValue = configuracion.nProductoLote.ToString();
+            DSerial.SelectedValue = configuracion.nProductoSerial.ToString();
+            DEstado.SelectedValue = configuracion.nProductoEstado.ToString();
+
             TDiasVencimiento.Text = configuracion.nDiasVencimiento.ToString();
+
+            CVencimiento.Checked = configuracion.bVencimiento;
+            CLote.Checked = configuracion.bLote;
+            CSerial.Checked = configuracion.bSerial;
+            CEstado.Checked = configuracion.bEstado;
         }
     }
 
@@ -31,12 +38,17 @@ public partial class administrador_configuracion : System.Web.UI.Page
 
         configuracion.nCosto= Convert.ToInt32(DCostos.SelectedValue);
         configuracion.nCantidad= Convert.ToInt32(DCantidades.SelectedValue);
-        configuracion.nVence= Convert.ToInt32(DVence.SelectedValue);
-        configuracion.nLote= Convert.ToInt32(DLote.SelectedValue);
-        configuracion.nSerial= Convert.ToInt32(DSerial.SelectedValue);
-        configuracion.nEstado= Convert.ToInt32(DEstado.SelectedValue);
+        configuracion.nProductoVence = Convert.ToInt32(DVence.SelectedValue);
+        configuracion.nProductoLote = Convert.ToInt32(DLote.SelectedValue);
+        configuracion.nProductoSerial = Convert.ToInt32(DSerial.SelectedValue);
+        configuracion.nProductoEstado = Convert.ToInt32(DEstado.SelectedValue);
         configuracion.nUbicacion = Convert.ToInt32(DUbicacion.SelectedValue);
         configuracion.nDiasVencimiento = Convert.ToInt32(configuracion.nDiasVencimiento);
+
+        configuracion.bVencimiento= CVencimiento.Checked;
+        configuracion.bLote= CLote.Checked;
+        configuracion.bSerial= CSerial.Checked;
+        configuracion.bEstado= CEstado.Checked;
 
         if(configuracion.SaveConfiguracion()) {
             LMensaje.Text =  "Configuración guardada";

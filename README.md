@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-05 · Incorporar alertas vinculadas con productos.** Añade el modelo que reúne alertas y cambia los controles del catálogo y el formato de salida. Esto permite localizar las advertencias que se consultan junto a los datos del producto.
+**2013-04-05 · Configurar vencimientos y mostrar el lote cuando aplica.** Actualiza los campos de configuración para vencimientos y la visibilidad del lote en transformación. El formulario puede pedir esa información según las opciones de inventario.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-05 · Add product-related alerts.** Add the model that gathers alerts and revise catalog controls and withdrawal output. Readers can identify warnings consulted alongside product data.
+**2013-04-05 · Configure expiry and show the lot where applicable.** Update expiry settings and lot field visibility on the transformation form. The form can request that information according to the inventory options.
 
 ### How to explore the source
 

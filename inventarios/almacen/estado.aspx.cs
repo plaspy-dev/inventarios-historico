@@ -34,7 +34,7 @@ public partial class almacen_estado : System.Web.UI.Page
         ((ing)Master).CheckAlmacen();
 
         Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !CTodosAlmacenes.Checked && CConfiguracion.GetConfiguracion().nUbicacion!=0;
-        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !CTodosAlmacenes.Checked && CConfiguracion.GetConfiguracion().nEstado!=0;
+        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !CTodosAlmacenes.Checked && CConfiguracion.GetConfiguracion().bEstado;
         Utilidades.GetGridColumn(GResultados, "Almacén").Visible= CTodosAlmacenes.Checked && CAlmacen.Checked;
 
         SKardex.SelectCommand = String.Format(SKardex.SelectCommand, ((ing)Master).GetAlmacen());
@@ -93,13 +93,13 @@ public partial class almacen_estado : System.Web.UI.Page
             Utilidades.GetGridColumn(GResultados, "Costo").Visible = configuracion.nCosto != 0;
 
             // vencimiento
-            TVence.Visible = LVence.Visible = configuracion.nVence != 0;
+            TVence.Visible = LVence.Visible = configuracion.bVencimiento;
 
             // ubicacion
             DUbicacion.Visible = LUbicacion.Visible = configuracion.nUbicacion != 0;
 
             // estado
-            DEstado.Visible = LEstado.Visible = configuracion.nEstado != 0;
+            DEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
             CAlmacen.Visible= CTodosAlmacenes.Visible = Usuario.GetUsuario()["almacenes"].IndexOf(",") != -1 || Usuario.GetUsuario()["almacenes"] == "-2";
 
@@ -146,8 +146,8 @@ public partial class almacen_estado : System.Web.UI.Page
     {
         GResultados.DataSourceID = CDetallado.Checked ? "SResultados1" : "SResultados";
 
-        Utilidades.GetGridColumn(GResultados, "Lote").Visible = CDetallado.Checked && CConfiguracion.GetConfiguracion().nLote!=0;
-        Utilidades.GetGridColumn(GResultados, "Vence").Visible = CDetallado.Checked && CConfiguracion.GetConfiguracion().nVence!=0;
+        Utilidades.GetGridColumn(GResultados, "Lote").Visible = CDetallado.Checked && CConfiguracion.GetConfiguracion().bLote;
+        Utilidades.GetGridColumn(GResultados, "Vence").Visible = CDetallado.Checked && CConfiguracion.GetConfiguracion().bVencimiento;
 
         if(Utilidades.GetRowsCount(GResultados, LTotal)>0) {
             ((ing)Master).SetPrintFile("estado.html");

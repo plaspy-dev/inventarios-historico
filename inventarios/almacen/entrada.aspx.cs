@@ -31,15 +31,15 @@ public partial class almacen_entrada : System.Web.UI.Page
 
             // lote
             Utilidades.GetGridColumn(GProductos, "Lote").Visible =
-            RLote.Visible= TLote.Visible= LLote.Visible = configuracion.nLote != 0;
+            RLote.Visible= TLote.Visible= LLote.Visible = configuracion.bLote;
 
             // vencimiento
             Utilidades.GetGridColumn(GProductos, "Vence").Visible =
-            RVencimiento.Visible = TVencimiento.Visible = LVencimiento.Visible = configuracion.nVence != 0;
+            RVencimiento.Visible = TVencimiento.Visible = LVencimiento.Visible = configuracion.bVencimiento;
 
             // serial
             Utilidades.GetGridColumn(GProductos, "Serial").Visible =
-            RSerial.Visible = TSerial.Visible = LSerial.Visible = configuracion.nSerial != 0;
+            RSerial.Visible = TSerial.Visible = LSerial.Visible = configuracion.bSerial;
 
             // ubicacion
             Utilidades.GetGridColumn(GProductos, "Ubicación").Visible =
@@ -48,7 +48,7 @@ public partial class almacen_entrada : System.Web.UI.Page
 
             // estado
             Utilidades.GetGridColumn(GProductos, "Estado").Visible =
-            REstado.Visible = DEstado.Visible = LEstado.Visible = configuracion.nEstado != 0;
+            REstado.Visible = DEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
 
             Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible = false;

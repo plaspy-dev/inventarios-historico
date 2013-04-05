@@ -22,15 +22,15 @@ public partial class almacen_traslado : System.Web.UI.Page
 
             // lote
             Utilidades.GetGridColumn(GProductos, "Lote").Visible =
-            LLoteA.Visible= TLote.Visible = LLote.Visible = configuracion.nLote != 0;
+            LLoteA.Visible= TLote.Visible = LLote.Visible = configuracion.bLote;
 
             // vencimiento
             Utilidades.GetGridColumn(GProductos, "Vence").Visible =
-            LVencimientoA.Visible= TVencimiento.Visible = LVencimiento.Visible = configuracion.nVence != 0;
+            LVencimientoA.Visible= TVencimiento.Visible = LVencimiento.Visible = configuracion.bVencimiento;
 
             // serial
             Utilidades.GetGridColumn(GProductos, "Serial").Visible =
-            LSerialA.Visible= TSerial.Visible = LSerial.Visible = configuracion.nSerial != 0;
+            LSerialA.Visible= TSerial.Visible = LSerial.Visible = configuracion.bSerial;
 
             // ubicacion
             Utilidades.GetGridColumn(GProductos, "Ubicación").Visible =
@@ -38,7 +38,7 @@ public partial class almacen_traslado : System.Web.UI.Page
 
             // estado
             Utilidades.GetGridColumn(GProductos, "Estado").Visible =
-            LEstadoA.Visible= TEstado.Visible = LEstado.Visible = configuracion.nEstado != 0;
+            LEstadoA.Visible= TEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
 
             CUsuario usuario = (CUsuario)CUsuario.GetUsuario();

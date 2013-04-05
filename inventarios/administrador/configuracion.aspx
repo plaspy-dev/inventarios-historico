@@ -28,6 +28,31 @@
     <tr>
         <td colspan="3" class="GridHeader">Productos</td>
     </tr>
+    <tr>
+        <td colspan="3"><asp:CheckBox runat="server" ID="CVencimiento" Text="Los productos manejan fecha de vencimiento" /></td>
+    </tr>
+    <tr>
+        <td colspan="3"><asp:CheckBox runat="server" ID="CLote" Text="Los productos manejan lote" /></td>
+    </tr>
+    <tr>
+        <td colspan="3"><asp:CheckBox runat="server" ID="CSerial" Text="Los productos manejan serial" /></td>
+    </tr>
+    <tr>
+        <td colspan="3"><asp:CheckBox runat="server" ID="CEstado" Text="Los productos manejan estado" /></td>
+    </tr>
+      <tr>
+        <td>Ubicación</td>
+        <td><asp:DropDownList ID="DUbicacion" runat="server">
+                <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
+                <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
+                <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
+            </asp:DropDownList>
+        </td>
+        <td></td>
+      </tr>
+    <tr>
+        <td colspan="3" class="GridHeader">Configuración inicial de productos</td>
+    </tr>
   <tr>
       <td>
           Manejo de cantidades</td>
@@ -37,6 +62,7 @@
               <asp:ListItem Text="Entero" Value="1"></asp:ListItem>
           </asp:DropDownList>
       </td>
+      <td></td>
   </tr>
   <tr>
     <td>Fecha de vencimiento</td>
@@ -79,16 +105,6 @@
         </asp:DropDownList>
     </td>
     <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
-  </tr>
-  <tr>
-    <td>Ubicación</td>
-    <td><asp:DropDownList ID="DUbicacion" runat="server">
-            <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
-            <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
-            <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
-        </asp:DropDownList>
-    </td>
-    <td></td>
   </tr>
   <tr>
     <td colspan="3">
