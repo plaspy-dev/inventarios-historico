@@ -20,20 +20,20 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
             // lote
-            LLoteA.Visible = TLote.Visible = LLote.Visible = configuracion.nLote != 0;
-            LLoteA2.Visible = TLote2.Visible = LLote2.Visible = configuracion.nLote != 0;
+            LLoteA.Visible = TLote.Visible = LLote.Visible = configuracion.bLote;
+            LLoteA2.Visible = TLote2.Visible = LLote2.Visible = configuracion.bLote;
 
             // vencimiento
-            LVencimientoA.Visible = TVencimiento.Visible = LVencimiento.Visible = configuracion.nVence != 0;
-            LVencimientoA2.Visible = TVencimiento2.Visible = LVencimiento2.Visible = configuracion.nVence != 0;
+            LVencimientoA.Visible = TVencimiento.Visible = LVencimiento.Visible = configuracion.bVencimiento;
+            LVencimientoA2.Visible = TVencimiento2.Visible = LVencimiento2.Visible = configuracion.bVencimiento;
 
             // serial
-            LSerialA.Visible = TSerial.Visible = LSerial.Visible = configuracion.nSerial != 0;
-            LSerialA2.Visible = TSerial2.Visible = LSerial2.Visible = configuracion.nSerial != 0;
+            LSerialA.Visible = TSerial.Visible = LSerial.Visible = configuracion.bSerial;
+            LSerialA2.Visible = TSerial2.Visible = LSerial2.Visible = configuracion.bSerial;
 
             // estado
-            LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.nEstado != 0;
-            LEstadoA2.Visible = DEstado2.Visible = LEstado2.Visible = configuracion.nEstado != 0;
+            LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.bEstado;
+            LEstadoA2.Visible = DEstado2.Visible = LEstado2.Visible = configuracion.bEstado;
 
 
             TNumero.Focus();

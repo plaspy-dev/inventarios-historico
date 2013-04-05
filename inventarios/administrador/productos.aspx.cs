@@ -20,10 +20,10 @@ public partial class administrador_productos : System.Web.UI.Page
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
             DCantidades.SelectedValue = configuracion.nCantidad.ToString();
-            DVence.SelectedValue = configuracion.nVence.ToString();
-            DLote.SelectedValue = configuracion.nLote.ToString();
-            DSerial.SelectedValue = configuracion.nSerial.ToString();
-            DEstado.SelectedValue = configuracion.nEstado.ToString();
+            DVence.SelectedValue = configuracion.nProductoVence.ToString();
+            DLote.SelectedValue = configuracion.nProductoLote.ToString();
+            DSerial.SelectedValue = configuracion.nProductoSerial.ToString();
+            DEstado.SelectedValue = configuracion.nProductoEstado.ToString();
 
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
