@@ -119,9 +119,7 @@ public partial class almacen_estado : System.Web.UI.Page
 
                 PKardex.Visible = true;
                 PBuscar.Visible = false;
-                Page.Title = "Kardex de " + Request.QueryString["n"];
-                if(!string.IsNullOrEmpty(Request.QueryString["l"]) && !string.IsNullOrEmpty(Request.QueryString["v"])) 
-                    Page.Title +=" (" + Request.QueryString["l"] + ") " + Request.QueryString["v"];
+                Page.Title = "Kardex de " + Producto.GetProducto(Request.QueryString["pid"]).nombre;
 
                 BActualizar_Click(sender, e);
             } else {
@@ -344,8 +342,11 @@ public partial class almacen_estado : System.Web.UI.Page
     }
     protected void BActualizar_Click(object sender, EventArgs e)
     {
-        if (!IsValid)
-            return;
+        try
+        {
+            if (!IsValid)
+                return;
+        } catch {}
 
         GKardex.DataBind();
         ((ing)Master).SetPrintFile("kardex.html");

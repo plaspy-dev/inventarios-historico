@@ -15,6 +15,25 @@ public partial class ing : System.Web.UI.MasterPage
         // CUsuario.CheckVariables();
         CUsuario usuario = (CUsuario)Usuario.GetUsuario();
 
+        if (Session["szMensaje"] != null)
+        {
+            LPagina.Text += " " + Session["szMensaje"].ToString();
+            Session["szMensaje"] = null;
+        }
+        else
+        {
+            LPagina.Text = Page.Title;
+        }
+        if (Session["szAlerta"] != null)
+        {
+            LAlerta.Text = Session["szAlerta"].ToString();
+            Session["szAlerta"] = null;
+        }
+        else
+        {
+            LAlerta.Text = "";
+        }
+
         if (!IsPostBack)
         {
             InitAlmacen();
@@ -37,6 +56,9 @@ public partial class ing : System.Web.UI.MasterPage
                     HAlertas.Text += " Traslados pendientes";
                 }
             }
+
+            RAlertas.DataSource = Alertas.GetAlertas(GetAlmacen());
+            RAlertas.DataBind();
 
             HGuardar.NavigateUrl= HImprimir.NavigateUrl = Request.Url.AbsolutePath + Request.Url.Query;
             HImprimir.NavigateUrl += Request.Url.Query.Length == 0 ? "?p=1" : "&p=1";
@@ -94,21 +116,6 @@ public partial class ing : System.Web.UI.MasterPage
                 }
             }
         }
-        if (Session["szMensaje"] != null)
-        {
-            LPagina.Text += " " + Session["szMensaje"].ToString();
-            Session["szMensaje"] = null;
-        }
-        else
-        {
-            LPagina.Text = Page.Title;
-        }
-        if (Session["szAlerta"]!=null) {
-            LAlerta.Text = Session["szAlerta"].ToString();
-            Session["szAlerta"] = null;
-        } else {
-            LAlerta.Text = "";
-        }
         usuario.CreateMenu(TMenu, Session["parametros"] == null ? "" : Session["parametros"].ToString());
     }
     public void SetPrintFile(string archivo) {
@@ -144,10 +151,6 @@ public partial class ing : System.Web.UI.MasterPage
             Response.Redirect(HttpContext.Current.Request.Url.AbsolutePath + query);
             Response.End();
         }
-        /*if (ViewState["almacen"]!=null && ViewState["almacen"].ToString()!=GetAlmacen()) {
-            Response.Redirect(HttpContext.Current.Request.Url.AbsolutePath + HttpContext.Current.Request.Url.Query);
-            Response.End();
-        }*/
     }
     public DropDownList GetDropDownAlmacen() {
         return DAlmacen;
@@ -246,5 +249,19 @@ public partial class ing : System.Web.UI.MasterPage
             SAlertas.SelectCommand = string.Format(SAlertas.SelectCommand, GetAlmacen());
             PAlertas.Visible = true;
         }
+    }
+    protected void OnAlerta_Click(object sender, EventArgs e) {
+        
+        LinkButton link = (LinkButton)sender;
+
+        SAlertas.SelectCommand = string.Format(link.CommandName, GetAlmacen());
+        ((HyperLinkField)GAlertas.Columns[0]).DataNavigateUrlFormatString = link.CommandArgument;
+        GAlertas.DataBind();
+        /*if (GAlertas.Rows.Count==1) {
+            Response.Redirect(string.Format(link.CommandArgument, GAlertas.DataKeys[0].Value.ToString()));
+        } else {
+            PAlertas.Visible = true;
+        }*/
+        PAlertas.Visible = true;
     }
 }

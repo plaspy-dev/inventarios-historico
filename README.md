@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-03 · Filtrar existencias y preparar sus columnas.** Amplía los filtros y la lógica con que el listado selecciona columnas de resultados, e incorpora una página de configuración. El lector puede seguir cómo una consulta produce el detalle de existencias que muestra la tabla.
+**2013-04-05 · Incorporar alertas vinculadas con productos.** Añade el modelo que reúne alertas y cambia los controles del catálogo y el formato de salida. Esto permite localizar las advertencias que se consultan junto a los datos del producto.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-03 · Filter stock and configure its columns.** Expand filters and result column selection and add a settings page. Readers can trace a query to the stock details shown in the table.
+**2013-04-05 · Add product-related alerts.** Add the model that gathers alerts and revise catalog controls and withdrawal output. Readers can identify warnings consulted alongside product data.
 
 ### How to explore the source
 

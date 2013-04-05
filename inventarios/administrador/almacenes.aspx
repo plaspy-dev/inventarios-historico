@@ -86,7 +86,7 @@
       <tr>
         <td>
             <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" 
-                DataKeyNames="id" DataSourceID="SResultados" 
+                DataKeyNames="id" DataSourceID="SResultados" AllowSorting="true"
                 onselectedindexchanged="GResultado_SelectedIndexChanged" >
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -104,7 +104,7 @@
             <asp:SqlDataSource ID="SResultados" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT id, nombre, descripcion FROM almacen WHERE estado IS NULL" 
+                SelectCommand="SELECT id, nombre, descripcion FROM almacen WHERE estado IS NULL ORDER BY nombre" 
                 DeleteCommand="UPDATE almacen SET estado=-1 WHERE id=@id" >
             </asp:SqlDataSource>
           </td>

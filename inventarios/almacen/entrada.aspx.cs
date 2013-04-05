@@ -387,6 +387,8 @@ public partial class almacen_entrada : System.Web.UI.Page
 
         conector.Commit();
         Session["entrada_clean"] = 1;
+
+        Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
         ((ing)Master).SetAlerta("Entrada " + HId.Value + " editada.");
         ((ing)Master).SetResultado("Entrada " + HId.Value + " editada.");
     }

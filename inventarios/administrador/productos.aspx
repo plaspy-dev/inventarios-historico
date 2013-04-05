@@ -10,6 +10,12 @@
                 collapsible: true,
                 active: false
             });
+            $("#accordion2").accordion({
+                autoHeight: false,
+                navigation: true,
+                collapsible: true,
+                active: false
+            });
             $("#<%= TNombre.ClientID %>").autocomplete({
                 source: function(request, response) {
                     $.ajax({
@@ -21,7 +27,7 @@
                         dataFilter: function(data) { return data; },
                         success: function(data) {
                             response($.map(data.d, function(item) {
-                                item.label = item.ProductoCompleto;x
+                                item.label = item.ProductoCompleto;
                                 return item;
                             }))
                         },
@@ -181,8 +187,50 @@
           </tr>
           <tr>
             <td>Último Costo</td>
-            <td><asp:TextBox runat="server" ID="TCosto" CssClass="float"></asp:TextBox></td>
+            <td><asp:TextBox runat="server" ID="TCosto" CssClass="dinero"></asp:TextBox></td>
             <td></td>
+          </tr>
+          <tr>
+            <td colspan="3">
+                <div id="accordion2">
+                    <h3><a href="#">Máximos y mínimos</a></h3>
+                    <div class="hide">
+                        <asp:GridView ID="GAlmacenes" runat="server" AutoGenerateColumns="False" 
+                            DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true">
+                            <RowStyle CssClass="GridRow"></RowStyle>
+                            <FooterStyle CssClass="GridFooter"></FooterStyle>
+                            <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                            <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                            <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                            <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                            <Columns>
+                                <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" />
+                                <asp:TemplateField HeaderText="Mínimo" SortExpression="minimo">
+                                    <ItemTemplate>
+                                        <asp:TextBox runat="server" ID="TMinimo" CssClass="float" Text='<%# Eval("minimo").ToString()=="" ? "" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                                <asp:TemplateField HeaderText="Máximo" SortExpression="maximo">
+                                    <ItemTemplate>
+                                        <asp:TextBox runat="server" ID="TMaximo" CssClass="float" Text='<%# Eval("maximo").ToString()=="" ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                        </asp:GridView>
+                        <asp:SqlDataSource ID="SAlmaceness" runat="server" 
+                            ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                            ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                            SelectCommand="SELECT almacen.id, almacen.nombre, maximo_minimo.maximo, maximo_minimo.minimo
+                                        FROM almacen
+                                        LEFT JOIN maximo_minimo ON (maximo_minimo.producto=@producto AND maximo_minimo.almacen=almacen.id)
+                                        WHERE estado IS NULL ORDER BY almacen.nombre;">
+                            <SelectParameters>
+                                 <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="producto" DefaultValue="0" />
+                            </SelectParameters>
+                        </asp:SqlDataSource>
+                    </div>
+                </div>
+            </td>
           </tr>
           <tr>
             <td colspan="3">
@@ -201,7 +249,7 @@
                             <Columns>
                                 <asp:BoundField HeaderText="Proveedor" DataField="nombre" SortExpression="nombre" />
                                 <asp:BoundField DataField="fecha" HeaderText="Fecha" SortExpression="fecha" ItemStyle-HorizontalAlign="Right" />
-                                <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
+                                <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
                             </Columns>
                         </asp:GridView>
                         <asp:SqlDataSource ID="SCostos" runat="server"
