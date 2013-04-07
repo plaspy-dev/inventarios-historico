@@ -5,6 +5,7 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
     <p align="center">
         Ha ocurrido un error en la aplicación, lo sentimos estamos trabajando en esto.<br />
-        <img alt="" src="error.jpg" /></p>
+        <img alt="" src="error.jpg" /><br />
+        <a href="javascript:history.back();">Volver</a>
+        </p>
 </asp:Content>
-

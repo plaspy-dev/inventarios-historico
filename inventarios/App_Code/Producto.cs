@@ -28,6 +28,7 @@ public class Producto
     protected int _nNumero= -1;
     protected int _nEstado = -1;
     protected string _Empresa;
+    public string FormatoLote = "";
 
     public String id { set; get; }
     public String lote { set; get; }
@@ -57,6 +58,23 @@ public class Producto
     public string szEstado { get {
         return Almacen.GetNombreEstado(estado);
     }}
+
+    public string LoteTemporal {
+        get {
+            DateTime actual = DateTime.Now;
+            string pad = "00";
+            string dia= actual.Day.ToString();
+            string mes = actual.Month.ToString();
+
+            string lote = FormatoLote
+                .Replace("%codigo%", codigo)
+                .Replace("%dia%", pad.Substring(0, pad.Length - dia.Length) + dia)
+                .Replace("%mes%", pad.Substring(0, pad.Length - mes.Length) + mes)
+                .Replace("%ano%",  actual.Year.ToString().Substring(2))
+                .Replace("%anoc%", actual.Year.ToString());
+            return lote;
+        }
+    }
 
     [XmlIgnore]
     public string Empresa
@@ -230,6 +248,7 @@ public class Producto
             query += "entero";
             query += "nEstado";
             query += "diasvencimiento";
+            query += "formatolote";
 
             MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
             if (reader != null && reader.Read())
@@ -264,6 +283,7 @@ public class Producto
                     producto.DiasV = Convert.ToInt32(reader["diasvencimiento"]);
                 }catch { producto.DiasV = 0; }
                 producto.Empresa = reader["empresa"].ToString();
+                producto.FormatoLote = reader["formatolote"].ToString();
             }
             HttpRuntime.Cache.Insert("producto" + id, producto, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
@@ -349,6 +369,7 @@ public class Producto
         nEstado = producto.nEstado;
         Costo = producto.Costo;
         DiasV = producto.DiasV;
+        FormatoLote = producto.FormatoLote;
 
         ubicacion = 0;
         estado = 0;
@@ -427,12 +448,15 @@ public class Producto
             + "  ) AS b WHERE c=@i;"
              , almacen, id, Query.GetValor(desde));
         MySqlDataReader reader= conector.Query(query);
+        costop = 0;
+        costoacumulado = 0;
+        saldo = 0;
         if (reader == null)
             return false;
         if(reader.Read()) {
-            costoacumulado = Convert.ToDecimal(reader["costoacumulado"]);
-            costop = Convert.ToDecimal(reader["costop"]);
-            saldo = Convert.ToDecimal(reader["saldo"]);
+            try { costoacumulado = Convert.ToDecimal(reader["costoacumulado"]); } catch {}
+            try { costop = Convert.ToDecimal(reader["costop"]); } catch {}
+            try { saldo = Convert.ToDecimal(reader["saldo"]); } catch { }
         }
         return true;
     }

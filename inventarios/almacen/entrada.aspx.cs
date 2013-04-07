@@ -17,8 +17,6 @@ public partial class almacen_entrada : System.Web.UI.Page
 
         ((ing)Master).CheckAlmacen();
 
-        SUbicacion.SelectCommand = string.Format(SUbicacion.SelectCommand, ((ing)Master).GetAlmacen());
-
         if(!IsPostBack) {
             
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
@@ -44,7 +42,7 @@ public partial class almacen_entrada : System.Web.UI.Page
             // ubicacion
             Utilidades.GetGridColumn(GProductos, "Ubicación").Visible =
             Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible =
-            DUbicacion.Visible = LUbicacion.Visible = configuracion.nUbicacion != 0;
+            TUbicacionID.Visible= TUbicacion.Visible= LUbicacion.Visible = configuracion.nUbicacion != 0;
 
             // estado
             Utilidades.GetGridColumn(GProductos, "Estado").Visible =
@@ -59,6 +57,14 @@ public partial class almacen_entrada : System.Web.UI.Page
                 Session["entrada_clean"] = null;
             }
             else ViewState["clean"] = false;
+
+            if(Session["lentrada"]!=null) {
+
+                ViewState["urlprint"] = Request.Url.AbsolutePath + "?ei=" + Session["lentrada"].ToString() + "&p=1";
+                LImprimir.Text = "Entrada " + Session["lentrada"].ToString() + " Editada.<br/>¿Desea imprimirla?";
+                PImprimir.Visible = true;
+                Session["lentrada"] = null;
+            }
 
             CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
             if(!string.IsNullOrEmpty(Request.QueryString["ei"])) {
@@ -172,7 +178,8 @@ public partial class almacen_entrada : System.Web.UI.Page
         TVencimiento.Text = producto.vence;
         TProductoID.Text = producto.id;
         TSerial.Text = producto.serial;
-        DUbicacion.SelectedValue = producto.ubicacion.ToString();
+        TUbicacionID.Text= producto.ubicacion.ToString();
+        TUbicacion.Text = producto.NombreUbicacion;
         DEstado.SelectedValue = producto.estado.ToString();
         TCosto.Text = producto.Costo.ToString(CultureInfo.InvariantCulture);
     }
@@ -209,7 +216,7 @@ public partial class almacen_entrada : System.Web.UI.Page
             producto.Costo = Decimal.Parse(TCosto.Text, NumberStyles.Currency, CultureInfo.InvariantCulture);
         } catch { }
         producto.estado = Convert.ToInt32(DEstado.SelectedValue);
-        producto.ubicacion= Convert.ToInt32(DUbicacion.SelectedValue);
+        producto.ubicacion = TUbicacionID.Text.Length==0 ? 0 : Convert.ToInt32(TUbicacionID.Text);
 
         ProductoUsado productousadoNuevo = new ProductoUsado(HProductos.Value);
         ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
@@ -251,7 +258,7 @@ public partial class almacen_entrada : System.Web.UI.Page
 
         TCosto.Text= TSerial.Text= TProducto.Text = TProductoID.Text = TCantidad.Text= TLote.Text = TVencimiento.Text = "";
         DEstado.SelectedIndex = 0;
-        DUbicacion.SelectedIndex = 0;
+        TUbicacion.Text= TUbicacionID.Text="";
         TProducto.Focus();
 
         GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Costo T.")].Text = string.Format("{0:C}", productoUsado.GetCostoTotal());
@@ -329,10 +336,10 @@ public partial class almacen_entrada : System.Web.UI.Page
         {
             for (int i = 0; i < GProductos.Rows.Count; i++)
             {
-                DropDownList ubicacion = (DropDownList)GProductos.Rows[i].FindControl("DUbicacion");
-                if (ubicacion.SelectedValue != "0")
+                TextBox ubicacion = (TextBox)GProductos.Rows[i].FindControl("TUbicacionID");
+                if (ubicacion.Text.Length!=0)
                 { // se modifico la ubicacion.
-                    productoUsado.UpdateProductoUbicacion(Convert.ToInt32(GProductos.DataKeys[i].Values[0]), Convert.ToInt32(ubicacion.SelectedValue));
+                    productoUsado.UpdateProductoUbicacion(Convert.ToInt32(GProductos.DataKeys[i].Values[0]), ubicacion.Text.Length==0 ? 0 : Convert.ToInt32(ubicacion.Text));
                 }
             }
         }
@@ -389,7 +396,9 @@ public partial class almacen_entrada : System.Web.UI.Page
         Session["entrada_clean"] = 1;
 
         Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
-        ((ing)Master).SetAlerta("Entrada " + HId.Value + " editada.");
+
+        Session["lentrada"] = HId.Value;
+
         ((ing)Master).SetResultado("Entrada " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)

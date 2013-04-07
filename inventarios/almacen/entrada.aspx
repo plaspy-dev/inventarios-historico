@@ -6,6 +6,7 @@
     {
         width: 100px;
     }
+    .tubicacion {}
 </style>
 <script type="text/javascript">
     $(function() {
@@ -29,7 +30,38 @@
         if (hasStorage) 
           localStorage.entrada = $("#<%= HProductos.ClientID %>").val();
         $("#<%= BAceptar.ClientID %>").click(function() { window.onbeforeunload = null; });
-          
+                  
+          $(".tubicacion").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "../webservices/servicios.asmx/GetUbicacion",
+                    data: "{ 'q': '" + request.term + "', a: '<%= ((ing)Master).GetAlmacen() %>' }",
+                    dataType: "json",
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    dataFilter: function(data) { return data; },
+                    success: function(data) {
+                        response($.map(data.d, function(item) {
+                            item.label= item.value;
+                            return item;
+                        }))
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus);
+                    }
+                });
+            },
+            autoFocus: true,
+            minLength: 3,
+            select: function(event, ui) {
+
+                $("#"+ $(this).attr("id")+ "ID").val(ui.item.item);
+                $(this).val(ui.item.value);
+                return false;
+            },
+                search: function(event, ui) { $("#" + $(this).attr("id") + "ID").val(""); }
+        }).change(function() { if ($(this).val().length == 0) $("#" + $(this).attr("id") + "ID").val(""); });
+        
           $("#<%= TTercero.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -102,6 +134,13 @@
                 } else {
                     $("#<%= TVencimiento.ClientID %>").val("");
                 }
+                var pad = "00";
+                var almacen= "<%= ((ing)Master).GetAlmacen() %>";
+                
+                $("#<%= TLote.ClientID %>").val(
+                    ui.item.LoteTemporal
+                    .replace("%codigoalmacen%", pad.substring(0, pad.length - almacen.length) + almacen)
+                );
 
                 ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
                 ui.item.nLote>0 ? $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= TLote.ClientID %>,#<%= LLote.ClientID %>").hide();
@@ -124,6 +163,16 @@
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+<asp:Panel runat="server" ID="PImprimir" Visible="false">
+    <div id="dialog-confirm" title="Imprimir" class="hide"> 
+        <p><asp:Label runat="server" ID="LImprimir"></asp:Label></p>
+    </div>
+    <script type="text/javascript">
+        $(function() {
+            $("#dialog-confirm").dialog({resizable: false,modal: true,buttons: { "Imprimir": function() { window.open('<%= ViewState["urlprint"] %>', '_blank'); $(this).dialog("close"); }, "Cancelar" : function() {$(this).dialog("close");}}});
+        });
+    </script>
+</asp:Panel>
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
 <ContentTemplate>
     <asp:HiddenField runat="server" ID="HId" />
@@ -202,15 +251,8 @@
             <td class="tdl">
                 &nbsp;</td>
             <td><asp:TextBox CssClass="tlote" runat="server" ID="TSerial"></asp:TextBox></td>
-            <td><asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
-                       DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id">
-                       <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
-                </asp:DropDownList>
-                <asp:SqlDataSource ID="SUbicacion" runat="server" 
-                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                    ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                    SelectCommand="SELECT id, nombre FROM ubicacion WHERE almacen={0} AND estado IS NULL ORDER BY nombre">
-                </asp:SqlDataSource></td>
+            <td><asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
+                <asp:TextBox runat="server" ID="TUbicacionID" CssClass="hide"></asp:TextBox></td>
             <td>
                 <asp:DropDownList ID="DEstado" runat="server" AppendDataBoundItems="true" 
                         DataSourceID="SEstado" DataTextField="nombre" DataValueField="id">
@@ -264,10 +306,8 @@
                         <asp:BoundField DataField="NombreUbicacion" HeaderText="Ubicación" SortExpression="NombreUbicacion" />
                         <asp:TemplateField HeaderText="Ubicación ">
                             <ItemTemplate>
-                                <asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
-                                   DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id" SelectedValue='<%# Eval("ubicacion") %>'>
-                                   <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
-                                </asp:DropDownList>
+                                <asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion" Text='<%# Eval("NombreUbicacion") %>'></asp:TextBox>
+                                <asp:TextBox runat="server" ID="TUbicacionID" CssClass="hide" Text='<%# Eval("ubicacion") %>'></asp:TextBox>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" />

@@ -1,33 +1,70 @@
 ﻿<%@ Page Title="Estado" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="estado.aspx.cs" Inherits="almacen_estado" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
-
+    <link rel="Stylesheet" type="text/css" href="../css/jquery.multiselect.css" />
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.multiselect.min.js"></script>
     <script type="text/javascript">
-    addFunctionToStart(function() {
-        addDialog("#<%= PUbicacion.ClientID %>", "#dUbicacion");
-        addDialog("#<%= PEstado.ClientID %>", "#dEstado");
-        $("#<%= DProductoUbicaciones.ClientID %>").change(function() {
-            var cantidad = $(this).val().split(";");
-            $("#tmaxima").text(cantidad[4]);
-            $("#<%= TCantidad.ClientID %>").val(cantidad[4]);
-        }).change();
-        $("#<%= DProductoEstado.ClientID %>").change(function() {
-            var cantidad = $(this).val().split(";");
-            $("#tmaximaestado").text(cantidad[4]);
-            $("#<%= TEstadoCantidad.ClientID %>").val(cantidad[4]);
-        }).change();
-    });
-    $(function() {
-        $("#<%= CTodosAlmacenes.ClientID %>").change(function() {
-            if ($(this).is(':checked')) {
-                $("#<%= CAlmacen.ClientID %>").parent().show();
-            } else {
+
+        function CheckAlmacenes() {
+            if ($("#<%= DAlmacenes.ClientID %>").val() == null || $("#<%= DAlmacenes.ClientID %>").val().toString().indexOf(",") == -1)
                 $("#<%= CAlmacen.ClientID %>").parent().hide();
-            }
-        }).change();
-        if ($("#<%= CTodosAlmacenes.ClientID %>").is(':checked'))
-            $('#<%= GResultados.ClientID %> a[href*="estado.aspx"]').click(function() { return false;  });
-    });
+            else $("#<%= CAlmacen.ClientID %>").parent().show();
+        }
+        addFunctionToStart(function() {
+            addDialog("#<%= PUbicacion.ClientID %>", "#dUbicacion");
+            addDialog("#<%= PEstado.ClientID %>", "#dEstado");
+
+            CheckAlmacenes();
+            
+            $("#<%= DAlmacenes.ClientID %>").multiselect({
+                noneSelectedText: "Seleccione un almacen",
+                checkAllText: "Todos",
+                uncheckAllText: "Ninguno",
+                selectedText: "# seleccionados",
+                close: CheckAlmacenes
+            });
+            $("#<%= TUbicacion.ClientID %>,#<%= TNUbicacion.ClientID %>").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "../webservices/servicios.asmx/GetUbicacion",
+                        data: "{ 'q': '" + request.term + "', a: '<%= ((ing)Master).GetAlmacen() %>' }",
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        dataFilter: function(data) { return data; },
+                        success: function(data) {
+                            response($.map(data.d, function(item) {
+                                item.label = item.value;
+                                return item;
+                            }))
+                        },
+                        error: function(XMLHttpRequest, textStatus, errorThrown) {
+                            alert(textStatus);
+                        }
+                    });
+                },
+                autoFocus: true,
+                minLength: 3,
+                select: function(event, ui) {
+
+                    $("#" + $(this).attr("id") + "ID").val(ui.item.item);
+                    $(this).val(ui.item.value);
+                    return false;
+                },
+                search: function(event, ui) { $("#" + $(this).attr("id") + "ID").val(""); }
+            }).change(function() { if ($(this).val().length == 0) $("#" + $(this).attr("id") + "ID").val(""); });
+
+            $("#<%= DProductoUbicaciones.ClientID %>").change(function() {
+                var cantidad = $(this).val().split(";");
+                $("#tmaxima").text(cantidad[4]);
+                $("#<%= TCantidad.ClientID %>").val(cantidad[4]);
+            }).change();
+            $("#<%= DProductoEstado.ClientID %>").change(function() {
+                var cantidad = $(this).val().split(";");
+                $("#tmaximaestado").text(cantidad[4]);
+                $("#<%= TEstadoCantidad.ClientID %>").val(cantidad[4]);
+            }).change();
+        });
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
@@ -54,10 +91,8 @@
                 <tr>
                     <td>Destino</td>
                     <td>
-                        <asp:DropDownList ID="DNuevaUbicacion" runat="server" AppendDataBoundItems="true" 
-                            DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id">
-                            <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
-                        </asp:DropDownList>
+                        <asp:TextBox runat="server" ID="TNUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
+                        <asp:TextBox runat="server" ID="TNUbicacionID" CssClass="hide"></asp:TextBox>
                     </td>
                 </tr>
                 <tr>
@@ -115,9 +150,10 @@
             <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
             <td>Grupo</td>
             <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label></td>
-            <td></td>
-            <td><asp:CheckBox runat="server" ID="CTodosAlmacenes" Text="Todos los almacenes" /></td>
+            <td><asp:Label runat="server" ID="LAlmacenes" Text="Almacenes"></asp:Label></td>
             <td><asp:CheckBox runat="server" ID="CAlmacen" Text="Ver almacén" CssClass="hide" /></td>
+            <td></td>
+            <td></td>
         </tr>
         <tr>
             <td>
@@ -128,16 +164,8 @@
                 <asp:TextBox runat="server" ID="TNombre"></asp:TextBox>
             </td>
             <td>
-                <asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
-                       DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id">
-                       <asp:ListItem Text="(Todas)" Value="-1"></asp:ListItem>
-                       <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
-                </asp:DropDownList>
-                <asp:SqlDataSource ID="SUbicacion" runat="server" 
-                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                    ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                    SelectCommand="SELECT id, nombre FROM ubicacion WHERE almacen={0} AND estado IS NULL ORDER BY nombre">
-                </asp:SqlDataSource>
+                <asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
+                <asp:TextBox runat="server" ID="TUbicacionID" CssClass="hide"></asp:TextBox>
             </td>
             <td><asp:DropDownList ID="DGrupo" runat="server" AppendDataBoundItems="true" 
                     DataSourceID="SGrupo" DataTextField="nombre" DataValueField="id">
@@ -163,10 +191,14 @@
                 </asp:SqlDataSource>
                 </td>
             <td>
+                <asp:ListBox ID="DAlmacenes" runat="server" SelectionMode="Multiple">
+                </asp:ListBox>
+                </td>
+            <td>
                 <asp:CheckBox ID="CDetallado" runat="server" Text="Detallado" />
             </td>
             <td>
-                <asp:CheckBox ID="CTodos" runat="server" Text="Todos los productos" />
+                <asp:CheckBox ID="CTodos" runat="server" Text="Productos sin existencias" />
             </td>
             <td>
                 <asp:Button ID="BBuscar" runat="server" Text="Actualizar" onclick="BBuscar_Click" />
@@ -216,7 +248,8 @@
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa
-                        ,producto.unidad,producto.codigo,producto.descripcion,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
+                        ,producto.unidad,producto.codigo,producto.descripcion
+                        ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,'' AS lote,'' AS vence,'' AS szSerial,estado{0}.costo AS costo
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
                         ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado
@@ -241,7 +274,7 @@
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
                     <asp:ControlParameter ControlID="CTodos" PropertyName="Checked" Name="todos" />
-                    <asp:ControlParameter ControlID="DUbicacion" PropertyName="SelectedValue" Name="ubicacion" />
+                    <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>
@@ -252,7 +285,8 @@
                 SelectCommand="SELECT estado{0}.producto,estado{0}.lote
                         ,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence
                         ,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa,estado{0}.szSerial,estado{0}.costo AS costo
-                        ,producto.unidad,producto.codigo,producto.descripcion,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
+                        ,producto.unidad,producto.codigo,producto.descripcion                        
+                        ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
                         ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado
                         FROM estado{0} 
@@ -276,7 +310,7 @@
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
                     <asp:ControlParameter ControlID="CTodos" PropertyName="Checked" Name="todos" />
-                    <asp:ControlParameter ControlID="DUbicacion" PropertyName="SelectedValue" Name="ubicacion" />
+                    <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>
@@ -316,8 +350,11 @@
         function drawChart() {
             var data = google.visualization.arrayToDataTable([['Fecha', 'Costo']<asp:Literal runat="server" ID="LCostos"></asp:Literal>]);
             var options = { title: 'Costos' };
-            var chart = new google.visualization.AreaChart(document.getElementById('<%= chart_costos.ClientID %>'));
-            chart.draw(data, options);
+            var chart;
+            try {
+                chart = new google.visualization.AreaChart(document.getElementById('<%= chart_costos.ClientID %>'));
+                chart.draw(data, options);
+            } catch (e) {}
             
             data = google.visualization.arrayToDataTable([['Fecha', 'Cantidad']<asp:Literal runat="server" ID="LEntradas"></asp:Literal>]);
             options = { title: 'Entradas' };

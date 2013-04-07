@@ -11,7 +11,6 @@ public partial class almacen_informes : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         ((ing)Master).CheckAlmacen();
-        SUbicacion.SelectCommand = String.Format(SUbicacion.SelectCommand, ((ing)Master).GetAlmacen(), ((ing)Master).GetAlmacen());
         SResultados1.SelectCommand = String.Format(SResultados1.SelectCommand, ((ing)Master).GetAlmacen(), ((ing)Master).GetAlmacen());
         SResultados2.SelectCommand = String.Format(SResultados2.SelectCommand, ((ing)Master).GetAlmacen(), ((ing)Master).GetAlmacen());
         SResultados3.SelectCommand = String.Format(SResultados3.SelectCommand, ((ing)Master).GetAlmacen(), ((ing)Master).GetAlmacen());

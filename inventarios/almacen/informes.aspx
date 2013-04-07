@@ -3,6 +3,36 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 <script type="text/javascript">
     $(function() {
+        $("#<%= TUbicacion.ClientID %>").autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "../webservices/servicios.asmx/GetUbicacion",
+                    data: "{ 'q': '" + request.term + "', a: '<%= ((ing)Master).GetAlmacen() %>' }",
+                    dataType: "json",
+                    type: "POST",
+                    contentType: "application/json; charset=utf-8",
+                    dataFilter: function(data) { return data; },
+                    success: function(data) {
+                        response($.map(data.d, function(item) {
+                            item.label = item.value;
+                            return item;
+                        }))
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus);
+                    }
+                });
+            },
+            autoFocus: true,
+            minLength: 3,
+            select: function(event, ui) {
+
+                $("#" + $(this).attr("id") + "ID").val(ui.item.item);
+                $(this).val(ui.item.value);
+                return false;
+            },
+            search: function(event, ui) { $("#" + $(this).attr("id") + "ID").val(""); }
+        }).change(function() { if ($(this).val().length == 0) $("#" + $(this).attr("id") + "ID").val(""); });
         $("#<%= TTercero.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -77,16 +107,8 @@
                 <asp:TextBox runat="server" ID="TNombre"></asp:TextBox>
             </td>
             <td>
-                <asp:DropDownList ID="DUbicacion" runat="server" AppendDataBoundItems="true" 
-                       DataSourceID="SUbicacion" DataTextField="nombre" DataValueField="id">
-                       <asp:ListItem Text="(Todas)" Value="-1"></asp:ListItem>
-                       <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
-                </asp:DropDownList>
-                <asp:SqlDataSource ID="SUbicacion" runat="server" 
-                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                    ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                    SelectCommand="SELECT id, nombre FROM ubicacion WHERE almacen={0} AND estado IS NULL ORDER BY nombre">
-                </asp:SqlDataSource>
+                <asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
+                <asp:TextBox runat="server" ID="TUbicacionID" CssClass="hide"></asp:TextBox>
             </td>
             <td><asp:DropDownList ID="DGrupo" runat="server" AppendDataBoundItems="true" 
                     DataSourceID="SGrupo" DataTextField="nombre" DataValueField="id">
@@ -169,7 +191,7 @@
                     <asp:ControlParameter ControlID="THasta" PropertyName="Text" Name="hasta" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TTerceroID" PropertyName="Text" Name="tercero" DefaultValue="0" />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
-                    <asp:ControlParameter ControlID="DUbicacion" PropertyName="SelectedValue" Name="ubicacion" />
+                    <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>
@@ -201,7 +223,7 @@
                     <asp:ControlParameter ControlID="THasta" PropertyName="Text" Name="hasta" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TTerceroID" PropertyName="Text" Name="tercero" DefaultValue="0" />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
-                    <asp:ControlParameter ControlID="DUbicacion" PropertyName="SelectedValue" Name="ubicacion" />
+                    <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>
@@ -234,7 +256,7 @@
                     <asp:ControlParameter ControlID="THasta" PropertyName="Text" Name="hasta" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TTerceroID" PropertyName="Text" Name="tercero" DefaultValue="0" />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
-                    <asp:ControlParameter ControlID="DUbicacion" PropertyName="SelectedValue" Name="ubicacion" />
+                    <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>
@@ -264,7 +286,7 @@
                     <asp:ControlParameter ControlID="THasta" PropertyName="Text" Name="hasta" DefaultValue=" " />
                     <asp:ControlParameter ControlID="TTerceroID" PropertyName="Text" Name="tercero" DefaultValue="0" />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
-                    <asp:ControlParameter ControlID="DUbicacion" PropertyName="SelectedValue" Name="ubicacion" />
+                    <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>

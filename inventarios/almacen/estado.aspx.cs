@@ -33,24 +33,41 @@ public partial class almacen_estado : System.Web.UI.Page
     {
         ((ing)Master).CheckAlmacen();
 
-        Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !CTodosAlmacenes.Checked && CConfiguracion.GetConfiguracion().nUbicacion!=0;
-        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !CTodosAlmacenes.Checked && CConfiguracion.GetConfiguracion().bEstado;
-        Utilidades.GetGridColumn(GResultados, "Almacén").Visible= CTodosAlmacenes.Checked && CAlmacen.Checked;
+        bool todoslosalmacenes = false;
+        string seleccionado = "";
+        for(int i=0; i<DAlmacenes.Items.Count; i++) {
+            if (DAlmacenes.Items[i].Selected)
+            {
+                if(seleccionado.Length>0) {
+                    todoslosalmacenes = true;
+                    break;
+                }
+                seleccionado = DAlmacenes.Items[i].Value;
+            }
+        }
+
+        if (!todoslosalmacenes && seleccionado.Length > 0 && seleccionado != ((ing)Master).GetAlmacen())
+        {
+            ((ing)Master).GetDropDownAlmacen().SelectedValue=seleccionado;
+        }
+
+        Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !todoslosalmacenes && CConfiguracion.GetConfiguracion().nUbicacion != 0;
+        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !todoslosalmacenes && CConfiguracion.GetConfiguracion().bEstado;
+        Utilidades.GetGridColumn(GResultados, "Almacén").Visible = todoslosalmacenes && CAlmacen.Checked;
 
         SKardex.SelectCommand = String.Format(SKardex.SelectCommand, ((ing)Master).GetAlmacen());
-        SUbicacion.SelectCommand = String.Format(SUbicacion.SelectCommand, ((ing)Master).GetAlmacen());
 
-        if (CTodosAlmacenes.Checked) {
+        if (todoslosalmacenes)
+        {
             string original = SResultados.SelectCommand = String.Format(SResultados.SelectCommand, "0", "%almacen%");
             string original1 = SResultados1.SelectCommand = String.Format(SResultados1.SelectCommand, "0", "%almacen%");
 
             ArrayList alm = new ArrayList();
-            DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
-            for (int i = 0; i < almacenes.Items.Count; i++)
+            for (int i = 0; i < DAlmacenes.Items.Count; i++)
             {
-                alm.Add(almacenes.Items[i].Value);
+                if (DAlmacenes.Items[i].Selected)
+                    alm.Add(DAlmacenes.Items[i].Value);
             }
-
             SResultados.SelectCommand = Almacen.GetAllAlamcenes(SResultados.SelectCommand, alm);
             SResultados1.SelectCommand = Almacen.GetAllAlamcenes(SResultados1.SelectCommand, alm);
 
@@ -96,12 +113,16 @@ public partial class almacen_estado : System.Web.UI.Page
             TVence.Visible = LVence.Visible = configuracion.bVencimiento;
 
             // ubicacion
-            DUbicacion.Visible = LUbicacion.Visible = configuracion.nUbicacion != 0;
+            TUbicacion.Visible= TUbicacionID.Visible= LUbicacion.Visible = configuracion.nUbicacion != 0;
 
             // estado
             DEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
-            CAlmacen.Visible= CTodosAlmacenes.Visible = Usuario.GetUsuario()["almacenes"].IndexOf(",") != -1 || Usuario.GetUsuario()["almacenes"] == "-2";
+            LAlmacenes.Visible= DAlmacenes.Visible = CAlmacen.Visible= Usuario.GetUsuario()["almacenes"].IndexOf(",") != -1 || Usuario.GetUsuario()["almacenes"] == "-2";
+
+            DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
+            for (int i = 0; i < almacenes.Items.Count; i++)
+                DAlmacenes.Items.Add(almacenes.Items[i]);
 
             if(!string.IsNullOrEmpty(Request.QueryString["pid"])) { // Kardex
 
@@ -216,7 +237,7 @@ public partial class almacen_estado : System.Web.UI.Page
         if (!producto.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
             return;
 
-        producto.ubicacion = Convert.ToInt32(DNuevaUbicacion.SelectedValue);
+        producto.ubicacion = TNUbicacionID.Text.Length==0 ? 0 : Convert.ToInt32(TNUbicacionID.Text);
         producto.GetCostoPromedio(((ing)Master).GetAlmacen());
 
         if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
@@ -434,7 +455,6 @@ public partial class almacen_estado : System.Web.UI.Page
 
         for (int i = 0; i < grafica.Count; i++)
         {
-
             Kardex kardex = grafica[i];
             if (kardex.bSalidas)
                 LSalidas.Text += string.Format(",['{0}', {1}]"
