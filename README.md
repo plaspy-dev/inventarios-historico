@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-07 · Reorganizar filtros de estado, entradas e informes.** Cambia los formularios y la lógica de navegador que leen los valores de los filtros en estado, entradas e informes. La interfaz puede usar los campos actualizados en cada consulta.
+**2013-04-07 · Guardar el plazo de alerta desde el formulario.** Lee la cantidad de días desde el campo editable de la configuración de vencimientos. Así se puede guardar el valor recién escrito en el formulario.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-07 · Rework stock, receipt, and report filters.** Revise forms and browser logic that read filters for stock status, receipts, and reports. The interface can use the revised fields for each search.
+**2013-04-07 · Save the expiry alert window from the form.** Read the number of days from the editable expiry settings field. This allows the newly entered value to be saved.
 
 ### How to explore the source
 

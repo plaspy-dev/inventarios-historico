@@ -43,7 +43,7 @@ public partial class administrador_configuracion : System.Web.UI.Page
         configuracion.nProductoSerial = Convert.ToInt32(DSerial.SelectedValue);
         configuracion.nProductoEstado = Convert.ToInt32(DEstado.SelectedValue);
         configuracion.nUbicacion = Convert.ToInt32(DUbicacion.SelectedValue);
-        configuracion.nDiasVencimiento = Convert.ToInt32(configuracion.nDiasVencimiento);
+        configuracion.nDiasVencimiento = Convert.ToInt32(TDiasVencimiento.Text);
 
         configuracion.bVencimiento= CVencimiento.Checked;
         configuracion.bLote= CLote.Checked;
