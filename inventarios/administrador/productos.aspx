@@ -47,6 +47,25 @@
             $("#<%= DVence.ClientID %>").change(function() {
                 $("#<%= TDiasVencimiento.ClientID %>").attr("disabled", $(this).val() == "0");
             }).change();
+            $("#<%= TFormatoLote.ClientID %>").change(function() {
+                if ($(this).val().length == 0)
+                    $("#sformatolote").text("Ejemplo: milote-%codigo%-%codigoalmacen%-%anoc%-%ano%-%mes%-%dia%");
+                else {
+                    var pad = "00";
+                    var dia = new Date().getDate().toString();
+                    var mes = (new Date().getMonth()+1).toString();
+                    var almacen= "<%= ((ing)Master).GetAlmacen() %>";
+                    $("#sformatolote").text("Resultado: " + 
+                        $(this).val()
+                        .replace("%codigo%", $("#<%= TCodigo.ClientID %>").val())
+                        .replace("%codigoalmacen%", pad.substring(0, pad.length - almacen.length) + almacen)
+                        .replace("%dia%", pad.substring(0, pad.length - dia.length) + dia)
+                        .replace("%mes%", pad.substring(0, pad.length - mes.length) + mes)
+                        .replace("%ano%", new Date().getFullYear().toString().substring(2))
+                        .replace("%anoc%", new Date().getFullYear())
+                    );
+                }
+            }).change();
         });
 </script>
 </asp:Content>
@@ -186,6 +205,11 @@
             <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
           </tr>
           <tr>
+            <td>Formato lote</td>
+            <td><asp:TextBox runat="server" ID="TFormatoLote"></asp:TextBox> <span id="sformatolote"></span></td>
+            <td></td>
+          </tr>
+          <tr>
             <td>Último Costo</td>
             <td><asp:TextBox runat="server" ID="TCosto" CssClass="dinero"></asp:TextBox></td>
             <td></td>
@@ -310,6 +334,7 @@
                     <asp:BoundField DataField="entero" HeaderText="Manejo de cantidades" SortExpression="entero" />
                     <asp:BoundField DataField="vence" HeaderText="Fecha de vencimiento" SortExpression="vence" />
                     <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
+                    <asp:BoundField DataField="formatolote" HeaderText="Formato lote" SortExpression="formatolote" />
                     <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
                     <asp:BoundField DataField="estado" HeaderText="Estado" SortExpression="estado" />
                     <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
@@ -325,6 +350,7 @@
                         ,CASE producto.serial WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS serial
                         ,CASE producto.entero WHEN 1 THEN 'Entero' ELSE 'Decimal' END AS entero
                         ,varios.nombre AS grupo
+                        ,producto.formatolote
                         ,producto.costo
                         FROM producto 
                         LEFT JOIN varios ON (producto.grupo=varios.id)

@@ -73,6 +73,36 @@ public class servicios : System.Web.Services.WebService {
         return lista;
     }
 
+    [WebMethod]
+    public List<CJSon> GetUbicacion(String q, string a)
+    {
+        List<CJSon> lista = new List<CJSon>();
+        CConector conector = new CConector();
+
+        string query = string.Format("SELECT id, nombre FROM ubicacion WHERE almacen={0} AND estado IS NULL", a);
+        string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
+
+        for (int i = 0; i < split.Length; i++)
+        {
+            if (split[i].Length > 0)
+            { // verificamos que no este vacio
+                query += String.Format(" AND nombre LIKE '%{0}%'", split[i]);
+            }
+        }
+        query += " ORDER BY nombre LIMIT 50;";
+        MySqlDataReader reader = conector.Query(query);
+        if (reader != null)
+        {
+            while (reader.Read())
+            {
+                CJSon info = new CJSon(reader["nombre"].ToString(), reader["id"].ToString());
+                lista.Add(info);
+            }
+            reader.Close();
+        }
+        return lista;
+    }
+
     [WebMethod(EnableSession=true)]
     public List<Producto> GetProducto(String q, String p)
     {

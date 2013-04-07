@@ -48,6 +48,7 @@ public partial class administrador_productos : System.Web.UI.Page
                 query += "costo";
                 query += "id";
                 query += "diasvencimiento";
+                query += "formatolote";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
                 if(reader!=null && reader.Read()) {
@@ -65,6 +66,7 @@ public partial class administrador_productos : System.Web.UI.Page
                     DEstado.SelectedValue = reader["nEstado"].ToString();
                     TCosto.Text = Convert.ToDecimal(reader["costo"]).ToString(CultureInfo.InvariantCulture);
                     TDiasVencimiento.Text = reader["diasvencimiento"].ToString();
+                    TFormatoLote.Text = reader["formatolote"].ToString();
                     CConector.SelectInDropDown(DGrupo, reader["grupo"]);
 
                     ViewState["codigo"] = TCodigo.Text;
@@ -115,6 +117,7 @@ public partial class administrador_productos : System.Web.UI.Page
         query["costo"] = TCosto.Text.Length == 0 ? "" :
             decimal.Parse(TCosto.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
         query["diasvencimiento"]= TDiasVencimiento.Text;
+        query["formatolote"] = TFormatoLote.Text;
 
         if (HId.Value.Length == 0)
         {

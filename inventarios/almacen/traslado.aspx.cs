@@ -47,6 +47,14 @@ public partial class almacen_traslado : System.Web.UI.Page
                 ViewState["clean"] = true;
                 Session["traslado_clean"] = null;
             } else ViewState["clean"] = false;
+            
+            if (Session["ltraslado"] != null)
+            {
+                ViewState["urlprint"] = Request.Url.AbsolutePath + "?ti=" + Session["ltraslado"].ToString() + "&p=1";
+                LImprimir.Text = "Traslado " + Session["ltraslado"].ToString() + " Editado.<br/>¿Desea imprimirla?";
+                PImprimir.Visible = true;
+                Session["ltraslado"] = null;
+            }
 
             CAutomatico.Enabled = usuario.CanAdmin();
             TNumero.Focus();
@@ -407,7 +415,8 @@ public partial class almacen_traslado : System.Web.UI.Page
         Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
         Alertas.RemoveAlertas(DDestino.SelectedValue);
         Session["traslado_clean"] = 1;
-        ((ing)Master).SetAlerta("Traslado " + HId.Value + " editada.");
+        Session["ltraslado"] = HId.Value;
+
         ((ing)Master).SetResultado("Traslado " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)

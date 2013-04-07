@@ -50,6 +50,13 @@ public partial class almacen_salida : System.Web.UI.Page
             }
             else ViewState["clean"] = false;
 
+            if (Session["lsalida"] != null)
+            {
+                ViewState["urlprint"] = Request.Url.AbsolutePath + "?si=" + Session["lsalida"].ToString() + "&p=1";
+                LImprimir.Text = "Salida " + Session["lsalida"].ToString() + " Editada.<br/>¿Desea imprimirla?";
+                PImprimir.Visible = true;
+                Session["lsalida"] = null;
+            }
 
             TNumero.Focus();
             ViewState["almacen"] = ((ing)Master).GetAlmacen();
@@ -322,7 +329,8 @@ public partial class almacen_salida : System.Web.UI.Page
         conector.Commit();
         Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
         Session["salida_clean"] = 1;
-        ((ing)Master).SetAlerta("Remisión " + HId.Value + " editada.");
+        Session["lsalida"] = HId.Value;
+
         ((ing)Master).SetResultado("Remisión " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)

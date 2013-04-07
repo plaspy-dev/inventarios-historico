@@ -149,6 +149,16 @@
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+<asp:Panel runat="server" ID="PImprimir" Visible="false">
+    <div id="dialog-confirm" title="Imprimir" class="hide"> 
+        <p><asp:Label runat="server" ID="LImprimir"></asp:Label></p>
+    </div>
+    <script type="text/javascript">
+        $(function() {
+            $("#dialog-confirm").dialog({ resizable: false, modal: true, buttons: { "Imprimir": function() { window.open('<%= ViewState["urlprint"] %>', '_blank'); $(this).dialog("close"); }, "Cancelar": function() { $(this).dialog("close"); } } });
+        });
+    </script>
+</asp:Panel>
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
     <ContentTemplate>
 <asp:HiddenField runat="server" ID="HId" />

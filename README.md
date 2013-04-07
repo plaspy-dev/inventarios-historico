@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-05 · Configurar vencimientos y mostrar el lote cuando aplica.** Actualiza los campos de configuración para vencimientos y la visibilidad del lote en transformación. El formulario puede pedir esa información según las opciones de inventario.
+**2013-04-07 · Reorganizar filtros de estado, entradas e informes.** Cambia los formularios y la lógica de navegador que leen los valores de los filtros en estado, entradas e informes. La interfaz puede usar los campos actualizados en cada consulta.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-05 · Configure expiry and show the lot where applicable.** Update expiry settings and lot field visibility on the transformation form. The form can request that information according to the inventory options.
+**2013-04-07 · Rework stock, receipt, and report filters.** Revise forms and browser logic that read filters for stock status, receipts, and reports. The interface can use the revised fields for each search.
 
 ### How to explore the source
 
