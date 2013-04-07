@@ -2,7 +2,7 @@
 
 | Component | Author | Origin | Notice | File | SHA-256 |
 | --- | --- | --- | --- | --- | --- |
-| MySQL Connector/NET | Oracle | `inventarios20130407114839.rar` | Copyright © 2004, 2010, Oracle and/or its affiliates. All rights reserved. | `inventarios/Bin/MySql.Data.dll` | `86525a33e425f2afbd00cbaedaa0135bb69145db51a042b65b0c46b1b5dbeb81` |
+| MySQL Connector/NET | Oracle | `inventarios20130407200409.rar` | Copyright © 2004, 2010, Oracle and/or its affiliates. All rights reserved. | `inventarios/Bin/MySql.Data.dll` | `86525a33e425f2afbd00cbaedaa0135bb69145db51a042b65b0c46b1b5dbeb81` |
 | ui-bg_diagonals-thick_75_f3d8d8_40x40.png | jQuery UI theme contributors / Colaboradores del tema jQuery UI | Dated inventory archive / Respaldo fechado de inventarios | Archived theme image / Imagen del tema de época | inventarios/css/alertas/images/ui-bg_diagonals-thick_75_f3d8d8_40x40.png | 419e9f823cc2a47cb52a039fbd321777b153f093ad3dea3b716db72c6e408315 |
 | ui-bg_dots-small_65_a6a6a6_2x2.png | jQuery UI theme contributors / Colaboradores del tema jQuery UI | Dated inventory archive / Respaldo fechado de inventarios | Archived theme image / Imagen del tema de época | inventarios/css/alertas/images/ui-bg_dots-small_65_a6a6a6_2x2.png | 41a94a40a00806c3d8acf64b8a943a6fa66d4ee371e21e87c94e7ed1623769ee |
 | ui-bg_flat_0_333333_40x100.png | jQuery UI theme contributors / Colaboradores del tema jQuery UI | Dated inventory archive / Respaldo fechado de inventarios | Archived theme image / Imagen del tema de época | inventarios/css/alertas/images/ui-bg_flat_0_333333_40x100.png | 02a69561054c2fae313ecfba2eb71c3864bb88efa90f4df9c1291460450ecaf8 |
