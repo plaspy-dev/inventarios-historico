@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-07 · Guardar el plazo de alerta desde el formulario.** Lee la cantidad de días desde el campo editable de la configuración de vencimientos. Así se puede guardar el valor recién escrito en el formulario.
+**2013-04-13 · Validar las alertas de producto y ajustar almacenes.** Añade validadores a los valores de alerta y ajusta su conversión al guardar productos. Simplifica consultas en la administración del almacén para hacer visibles los cambios en el registro que se edita.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-07 · Save the expiry alert window from the form.** Read the number of days from the editable expiry settings field. This allows the newly entered value to be saved.
+**2013-04-13 · Validate product alerts and revise warehouse editing.** Add validators to alert values and revise conversion when saving products. Simplify warehouse administration queries to reflect changes to the edited record.
 
 ### How to explore the source
 

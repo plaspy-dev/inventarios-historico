@@ -18,14 +18,6 @@
     <td></td>
     </tr>
     <tr>
-    <td>Días para alerta de vencimiento</td>
-    <td><asp:TextBox runat="server" ID="TDiasVencimiento" CssClass="entero"></asp:TextBox></td>
-    <td>
-        <asp:RequiredFieldValidator ControlToValidate="TDiasVencimiento" ErrorMessage="Por favor ingrese unos días." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
-        <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDiasVencimiento" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
-    </td>
-    </tr>
-    <tr>
         <td colspan="3" class="GridHeader">Productos</td>
     </tr>
     <tr>
@@ -105,6 +97,14 @@
         </asp:DropDownList>
     </td>
     <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+  </tr>
+  <tr>
+    <td>Días para alerta de vencimiento</td>
+    <td><asp:TextBox runat="server" ID="TDiasVencimiento" CssClass="entero"></asp:TextBox></td>
+    <td>
+        <asp:RequiredFieldValidator ControlToValidate="TDiasVencimiento" ErrorMessage="Por favor ingrese unos días." ID="RequiredFieldValidator1" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
+        <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDiasVencimiento" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+    </td>
   </tr>
   <tr>
     <td colspan="3">

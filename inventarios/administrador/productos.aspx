@@ -76,7 +76,7 @@
     <td valign="top"><table width="100%" border="0">
       <tr>
         <td>
-<table width="100%" border="0">
+<table width="100%" border="0" style="border-collapse: collapse">
           <tr>
             <td>Nombre</td>
             <td>
@@ -154,35 +154,6 @@
               </td>
           </tr>
           <tr>
-            <td>Fecha de vencimiento</td>
-            <td><asp:DropDownList ID="DVence" runat="server">
-                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
-                    <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
-                    <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
-                    <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
-                </asp:DropDownList>
-            </td>
-            <td>
-            <asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
-          </tr>
-          <tr>
-              <td>Días para vencimiento</td>
-              <td><asp:TextBox runat="server" ID="TDiasVencimiento" CssClass="entero"></asp:TextBox></td>
-              <td><asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDiasVencimiento" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
-          </tr>
-          <tr>
-            <td>Lote</td>
-            <td>
-                <asp:DropDownList ID="DLote" runat="server">
-                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
-                    <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
-                    <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
-                    <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
-                </asp:DropDownList>
-            </td>
-            <td><asp:RequiredFieldValidator ControlToValidate="DLote" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
-          </tr>
-          <tr>
             <td>Serial</td>
             <td><asp:DropDownList ID="DSerial" runat="server">
                     <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
@@ -205,9 +176,66 @@
             <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
           </tr>
           <tr>
-            <td>Formato lote</td>
-            <td><asp:TextBox runat="server" ID="TFormatoLote"></asp:TextBox> <span id="sformatolote"></span></td>
-            <td></td>
+            <td colspan="3" class="GridHeader">Vencimiento</td>
+          </tr>
+          <tr>
+            <td class="tdl">Fecha de vencimiento</td>
+            <td><asp:DropDownList ID="DVence" runat="server">
+                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
+                    <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
+                    <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
+                    <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
+                </asp:DropDownList>
+            </td>
+            <td class="tdr">
+            <asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator3" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+          </tr>
+          <tr>
+              <td class="tdl">Días para vencimiento</td>
+              <td><asp:TextBox runat="server" ID="TDiasVencimiento" CssClass="entero"></asp:TextBox></td>
+              <td class="tdr"><asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDiasVencimiento" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
+          </tr>
+          <tr>
+              <td class="tdl tdb">Días alerta vencimiento</td>
+              <td class="tdb"><asp:TextBox runat="server" ID="TDAlertaV" CssClass="entero"></asp:TextBox></td>
+              <td class="tdr tdb"><asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="RegularExpressionValidator1" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDAlertaV" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
+          </tr>
+          <tr>
+            <td colspan="3" class="GridHeader">Lote</td>
+          </tr>
+          <tr>
+            <td class="tdl">Lote</td>
+            <td>
+                <asp:DropDownList ID="DLote" runat="server">
+                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
+                    <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
+                    <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
+                    <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
+                </asp:DropDownList>
+            </td>
+            <td class="tdr"><asp:RequiredFieldValidator ControlToValidate="DLote" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+          </tr>
+          <tr>
+            <td class="tdl tdb">Formato lote</td>
+            <td  class="tdb"><asp:TextBox runat="server" ID="TFormatoLote"></asp:TextBox> <span id="sformatolote"></span></td>
+            <td class="tdr tdb"></td>
+          </tr>
+          <tr>
+            <td colspan="3" class="GridHeader">Mínimos y máximos</td>
+          </tr>
+          <tr>
+            <td class="tdl"></td>
+            <td colspan="2" class="tdr"><asp:CheckBox runat="server" ID="CMinMaxEstado" Text="Mínimos y máximos por estados" /></td>
+          </tr>
+          <tr>
+              <td class="tdl">Mínimo global</td>
+              <td><asp:TextBox runat="server" ID="TMinimo" CssClass="float"></asp:TextBox></td>
+              <td class="tdr"><asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator3" runat="server" ErrorMessage="Por favor ingrese un numero." ControlToValidate="TMinimo" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
+          </tr>
+          <tr>
+              <td class="tdl tdb">Máximo global</td>
+              <td class="tdb"><asp:TextBox runat="server" ID="TMaximo" CssClass="float"></asp:TextBox></td>
+              <td class="tdr tdb"><asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator2" runat="server" ErrorMessage="Por favor ingrese un numero." ControlToValidate="TMaximo" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
           </tr>
           <tr>
             <td>Último Costo</td>
@@ -217,7 +245,7 @@
           <tr>
             <td colspan="3">
                 <div id="accordion2">
-                    <h3><a href="#">Máximos y mínimos</a></h3>
+                    <h3><a href="#">Máximos y mínimos por almacén</a></h3>
                     <div class="hide">
                         <asp:GridView ID="GAlmacenes" runat="server" AutoGenerateColumns="False" 
                             DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true">
@@ -332,11 +360,16 @@
                     <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" />
                     <asp:BoundField DataField="grupo" HeaderText="Grupo" SortExpression="grupo" />
                     <asp:BoundField DataField="entero" HeaderText="Manejo de cantidades" SortExpression="entero" />
-                    <asp:BoundField DataField="vence" HeaderText="Fecha de vencimiento" SortExpression="vence" />
-                    <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
-                    <asp:BoundField DataField="formatolote" HeaderText="Formato lote" SortExpression="formatolote" />
                     <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
                     <asp:BoundField DataField="estado" HeaderText="Estado" SortExpression="estado" />
+                    <asp:BoundField DataField="vence" HeaderText="Fecha de vencimiento" SortExpression="vence" />
+                    <asp:BoundField DataField="diasvencimiento" HeaderText="Días vencimiento" SortExpression="diasvencimiento" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="dias_alerta" HeaderText="Días alerta vencimiento" SortExpression="dias_alerta" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
+                    <asp:BoundField DataField="formatolote" HeaderText="Formato lote" SortExpression="formatolote" />
+                    <asp:BoundField DataField="maxmin_tipo" HeaderText="Mínimo y máximo por estados" SortExpression="maxmin_tipo" />
+                    <asp:BoundField DataField="minimo" HeaderText="Mínimo global" SortExpression="minimo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
+                    <asp:BoundField DataField="maximo" HeaderText="Máximo global" SortExpression="maximo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
                     <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
                 </Columns>
             </asp:GridView>
@@ -352,6 +385,11 @@
                         ,varios.nombre AS grupo
                         ,producto.formatolote
                         ,producto.costo
+                        ,producto.diasvencimiento
+                        ,producto.dias_alerta
+                        ,producto.minimo
+                        ,producto.maximo
+                        ,CASE producto.maxmin_tipo WHEN 1 THEN 'Si' ELSE 'No' END AS maxmin_tipo
                         FROM producto 
                         LEFT JOIN varios ON (producto.grupo=varios.id)
                         WHERE producto.estado IS NULL

@@ -24,6 +24,7 @@ public partial class administrador_productos : System.Web.UI.Page
             DLote.SelectedValue = configuracion.nProductoLote.ToString();
             DSerial.SelectedValue = configuracion.nProductoSerial.ToString();
             DEstado.SelectedValue = configuracion.nProductoEstado.ToString();
+            TDAlertaV.Text = configuracion.nDiasVencimiento.ToString();
 
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
@@ -49,6 +50,10 @@ public partial class administrador_productos : System.Web.UI.Page
                 query += "id";
                 query += "diasvencimiento";
                 query += "formatolote";
+                query += "dias_alerta";
+                query += "maximo";
+                query += "minimo";
+                query += "maxmin_tipo";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
                 if(reader!=null && reader.Read()) {
@@ -64,7 +69,21 @@ public partial class administrador_productos : System.Web.UI.Page
                     DCantidades.SelectedValue = reader["entero"].ToString();
                     DSerial.SelectedValue = reader["serial"].ToString();
                     DEstado.SelectedValue = reader["nEstado"].ToString();
-                    TCosto.Text = Convert.ToDecimal(reader["costo"]).ToString(CultureInfo.InvariantCulture);
+                    TDAlertaV.Text = reader["dias_alerta"].ToString();
+                    CMinMaxEstado.Checked = reader["maxmin_tipo"].ToString() == "1";
+                    try
+                    {
+                        TMaximo.Text = Convert.ToDouble(reader["maximo"]).ToString(CultureInfo.InvariantCulture);
+                    } catch {}
+                    try
+                    {
+                        TMinimo.Text = Convert.ToDouble(reader["minimo"]).ToString(CultureInfo.InvariantCulture);
+                    }
+                    catch { }
+                    try
+                    {
+                        TCosto.Text = Convert.ToDecimal(reader["costo"]).ToString(CultureInfo.InvariantCulture);
+                    } catch {}
                     TDiasVencimiento.Text = reader["diasvencimiento"].ToString();
                     TFormatoLote.Text = reader["formatolote"].ToString();
                     CConector.SelectInDropDown(DGrupo, reader["grupo"]);
@@ -114,6 +133,10 @@ public partial class administrador_productos : System.Web.UI.Page
         query["grupo"] = DGrupo.SelectedValue;
         query["nEstado"] = DEstado.SelectedValue;
         query["serial"] = DSerial.SelectedValue;
+        query["dias_alerta"] = TDAlertaV.Text;
+        query["minimo"] = TMinimo.Text;
+        query["maximo"] = TMaximo.Text;
+        query["maxmin_tipo"] = CMinMaxEstado.Checked ? "1" : "";
         query["costo"] = TCosto.Text.Length == 0 ? "" :
             decimal.Parse(TCosto.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
         query["diasvencimiento"]= TDiasVencimiento.Text;

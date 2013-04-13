@@ -37,7 +37,7 @@
               <td colspan="3" class="tdl tdr">
               <asp:GridView ID="GUbicaciones" runat="server" AutoGenerateColumns="False" 
                 DataKeyNames="id" DataSourceID="SUbicaciones" 
-                onselectedindexchanged="GUbicaciones_SelectedIndexChanged" >
+                onselectedindexchanged="GUbicaciones_SelectedIndexChanged" AllowPaging="true" >
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
                 <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>

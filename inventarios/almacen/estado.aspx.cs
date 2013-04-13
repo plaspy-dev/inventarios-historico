@@ -247,6 +247,7 @@ public partial class almacen_estado : System.Web.UI.Page
         ViewState["producto"] = null;
         PUbicacion.Visible = false;
         GResultados.SelectedIndex = -1;
+        GResultados.DataBind();
     }
 
     protected void GResultados_SelectedIndexChanged(object sender, EventArgs e)
@@ -321,7 +322,6 @@ public partial class almacen_estado : System.Web.UI.Page
     }
     protected void BCancelarEstado_Click(object sender, EventArgs e)
     {
-
         ViewState["producto"] = null;
         PEstado.Visible = false;
         GResultados.SelectedIndex = -1;
@@ -342,7 +342,7 @@ public partial class almacen_estado : System.Web.UI.Page
         producto.estado = Convert.ToInt32(detalle[3]);
         producto.Ingreso = true;
 
-        producto.cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
+        producto.cantidad = Convert.ToDecimal(TEstadoCantidad.Text, CultureInfo.InvariantCulture);
 
         CConector conector = new CConector();
         conector.StartTransaction();
@@ -357,9 +357,10 @@ public partial class almacen_estado : System.Web.UI.Page
             return;
 
         conector.Commit();
-        DEstado.Visible = false;
+        PEstado.Visible = false;
         ViewState["producto"] = null;
         GResultados.SelectedIndex = -1;
+        GResultados.DataBind();
     }
     protected void BActualizar_Click(object sender, EventArgs e)
     {
@@ -480,8 +481,19 @@ public partial class almacen_estado : System.Web.UI.Page
         GKardex.FooterRow.Cells[columnasalida].Text = string.Format("{0:F}", salidas);
         GKardex.FooterRow.Cells[columnaCostoTEntrada].Text = string.Format("{0:C}", costoentradas - costosaldoa);
         GKardex.FooterRow.Cells[columnaCostoTSalida].Text = string.Format("{0:C}", costosalidas);
-        //GKardex.FooterRow.Cells[columnasaldo].Text = saldo.ToString();
+        GKardex.FooterRow.Cells[columnasaldo].Text = string.Format("{0:F}", entradas - saldoa - salidas);
         //GKardex.FooterRow.Cells[columnaCostoPromedio].Text = costop.ToString();
-        //GKardex.FooterRow.Cells[columnaCostoTSaldo].Text = string.Format("{0:C}", costosaldo);
+        GKardex.FooterRow.Cells[columnaCostoTSaldo].Text = string.Format("{0:C}", costoentradas - costosaldoa - costosalidas);
+
+        LDias.Text= LRotacion.Text = "";
+        try 
+        {
+            decimal rotacion = salidas/(entradas/ 2);
+            LRotacion.Text = string.Format("Índice de rotación: {0:F}.", rotacion);
+
+            TimeSpan span= Convert.ToDateTime(THasta.Text) - Convert.ToDateTime(TDesde.Text);
+            decimal diaseni = span.Days / rotacion;
+            LDias.Text = string.Format("<br/>{0:F} días en el inventario.", diaseni);
+        } catch {}
     }
 }

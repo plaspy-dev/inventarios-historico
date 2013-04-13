@@ -14,6 +14,7 @@ public partial class almacen_entrada : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        ((ing)Master)._ImprimirClicked += new EventHandler(OnImprimir);
 
         ((ing)Master).CheckAlmacen();
 
@@ -42,7 +43,11 @@ public partial class almacen_entrada : System.Web.UI.Page
             // ubicacion
             Utilidades.GetGridColumn(GProductos, "Ubicación").Visible =
             Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible =
+            RUbicacionO.Visible=RUbicacion.Visible=
             TUbicacionID.Visible= TUbicacion.Visible= LUbicacion.Visible = configuracion.nUbicacion != 0;
+
+            // ubicacion obligatoria
+            RUbicacion.Visible = configuracion.nUbicacion == 1;
 
             // estado
             Utilidades.GetGridColumn(GProductos, "Estado").Visible =
@@ -337,7 +342,7 @@ public partial class almacen_entrada : System.Web.UI.Page
             for (int i = 0; i < GProductos.Rows.Count; i++)
             {
                 TextBox ubicacion = (TextBox)GProductos.Rows[i].FindControl("TUbicacionID");
-                if (ubicacion.Text.Length!=0)
+                if (ubicacion.Text.Length!=0 && ubicacion.Text!="-1")
                 { // se modifico la ubicacion.
                     productoUsado.UpdateProductoUbicacion(Convert.ToInt32(GProductos.DataKeys[i].Values[0]), ubicacion.Text.Length==0 ? 0 : Convert.ToInt32(ubicacion.Text));
                 }
@@ -451,5 +456,10 @@ public partial class almacen_entrada : System.Web.UI.Page
         GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
 
         e.Cancel = true;
+    }
+    protected void OnImprimir(object sender, EventArgs e)
+    {
+        GProductos.Columns[1].Visible = 
+        GProductos.Columns[0].Visible = false;
     }
 }

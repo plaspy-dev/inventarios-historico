@@ -165,6 +165,8 @@ public partial class administrador_almacenes : System.Web.UI.Page
     protected void BActualizar_Click(object sender, EventArgs e)
     {
         CConector conector = new CConector();
+
+        conector.QueryMod("TRUNCATE TABLE estado_global");
         MySqlDataReader reader= conector.Query("SELECT id FROM almacen");
         if(reader!=null) {
 
@@ -172,38 +174,11 @@ public partial class administrador_almacenes : System.Web.UI.Page
 
                 CConector conector2= new CConector();
 
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_entrada_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_entrada_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_entrada_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_traslado_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_traslado_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_traslado_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_salida_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_salida_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_salida_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_transformacion_salida0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_transformacion_salida0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_transformacion_salida0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bi_transformacion_entrada0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bu_transformacion_entrada0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER bd_transformacion_entrada0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER ai_entrada_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER au_entrada_items0;", reader["id"].ToString()));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER ad_entrada_items0;", reader["id"].ToString()));
-
                 HId.Value= reader["id"].ToString();
 
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER ai_estado0", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER au_estado0;", HId.Value));
-
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE traslado_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_salida0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_entrada0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 DROP cantidadacumulada;", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 ADD costoacumulado DECIMAL(60,15) DEFAULT 0;", HId.Value));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE estado_global,(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado0 GROUP BY producto,estado) AS t SET estado_global.modificacion=SYSDATE(),estado_global.cantidad=estado_global.cantidad+t.cantidad WHERE estado_global.producto=t.producto AND estado_global.estado=t.estado;", HId.Value));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) SELECT producto,estado,SUM(cantidad),SYSDATE() FROM estado0 GROUP BY producto,estado;", HId.Value));
+                // conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
             }
         }
 
@@ -211,36 +186,8 @@ public partial class administrador_almacenes : System.Web.UI.Page
         
         CConector conector3 = new CConector();
 
-        conector3.QueryMod("DROP TRIGGER bi_entrada_items0;");
-        conector3.QueryMod("DROP TRIGGER bu_entrada_items0;");
-        conector3.QueryMod("DROP TRIGGER bd_entrada_items0;");
-        conector3.QueryMod("DROP TRIGGER bi_traslado_items0;");
-        conector3.QueryMod("DROP TRIGGER bu_traslado_items0;");
-        conector3.QueryMod("DROP TRIGGER bd_traslado_items0;");
-        conector3.QueryMod("DROP TRIGGER bi_salida_items0;");
-        conector3.QueryMod("DROP TRIGGER bu_salida_items0;");
-        conector3.QueryMod("DROP TRIGGER bd_salida_items0;");
-        conector3.QueryMod("DROP TRIGGER bi_transformacion_salida0;");
-        conector3.QueryMod("DROP TRIGGER bu_transformacion_salida0;");
-        conector3.QueryMod("DROP TRIGGER bd_transformacion_salida0;");
-        conector3.QueryMod("DROP TRIGGER bi_transformacion_entrada0;");
-        conector3.QueryMod("DROP TRIGGER bu_transformacion_entrada0;");
-        conector3.QueryMod("DROP TRIGGER bd_transformacion_entrada0;");
-        conector3.QueryMod("DROP TRIGGER ai_entrada_items0;");
-        conector3.QueryMod("DROP TRIGGER au_entrada_items0;");
-        conector3.QueryMod("DROP TRIGGER ad_entrada_items0;");
-
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER ai_estado0", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("DROP TRIGGER au_estado0;", HId.Value));
-
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE traslado_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_salida0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE transformacion_entrada0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 DROP cantidadacumulada;", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE estado0 ADD costoacumulado DECIMAL(60,15) DEFAULT 0;", HId.Value));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE estado_global,(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado0 GROUP BY producto,estado) AS t SET estado_global.modificacion=SYSDATE(),estado_global.cantidad=estado_global.cantidad+t.cantidad WHERE estado_global.producto=t.producto AND estado_global.estado=t.estado;", HId.Value));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) SELECT producto,estado,SUM(cantidad),SYSDATE() FROM estado0 GROUP BY producto,estado;", HId.Value));
 
         ((ing)Master).SetResultado("Almacenes actualizados");
     }
