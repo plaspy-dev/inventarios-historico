@@ -89,7 +89,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Destino</td>
+                    <td>Nueva ubicación</td>
                     <td>
                         <asp:TextBox runat="server" ID="TNUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
                         <asp:TextBox runat="server" ID="TNUbicacionID" CssClass="hide"></asp:TextBox>
@@ -125,7 +125,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Destino</td>
+                    <td>Nuevo estado</td>
                     <td>
                         <asp:DropDownList ID="DNuevoEstado" runat="server" AppendDataBoundItems="true" 
                             DataSourceID="SEstado" DataTextField="nombre" DataValueField="id">
@@ -194,10 +194,10 @@
                 <asp:ListBox ID="DAlmacenes" runat="server" SelectionMode="Multiple">
                 </asp:ListBox>
                 </td>
-            <td>
+            <td nowrap=nowrap>
                 <asp:CheckBox ID="CDetallado" runat="server" Text="Detallado" />
             </td>
-            <td>
+            <td nowrap=nowrap>
                 <asp:CheckBox ID="CTodos" runat="server" Text="Productos sin existencias" />
             </td>
             <td>
@@ -334,6 +334,7 @@
                     onclick="BActualizar_Click" /></td>
         </tr>
     </table>
+    <asp:Label runat="server" ID="LRotacion"></asp:Label><asp:Label runat="server" ID="LDias"></asp:Label>
     <div id="accordion">
         <h3><a href="#">Gráficas</a></h3>
         <div>
@@ -398,9 +399,9 @@
             <asp:BoundField HeaderText="Salida" DataField="salida" SortExpression="salida" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
             <asp:BoundField HeaderText="Costo U.S." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
             <asp:BoundField HeaderText="Costo T.S." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" FooterStyle-Wrap="false" />
-            <asp:BoundField HeaderText="Saldo" DataField="saldo" SortExpression="saldo" ItemStyle-HorizontalAlign="Right" />
-            <asp:BoundField HeaderText="Costo U." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
-            <asp:BoundField HeaderText="Costo T." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
+            <asp:BoundField HeaderText="Saldo" DataField="saldo" SortExpression="saldo" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" FooterStyle-Wrap="false"  />
+            <asp:BoundField HeaderText="Costo U." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" FooterStyle-HorizontalAlign="Right" FooterStyle-Wrap="false" />
+            <asp:BoundField HeaderText="Costo T." DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" FooterStyle-HorizontalAlign="Right" FooterStyle-Wrap="false"/>
         </Columns>
     </asp:GridView>
     <asp:SqlDataSource ID="SKardex" runat="server" 

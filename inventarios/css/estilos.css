@@ -13,6 +13,7 @@ html {
 	/*height: 100%;*/
 	font-family: Lucida Grande, Lucida Sans, Arial, sans-serif;
 	font-size: 14px;
+    min-width: 100%;
 }
 
 body {
@@ -22,21 +23,18 @@ body {
 	background: #156B13;
 	background: -moz-linear-gradient(top,  #DDEBCF 0%, #156B13 100%); /* firefox */
 	background:  -webkit-gradient(linear, left top, left bottom, color-stop(0%,#DDEBCF),  color-stop(100%,#156B13)); /* webkit */
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#DDEBCF', endColorstr='#156B13',GradientType=0 ); /* ie */
+	/*filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#DDEBCF', endColorstr='#156B13',GradientType=0 ); /* ie */
 	background-repeat: no-repeat;
     background-attachment: fixed;
-    min-width: 920px;
+    min-width: 100%;
 }
 
-#contenedor {
-	z-index: 4;
-	width: 100%;
-	height: 100%;
-	min-width: 920px;
+#contenedor 
+{
+    min-width: 100%;
 }
+
 #footer {
-	position: relative;
-	z-index: 0;
 	font-family: Helvetica, Arial, sans-serif;
 	color: #FFF;
 	font-size: 8px;
@@ -95,7 +93,7 @@ table .tablecollapse {
 }
 .cxc 
 {
-    width: 100%;
+    min-width: 100%;
 }
 .derecha
 {

@@ -9,7 +9,7 @@ Archived Web Forms site for recording stock receipts, issues and transfers acros
 > [!WARNING]
 > **Status: Archived.** The website compiles today with the documented Windows toolchain.
 
-This 2013-04-07 source snapshot tracks stock and movements separately for each warehouse.
+This 2013-04-13 source snapshot tracks stock and movements separately for each warehouse.
 
 ### Overview
 
@@ -48,7 +48,7 @@ MySQL Connector/NET 6.3.5.0 is included.
 
 ### Project structure
 
-The recovery includes the archived menu definition `inventarios/directorio.xml` dated 2013-04-07, and 22 interface graphics from the same source.
+The recovery includes the archived menu definition `inventarios/directorio.xml` dated 2013-04-13, and 22 interface graphics from the same source.
 
 `inventarios/` has the pages and stock workflows. `src/SDG.Componentes/` builds the C# reconstruction of the period assembly. `demo/` contains the build script and Web Forms configuration template.
 
@@ -64,7 +64,7 @@ The later 2026 reconstruction trial runs the exact revision with ASP.NET Compile
 
 ### History
 
-This source snapshot comes from a dated RAR archive. The original date is 2013-04-07. The 2026 reconstruction supplies the build, bilingual guide and local database fixture.
+This source snapshot comes from a dated RAR archive. The original date is 2013-04-13. The 2026 reconstruction supplies the build, bilingual guide and local database fixture.
 
 ### Keys for IIS
 
@@ -91,7 +91,7 @@ Archivado — Sitio Web Forms para registrar entradas, salidas y traslados de ex
 > [!WARNING]
 > **Estado: archivado.** El sitio compila hoy con las herramientas de Windows indicadas.
 
-Este respaldo de fuentes del 2013-04-07 controla existencias y movimientos por almacén.
+Este respaldo de fuentes del 2013-04-13 controla existencias y movimientos por almacén.
 
 ### Descripción general
 
@@ -130,7 +130,7 @@ El árbol incluye MySQL Connector/NET 6.3.5.0.
 
 ### Estructura
 
-La recuperación incluye la definición del menú archivado `inventarios/directorio.xml` del 2013-04-07 y 22 gráficos de interfaz del mismo respaldo.
+La recuperación incluye la definición del menú archivado `inventarios/directorio.xml` del 2013-04-13 y 22 gráficos de interfaz del mismo respaldo.
 
 `inventarios/` contiene las páginas y los movimientos. `src/SDG.Componentes/` compila la reconstrucción C# del ensamblado de época. `demo/` contiene el lanzador de compilación y la plantilla Web Forms.
 
@@ -146,7 +146,7 @@ En la prueba posterior de reconstrucción de 2026 se usa esta revisión exacta c
 
 ### Historial
 
-Este corte proviene de un respaldo RAR con fecha original del 2013-04-07. La reconstrucción de 2026 aporta compilación, guía bilingüe y base de datos local ficticia.
+Este corte proviene de un respaldo RAR con fecha original del 2013-04-13. La reconstrucción de 2026 aporta compilación, guía bilingüe y base de datos local ficticia.
 
 ### Claves de IIS
 

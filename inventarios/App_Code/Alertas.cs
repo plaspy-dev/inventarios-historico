@@ -24,13 +24,15 @@ public class Alertas
     }
 
     public static void RemoveAlertas(string almacen) {
-        // if (HttpRuntime.Cache["alertas" + almacen] != null)
-            HttpRuntime.Cache.Remove("alertas" + almacen);
+        HttpRuntime.Cache.Remove("alertas" + almacen);
     }
 
     public static List<Alertas> GetFullAlertas(string almacen)
     {
         List<Alertas> alertas = (List<Alertas>)HttpRuntime.Cache["alertas" + almacen];
+        
+        alertas = null;
+
         if (alertas == null)
         {
             alertas = new List<Alertas>();
@@ -52,8 +54,8 @@ public class Alertas
                 {
                     CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
-                    string consulta = consultas["consulta"].ToString().Replace("%diasvencimiento%", configuracion.nDiasVencimiento.ToString());
-                    string consultacount = consultas["consulta_contar"].ToString().Replace("%diasvencimiento%", configuracion.nDiasVencimiento.ToString());
+                    string consulta = consultas["consulta"].ToString();
+                    string consultacount = consultas["consulta_contar"].ToString();
                     
                     alertas.Add(new Alertas(
                             consultas["nombre"].ToString(),

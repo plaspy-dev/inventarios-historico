@@ -59,8 +59,13 @@
                 $(this).val(ui.item.value);
                 return false;
             },
-                search: function(event, ui) { $("#" + $(this).attr("id") + "ID").val(""); }
-        }).change(function() { if ($(this).val().length == 0) $("#" + $(this).attr("id") + "ID").val(""); });
+                search: function(event, ui) { $("#" + $(this).attr("id") + "ID").val("0"); }
+        }).change(function() { 
+            if ($(this).val().length == 0) 
+                $("#" + $(this).attr("id") + "ID").val("0"); 
+            else if($("#" + $(this).attr("id") + "ID").val()=="0")
+                $("#" + $(this).attr("id") + "ID").val("-1");
+        });
         
           $("#<%= TTercero.ClientID %>").autocomplete({
             source: function(request, response) {
@@ -242,7 +247,8 @@
             <td class="tdl">
                 &nbsp;</td>
             <td><asp:Label runat="server" ID="LSerial" Text="Serial"></asp:Label><asp:RequiredFieldValidator ControlToValidate="TSerial" ValidationGroup="producto" ErrorMessage="Por favor ingrese un serial." ID="RSerial" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
-            <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
+            <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label><asp:RequiredFieldValidator InitialValue="-1" ControlToValidate="TUbicacionID" ValidationGroup="producto" ErrorMessage="Por favor ingrese una ubicacion valida." ID="RUbicacionO" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator>
+            <asp:RequiredFieldValidator InitialValue="0" ControlToValidate="TUbicacionID" ValidationGroup="producto" ErrorMessage="Por favor ingrese una ubicacion." ID="RUbicacion" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
             <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label><asp:RequiredFieldValidator InitialValue="0" ControlToValidate="DEstado" ValidationGroup="producto" ErrorMessage="Por favor seleccione un estado." ID="REstado" runat="server" Display="Dynamic">*</asp:RequiredFieldValidator></td>
             <td class="tdr">
                 &nbsp;</td>
@@ -251,8 +257,9 @@
             <td class="tdl">
                 &nbsp;</td>
             <td><asp:TextBox CssClass="tlote" runat="server" ID="TSerial"></asp:TextBox></td>
-            <td><asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
-                <asp:TextBox runat="server" ID="TUbicacionID" CssClass="hide"></asp:TextBox></td>
+            <td>
+                <asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
+                <asp:TextBox runat="server" ID="TUbicacionID" Text="0" CssClass="hide"></asp:TextBox></td>
             <td>
                 <asp:DropDownList ID="DEstado" runat="server" AppendDataBoundItems="true" 
                         DataSourceID="SEstado" DataTextField="nombre" DataValueField="id">

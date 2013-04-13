@@ -14,6 +14,7 @@ public partial class almacen_traslado : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        ((ing)Master)._ImprimirClicked += new EventHandler(OnImprimir);
         ((ing)Master).CheckAlmacen();
 
         if (!IsPostBack)
@@ -465,5 +466,9 @@ public partial class almacen_traslado : System.Web.UI.Page
         GProductos.DataBind();
         HUsado.Value = productoUsado.SerializeBinary();
         e.Cancel = true;
+    }
+    protected void OnImprimir(object sender, EventArgs e)
+    {
+        GProductos.Columns[0].Visible = false;
     }
 }
