@@ -24,12 +24,19 @@ public class Alertas
     }
 
     public static void RemoveAlertas(string almacen) {
+        
         HttpRuntime.Cache.Remove("alertas" + almacen);
+        HttpRuntime.Cache.Remove("alerta_global");
+    }
+
+    public static List<Alertas> GetFullAlertas() {
+
+        return GetFullAlertas(null);
     }
 
     public static List<Alertas> GetFullAlertas(string almacen)
     {
-        List<Alertas> alertas = (List<Alertas>)HttpRuntime.Cache["alertas" + almacen];
+        List<Alertas> alertas = (List<Alertas>)HttpRuntime.Cache[almacen == null ? "alerta_global" : ("alertas" + almacen)];
         
         alertas = null;
 
@@ -46,7 +53,7 @@ public class Alertas
 
             CConector conectorc = new CConector();
             CConector conectortemp = new CConector();
-            MySqlDataReader consultas = conectorc.Query(query.GetSelect(""));
+            MySqlDataReader consultas = conectorc.Query(query.GetSelect(almacen==null ? "global=1" : "global IS NULL"));
 
             if (consultas != null)
             {
@@ -66,15 +73,22 @@ public class Alertas
                     ));
                 }
             }
-            HttpRuntime.Cache.Insert("alertas" + almacen, alertas, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            HttpRuntime.Cache.Insert(almacen == null ? "alerta_global" : ("alertas" + almacen), alertas, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
         return alertas;
     }
 
     public static List<Alertas> GetAlertas(string almacen)
     {
-        return (from p in GetFullAlertas(almacen)
+        List<Alertas> alertas = null;
+        alertas= (from p in GetFullAlertas(almacen)
          where !string.IsNullOrEmpty(p.Numero) && p.Numero != "0"
          select p).ToList();
+
+        alertas.AddRange((from p in GetFullAlertas()
+         where !string.IsNullOrEmpty(p.Numero) && p.Numero != "0"
+         select p).ToList());
+
+        return alertas;
     }
 }

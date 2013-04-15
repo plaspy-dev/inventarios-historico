@@ -18,6 +18,25 @@
     <td></td>
     </tr>
     <tr>
+        <td>Precios</td>
+        <td><asp:DropDownList ID="DValores" runat="server">
+            <asp:ListItem Text="Obligatorio" Value="1"></asp:ListItem>
+            <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
+            <asp:ListItem Text="No requerido" Value="0"></asp:ListItem>
+        </asp:DropDownList>
+        </td>
+        <td></td>    
+    </tr>
+    <tr>
+        <td>Tipo precios</td>
+        <td><asp:DropDownList ID="DTipoValores" runat="server">
+            <asp:ListItem Text="Cerrado" Value="1"></asp:ListItem>
+            <asp:ListItem Text="Abierto" Value="0"></asp:ListItem>
+        </asp:DropDownList>
+        </td>
+        <td></td>    
+    </tr>
+    <tr>
         <td colspan="3" class="GridHeader">Productos</td>
     </tr>
     <tr>

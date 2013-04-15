@@ -89,8 +89,8 @@
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
-                    url: "../webservices/servicios.asmx/GetProductoDisponible",
-                    data: "{ 'almacen': '" + <%= ViewState["almacen"] %> + "', 'auto': " + $("#<%= CAutomatico.ClientID %>").is(':checked') + ",'q': '" + request.term + "','productos': '" + $("#<%= HProductos.ClientID %>").val() + "' }",
+                    url: "../webservices/servicios.asmx/GetProductoSalida",
+                    data: "{ 'almacen': '" + <%= ViewState["almacen"] %> + "', 'auto': " + $("#<%= CAutomatico.ClientID %>").is(':checked') + ",'q': '" + request.term + "','productos': '" + $("#<%= HProductos.ClientID %>").val() + "', 't': '" + $("#<%= TTerceroID.ClientID %>").val() + "' }",
                     dataType: "json",
                     type: "POST",
                     contentType: "application/json; charset=utf-8",
@@ -120,6 +120,8 @@
                     descripcion+=": ";
                 descripcion+= " " + ui.item.descripcion;
                 $("#tdescripcion").text(descripcion);
+                $("#<%= TValor.ClientID %>").numeric("value",ui.item.Valor);
+                
                 if(!$("#<%= CAutomatico.ClientID %>").is(':checked')) {
                     $("#<%= TLote.ClientID %>").val(ui.item.lote);
                     $("#<%= TVencimiento.ClientID %>").val(ui.item.vence);
@@ -209,7 +211,7 @@
             <td class="tdr"><asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LEstadoA" Text="Automático"></asp:Label></td>
         </tr>
         <tr class="GridAltRow">
-            <td class="tdl"></td>
+            <td class="tdl"><span id="smax"></span></td>
             <td colspan="4" class="tdr" id="tdescripcion"></td>
         </tr>
         <tr class="GridAltRow">
@@ -221,17 +223,21 @@
                 <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
                 <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator></td>
             <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
-            <td colspan="2"><span id="smax"></span></td>
+            <td><asp:Label runat="server" ID="LValor" Text="Valor U."></asp:Label>
+            <asp:RequiredFieldValidator ControlToValidate="TValor" ValidationGroup="producto" ErrorMessage="Por favor ingrese un valor unitario." ID="RValor" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <asp:RegularExpressionValidator ValidationExpression="^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*(?:\.[0-9]+)?$" ID="RValorF" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TValor" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+            </td>
+            <td><asp:TextBox runat="server" ID="TValor" CssClass="dinero"></asp:TextBox></td>
             <td class="tdr">
                 <asp:Button ID="BAgregar" runat="server" Text="Agregar" ValidationGroup="producto" onclick="BAgregar_Click" />
                 <asp:Button ID="BActualizar" runat="server" Text="Actualizar" CssClass="hide" CausesValidation="false" onclick="BActualizar_Click" />
             </td>
         </tr>
         <tr>
-            <td colspan="5" align="center" class="tdl tdb tdr">
+            <td colspan="5" class="tdl tdb tdr">
                 <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
                     DataKeyNames="IdGrid,id,ubicacion,estado" 
-                    onselectedindexchanged="GProductos_SelectedIndexChanged" 
+                    onselectedindexchanged="GProductos_SelectedIndexChanged" ShowFooter="true"
                     EmptyDataText="No hay productos" onrowdeleting="GProductos_RowDeleting" >
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -243,7 +249,9 @@
                         <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
                         <asp:BoundField DataField="codigo" HeaderText="Código" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" />
-                        <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="Valor" HeaderText="Valor U." SortExpression="Valor" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="ValorTotal" HeaderText="Valor T." SortExpression="ValorTotal" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />

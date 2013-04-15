@@ -38,6 +38,7 @@ public class Producto
     public int estado { set; get; }
     public int ubicacion { set; get; }
     public Decimal Costo { set; get;}
+    public Decimal Valor { set; get; }
     public int DiasV { set; get; }
 
     [XmlIgnore] // este es el ingreso del repuesto
@@ -52,6 +53,11 @@ public class Producto
     [XmlIgnore]
     public Decimal CostoTotal {
         get { return cantidad*Costo; }
+    }
+    [XmlIgnore]
+    public Decimal ValorTotal
+    {
+        get { return cantidad * Valor; }
     }
 
     [XmlIgnore]
@@ -225,8 +231,8 @@ public class Producto
     }
 
     static public void RemoveProducto(string id) {
-        if (HttpRuntime.Cache["producto" + id] != null)
-            HttpRuntime.Cache.Remove("producto" + id);
+        HttpRuntime.Cache.Remove("producto" + id);
+        CProductoValor.Delete(id);
     }
 
     static public Producto GetProducto(string id)
@@ -292,8 +298,7 @@ public class Producto
 
     public void DeleteCostoPromedio(string almacen) {
 
-        if (HttpRuntime.Cache["costopromedio" + almacen + "_" + id] != null)
-            HttpRuntime.Cache.Remove("costopromedio" + almacen + "_" + id);
+        HttpRuntime.Cache.Remove("costopromedio" + almacen + "_" + id);
     }
 
     public Decimal GetCostoPromedio(string almacen)
@@ -314,36 +319,16 @@ public class Producto
         return Costo;
     }
 
-    public void DeleteCosto(string proveedor)
-    {
-        if (HttpRuntime.Cache["costoproducto" + proveedor + "_" + id] != null)
-            HttpRuntime.Cache.Remove("costoproducto" + proveedor + "_" + id);
-    }
-
     public Decimal GetCosto(string proveedor)
     {
-        Costo = 0;
-        if (proveedor == null) // no lo busque
-            return 0;
-        if (HttpRuntime.Cache["costoproducto" + proveedor + "_" + id] != null)
-        {
-            Costo = (Decimal)HttpRuntime.Cache["costoproducto" + proveedor + "_" + id];
-            return Costo;
-        }
-
-        CConector conector = new CConector();
-        string costo = "";
-        if(proveedor.Length!=0) // verificamos que sea el precio de un proveedor
-            costo = conector.QueryString(string.Format("SELECT costo FROM costo_proveedor WHERE producto={1} AND proveedor={0}", proveedor, id));
-        if(costo.Length==0) // usamos el precio establecido para el proveedor
-            costo = conector.QueryString(string.Format("SELECT costo FROM producto WHERE id={0}", id));
-        try
-        {
-            Costo = Convert.ToDecimal(costo);
-        }
-        catch { }
-        HttpRuntime.Cache.Insert("costoproducto" + proveedor + "_" + id, Costo, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        Costo= CProductoValor.GetProducto(id).GetCosto(proveedor);
         return Costo;
+    }
+
+    public Decimal GetValor(string cliente, int almacen)
+    {
+        Valor = CProductoValor.GetProducto(id).GetValor(cliente, almacen);
+        return Valor;
     }
 
     public Producto()
@@ -490,17 +475,22 @@ public class Producto
         return true;
     }
 
-    public bool UpdateCosto(Conector conector, string almacen, string proveedor)
-    {        
-        // actualizamos el costo del producto
-        string query = string.Format("UPDATE producto SET costo={1} WHERE id={0};"
-                , id, Costo.ToString(CultureInfo.InvariantCulture));
-        if (conector.QueryMod(query) == -1)
-            return false;
+    public bool UpdateCosto(Conector conector, string proveedor)
+    {
+        CProductoValor info = CProductoValor.GetProducto(id);
+
+        if (info.GetCosto() != Costo)
+        {
+            // actualizamos el costo del producto
+            string query = string.Format("UPDATE producto SET costo={1} WHERE id={0};"
+                    , id, Costo.ToString(CultureInfo.InvariantCulture));
+            if (conector.QueryMod(query) == -1)
+                return false;
+        }
 
         if (!string.IsNullOrEmpty(proveedor))
         {
-            query = string.Format("UPDATE costo_proveedor SET costo={2},fecha=SYSDATE() WHERE producto={0} AND proveedor={1};"
+            string query = string.Format("UPDATE costo_proveedor SET costo={2},fecha=SYSDATE() WHERE producto={0} AND proveedor={1};"
                 , id, proveedor, Costo.ToString(CultureInfo.InvariantCulture));
             if (conector.QueryMod(query) == -1)
                 return false;
@@ -509,7 +499,23 @@ public class Producto
             if (conector.QueryMod(query) == -1)
                 return false;
         }
-        DeleteCosto(proveedor);
+        info.UpdateCostos(proveedor, Costo);
+        return true;
+    }
+
+    public bool UpdateValor(Conector conector)
+    {
+        CProductoValor info = CProductoValor.GetProducto(id);
+        if(info.GetValorTemp()!=Valor) {
+
+            // actualizamos el costo del producto
+            string query = string.Format("UPDATE producto SET valor_temporal={1} WHERE id={0};"
+                    , id, Valor.ToString(CultureInfo.InvariantCulture));
+            if (conector.QueryMod(query) == -1)
+                return false;
+
+            info.UpdateValorTemp(Valor);
+        }
         return true;
     }
 
@@ -535,8 +541,15 @@ public class Producto
         if (szVencimiento.Length == 0)
             szVencimiento = "0000-00-00";
 
+        // actualizamos el estado
         string query = string.Format("UPDATE estado{0} SET cantidad=cantidad-{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7};"
             , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado);
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        // actualizamos el estado global
+        query = string.Format("UPDATE estado_global SET cantidad=cantidad-{0},modificacion=SYSDATE() WHERE producto={1} AND estado={2};"
+            , cantidad.ToString(CultureInfo.InvariantCulture), id, estado);
         if (conector.QueryMod(query) == -1)
             return false;
 
@@ -577,9 +590,21 @@ public class Producto
         if (conector.QueryMod(query) == -1)
             return false;
 
+        // actualizamos el estado global
+        query = string.Format("UPDATE estado_global SET cantidad=cantidad+{0},modificacion=SYSDATE() WHERE producto={1} AND estado={2};"
+            , cantidad.ToString(CultureInfo.InvariantCulture), id, estado);
+        if (conector.QueryMod(query) == -1)
+            return false;
+
         query = string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad,szSerial,ubicacion,estado, modificacion) "
             + " VALUES ({1}, {2}, {3}, {4}, {5},{6},{7}, SYSDATE());"
             , almacen, id, szLote, Query.GetValor(szVencimiento), cantidad.ToString(CultureInfo.InvariantCulture), szSerial, ubicacion, estado);
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        // insertamos el producto en el estado global
+        query = string.Format("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) VALUES ({1},{2},{0},SYSDATE());"
+            , cantidad.ToString(CultureInfo.InvariantCulture), id, estado);
         if (conector.QueryMod(query) == -1)
             return false;
 
@@ -637,6 +662,7 @@ public class Producto
         producto.ubicacion = ubicacion;
         producto.Ingreso = Ingreso;
         producto.Costo = Costo;
+        producto.Valor = Valor;
 
         return producto;
     }
