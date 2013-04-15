@@ -15,6 +15,8 @@ using MySql.Data.MySqlClient;
 public class CConfiguracion
 {
     public int nCosto=2;
+    public int nValor = 2;
+    public int nValorTipo = 0;
     public int nCantidad=0;
     public int nUbicacion = 2;
     public int nDiasVencimiento = 5;

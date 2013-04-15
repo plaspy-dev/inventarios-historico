@@ -90,7 +90,7 @@ public partial class administrador_almacenes : System.Web.UI.Page
                 return;
             if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE salida0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	fecha DATE,		observaciones TEXT,	estado INT,	documento VARCHAR(255), tercero BIGINT UNSIGNED, FOREIGN KEY (tercero) REFERENCES tercero(id), PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
                 return;
-            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE salida_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	salida BIGINT UNSIGNED NOT NULL,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,szSerial VARCHAR(255) DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,estado BIGINT NOT NULL DEFAULT 0,	ingreso DATETIME,   costo DECIMAL(60,15) DEFAULT 0,	FOREIGN KEY (salida) REFERENCES salida0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
+            if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE salida_items0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	salida BIGINT UNSIGNED NOT NULL,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,szSerial VARCHAR(255) DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,estado BIGINT NOT NULL DEFAULT 0,	ingreso DATETIME,   costo DECIMAL(60,15) DEFAULT 0,	valor DECIMAL(60,15), FOREIGN KEY (salida) REFERENCES salida0(id),	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
                 return;
             if (conector.QueryMod(Almacen.ReplaceAlmacenTables("CREATE TABLE transformacion_salida0 (	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,	producto BIGINT UNSIGNED NOT NULL,	cantidad DOUBLE,	lote VARCHAR(255),	vence DATE,szSerial VARCHAR(255) DEFAULT '', ubicacion BIGINT UNSIGNED NOT NULL DEFAULT 0,estado BIGINT NOT NULL DEFAULT 0,	ingreso DATETIME,   costo DECIMAL(60,15) DEFAULT 0,	observaciones TEXT,	FOREIGN KEY (producto) REFERENCES producto(id),	PRIMARY KEY(id)) ENGINE=InnoDB;", HId.Value)) == -1)
                 return;
@@ -178,6 +178,7 @@ public partial class administrador_almacenes : System.Web.UI.Page
 
                 conector2.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE estado_global,(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado0 GROUP BY producto,estado) AS t SET estado_global.modificacion=SYSDATE(),estado_global.cantidad=estado_global.cantidad+t.cantidad WHERE estado_global.producto=t.producto AND estado_global.estado=t.estado;", HId.Value));
                 conector2.QueryMod(Almacen.ReplaceAlmacenTables("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) SELECT producto,estado,SUM(cantidad),SYSDATE() FROM estado0 GROUP BY producto,estado;", HId.Value));
+                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 ADD valor DECIMAL(60,15);", HId.Value));
                 // conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
             }
         }
@@ -188,6 +189,7 @@ public partial class administrador_almacenes : System.Web.UI.Page
 
         conector3.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE estado_global,(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado0 GROUP BY producto,estado) AS t SET estado_global.modificacion=SYSDATE(),estado_global.cantidad=estado_global.cantidad+t.cantidad WHERE estado_global.producto=t.producto AND estado_global.estado=t.estado;", HId.Value));
         conector3.QueryMod(Almacen.ReplaceAlmacenTables("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) SELECT producto,estado,SUM(cantidad),SYSDATE() FROM estado0 GROUP BY producto,estado;", HId.Value));
+        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 ADD valor DECIMAL(60,15);", HId.Value));
 
         ((ing)Master).SetResultado("Almacenes actualizados");
     }

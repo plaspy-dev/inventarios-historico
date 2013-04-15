@@ -10,6 +10,20 @@ using SDG.Componentes;
 
 public partial class administrador_productos : System.Web.UI.Page
 {
+    [Serializable]
+    class PrecioCliente {
+
+        public int cliente { get; set; }
+        public string NombreCliente { get; set; }
+        public Decimal valor { get; set; }
+
+        public PrecioCliente(int nCliente, string nombrecliente, decimal dValor) {
+            cliente = nCliente;
+            valor = dValor;
+            NombreCliente = nombrecliente;
+        }
+    }
+
     protected void Page_Load(object sender, EventArgs e)
     {
         TNombre.Focus();
@@ -25,6 +39,12 @@ public partial class administrador_productos : System.Web.UI.Page
             DSerial.SelectedValue = configuracion.nProductoSerial.ToString();
             DEstado.SelectedValue = configuracion.nProductoEstado.ToString();
             TDAlertaV.Text = configuracion.nDiasVencimiento.ToString();
+
+            Utilidades.GetGridColumn(GResultado, "Último costo").Visible = configuracion.nCosto != 0;
+
+            Utilidades.GetGridColumn(GResultado, "Precio").Visible =
+            lprecios.Visible=
+            UPrecios.Visible = configuracion.nValor != 0;
 
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
@@ -53,6 +73,8 @@ public partial class administrador_productos : System.Web.UI.Page
                 query += "dias_alerta";
                 query += "maximo";
                 query += "minimo";
+                query += "valor_temporal";
+                query += "valor";
                 query += "maxmin_tipo";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
@@ -84,6 +106,14 @@ public partial class administrador_productos : System.Web.UI.Page
                     {
                         TCosto.Text = Convert.ToDecimal(reader["costo"]).ToString(CultureInfo.InvariantCulture);
                     } catch {}
+                    try {
+                        TUltimoPrecio.Text = Convert.ToDecimal(reader["valor_temporal"]).ToString(CultureInfo.InvariantCulture);
+                    } catch {}
+                    try
+                    {
+                        TPrecio.Text = Convert.ToDecimal(reader["valor"]).ToString(CultureInfo.InvariantCulture);
+                    }
+                    catch { }
                     TDiasVencimiento.Text = reader["diasvencimiento"].ToString();
                     TFormatoLote.Text = reader["formatolote"].ToString();
                     CConector.SelectInDropDown(DGrupo, reader["grupo"]);
@@ -93,7 +123,28 @@ public partial class administrador_productos : System.Web.UI.Page
                     ((ing)Master).SetModificacion(HId.Value);
                     BAceptar.Enabled = usuario.CanUpdate();
                     GCostos.DataBind();
-                    PCostos.Visible = CConfiguracion.GetConfiguracion().nCosto!=0 && GCostos.Rows.Count > 0;
+
+                    List<PrecioCliente> preciocliente= new List<PrecioCliente>();
+
+                    reader = conector.Query(string.Format("SELECT tercero.id,tercero.nombre,valor_cliente.valor"
+                                        + " FROM valor_cliente"
+                                        + " LEFT JOIN tercero ON (tercero.id=valor_cliente.cliente)"
+                                        + " WHERE valor_cliente.producto={0}"
+                                        + " ORDER BY tercero.nombre", HId.Value));
+                    if(reader!=null) {
+                        while(reader.Read()) {
+                            preciocliente.Add(new PrecioCliente(
+                                Convert.ToInt32(reader["id"]),
+                                reader["nombre"].ToString(),
+                                Convert.ToDecimal(reader["valor"])));
+                        }
+                    }
+                    GPreciosC.DataSource = preciocliente;
+                    GPreciosC.DataBind();
+                    ViewState["cliente"] = preciocliente;
+
+                    lcostos.Visible= 
+                    PCostos.Visible = CConfiguracion.GetConfiguracion().nCosto!=0;
                 }
             }
         }
@@ -139,6 +190,10 @@ public partial class administrador_productos : System.Web.UI.Page
         query["maxmin_tipo"] = CMinMaxEstado.Checked ? "1" : "";
         query["costo"] = TCosto.Text.Length == 0 ? "" :
             decimal.Parse(TCosto.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
+        query["valor"] = TPrecio.Text.Length == 0 ? "" :
+            decimal.Parse(TPrecio.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
+        query["valor_temporal"] = TUltimoPrecio.Text.Length == 0 ? "" :
+            decimal.Parse(TUltimoPrecio.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
         query["diasvencimiento"]= TDiasVencimiento.Text;
         query["formatolote"] = TFormatoLote.Text;
 
@@ -184,6 +239,49 @@ public partial class administrador_productos : System.Web.UI.Page
             }
         }
 
+        if (conector.QueryMod("DELETE FROM valor_almacen WHERE producto=" + HId.Value) == -1)
+            return;
+
+        query = new Query("valor_almacen");
+        query["producto"] = HId.Value;
+
+        // agregamos los precios por almacen
+        for (int i = 0; i < GPreciosA.Rows.Count; i++)
+        {
+            TextBox valor = (TextBox)GPreciosA.Rows[i].FindControl("TValor");
+
+            if (valor.Text.Length>0)
+            {
+                query["almacen"] = GPreciosA.DataKeys[i].Value.ToString();
+                query["valor"] = decimal.Parse(valor.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
+
+                if (conector.QueryMod(query.GetInsert()) == -1)
+                    return;
+            }
+        }
+
+        // agregamos los precios por cliente
+        if (conector.QueryMod("DELETE FROM valor_cliente WHERE producto=" + HId.Value) == -1)
+            return;
+
+        query = new Query("valor_cliente");
+        query["producto"] = HId.Value;
+
+        List<PrecioCliente> preciocliente = (List<PrecioCliente>)ViewState["cliente"];
+
+        // agregamos los precios por almacen
+        if(preciocliente!=null) {
+
+            for (int i = 0; i < preciocliente.Count; i++)
+            {
+                query["cliente"] = preciocliente[i].cliente.ToString();
+                query["valor"] = preciocliente[i].valor.ToString(CultureInfo.InvariantCulture);
+
+                if (conector.QueryMod(query.GetInsert()) == -1)
+                    return;
+            }
+        }
+
         conector.Commit();
         Producto.RemoveProducto(HId.Value);
         ((ing)Master).SetResultado(mensaje);
@@ -202,5 +300,69 @@ public partial class administrador_productos : System.Web.UI.Page
     {
         CFiltrado.Checked = !CFiltrado.Checked;
         BBuscar.Text = CFiltrado.Checked ? "Cancelar filtrado" : "Filtrar";
+    }
+
+    protected void BCAgregar_Click(object sender, EventArgs e) {
+        
+        TTercero.Text = TTerceroID.Text = TValor.Text = "";
+        TTercero.Focus();
+    }
+
+    protected void BAgregar_Click(object sender, EventArgs e)
+    {
+        if(!IsValid)
+            return;
+
+        List<PrecioCliente> preciocliente = (List<PrecioCliente>)ViewState["cliente"];
+        if(preciocliente==null)
+            preciocliente = new List<PrecioCliente>();
+
+        List<PrecioCliente> listado= (from p in preciocliente
+                        where p.cliente.ToString() == TTerceroID.Text
+                         select p).ToList();
+
+        PrecioCliente info;
+        if (listado.Count == 0)
+        {
+            info = new PrecioCliente(Convert.ToInt32(TTerceroID.Text)
+                        , TTercero.Text
+                        , 0);
+            preciocliente.Add(info);
+        } else {
+            info = listado[0];
+        }
+        info.valor = Decimal.Parse(TValor.Text, NumberStyles.Currency, CultureInfo.InvariantCulture); 
+
+        ViewState["cliente"] = preciocliente;
+        GPreciosC.DataSource = preciocliente;
+        GPreciosC.DataBind();
+
+        BCAgregar_Click(sender, e);
+    }
+
+    protected void GPreciosC_RowDeleting(object sender, GridViewDeleteEventArgs e)
+    {
+        List<PrecioCliente> preciocliente = (List<PrecioCliente>)ViewState["cliente"];
+        if (preciocliente == null)
+        {
+            e.Cancel = true; 
+            return;
+        }
+        List<PrecioCliente> listado = (from p in preciocliente
+                                       where p.cliente.ToString() == GPreciosC.DataKeys[e.RowIndex].Value.ToString()
+                                       select p).ToList();
+        if (listado.Count != 0) {
+            PrecioCliente info = listado[0];
+
+            TTercero.Text = info.NombreCliente;
+            TTerceroID.Text = info.cliente.ToString();
+            TValor.Text = info.valor.ToString(CultureInfo.InvariantCulture);
+
+            preciocliente.Remove(info);
+            ViewState["cliente"] = preciocliente;
+            GPreciosC.DataSource = preciocliente;
+            GPreciosC.DataBind();
+        }
+        e.Cancel = true;
     }
 }

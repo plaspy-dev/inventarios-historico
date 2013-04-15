@@ -4,17 +4,35 @@
 
     <script type="text/javascript">
         addFunctionToStart(function() {
-            $("#accordion").accordion({
-                autoHeight: false,
-                navigation: true,
-                collapsible: true,
-                active: false
-            });
-            $("#accordion2").accordion({
-                autoHeight: false,
-                navigation: true,
-                collapsible: true,
-                active: false
+            $("#tpr").tabs();
+            $("#<%= TTercero.ClientID %>").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "../webservices/servicios.asmx/GetTercero",
+                        data: "{ 'q': '" + request.term + "', tipo: 1 }",
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        dataFilter: function(data) { return data; },
+                        success: function(data) {
+                            response($.map(data.d, function(item) {
+                                item.label = item.value;
+                                return item;
+                            }))
+                        },
+                        error: function(XMLHttpRequest, textStatus, errorThrown) {
+                            alert(textStatus);
+                        }
+                    });
+                },
+                autoFocus: true,
+                minLength: 3,
+                select: function(event, ui) {
+
+                    $("#<%= TTerceroID.ClientID %>").val(ui.item.item);
+                    $("#<%= TTercero.ClientID %>").val(ui.item.value);
+                    return false;
+                }
             });
             $("#<%= TNombre.ClientID %>").autocomplete({
                 source: function(request, response) {
@@ -76,7 +94,15 @@
     <td valign="top"><table width="100%" border="0">
       <tr>
         <td>
-<table width="100%" border="0" style="border-collapse: collapse">
+        <div id="tpr">
+            <ul>
+                <li><a href="#dProducto">Producto</a></li>
+                <li><a href="#dMaxMin">Máximos y mínimos</a></li>
+                <li runat="server" visible="false" id="lcostos"><a href="#<%= PCostos.ClientID %>">Costos</a></li>
+                <li runat="server" visible="false" id="lprecios"><a href="#<%= UPrecios.ClientID %>">Precios</a></li>
+            </ul>
+            <div id="dProducto">
+            <table width="100%" border="0" style="border-collapse: collapse">
           <tr>
             <td>Nombre</td>
             <td>
@@ -220,35 +246,31 @@
             <td  class="tdb"><asp:TextBox runat="server" ID="TFormatoLote"></asp:TextBox> <span id="sformatolote"></span></td>
             <td class="tdr tdb"></td>
           </tr>
-          <tr>
-            <td colspan="3" class="GridHeader">Mínimos y máximos</td>
-          </tr>
-          <tr>
-            <td class="tdl"></td>
-            <td colspan="2" class="tdr"><asp:CheckBox runat="server" ID="CMinMaxEstado" Text="Mínimos y máximos por estados" /></td>
-          </tr>
-          <tr>
-              <td class="tdl">Mínimo global</td>
-              <td><asp:TextBox runat="server" ID="TMinimo" CssClass="float"></asp:TextBox></td>
-              <td class="tdr"><asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator3" runat="server" ErrorMessage="Por favor ingrese un numero." ControlToValidate="TMinimo" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
-          </tr>
-          <tr>
-              <td class="tdl tdb">Máximo global</td>
-              <td class="tdb"><asp:TextBox runat="server" ID="TMaximo" CssClass="float"></asp:TextBox></td>
-              <td class="tdr tdb"><asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator2" runat="server" ErrorMessage="Por favor ingrese un numero." ControlToValidate="TMaximo" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
-          </tr>
-          <tr>
-            <td>Último Costo</td>
-            <td><asp:TextBox runat="server" ID="TCosto" CssClass="dinero"></asp:TextBox></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td colspan="3">
-                <div id="accordion2">
-                    <h3><a href="#">Máximos y mínimos por almacén</a></h3>
-                    <div class="hide">
+        </table>
+            </div>
+            <div id="dMaxMin" class="hide">
+            <table>
+                <tr>
+                    <td></td>
+                    <td colspan="2"><asp:CheckBox runat="server" ID="CMinMaxEstado" Text="Mínimos y máximos por estados" /></td>
+                  </tr>
+                  <tr>
+                      <td>Mínimo global</td>
+                      <td><asp:TextBox runat="server" ID="TMinimo" CssClass="float"></asp:TextBox></td>
+                      <td><asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator3" runat="server" ErrorMessage="Por favor ingrese un numero." ControlToValidate="TMinimo" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
+                  </tr>
+                  <tr>
+                      <td>Máximo global</td>
+                      <td><asp:TextBox runat="server" ID="TMaximo" CssClass="float"></asp:TextBox></td>
+                      <td><asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator2" runat="server" ErrorMessage="Por favor ingrese un numero." ControlToValidate="TMaximo" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
+                  </tr>
+                  <tr>
+                    <td class="GridHeader" colspan="3">Máximos y mínimos por almacén</td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
                         <asp:GridView ID="GAlmacenes" runat="server" AutoGenerateColumns="False" 
-                            DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true">
+                            DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true" AllowPaging="true">
                             <RowStyle CssClass="GridRow"></RowStyle>
                             <FooterStyle CssClass="GridFooter"></FooterStyle>
                             <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -280,16 +302,22 @@
                                  <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="producto" DefaultValue="0" />
                             </SelectParameters>
                         </asp:SqlDataSource>
-                    </div>
-                </div>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="3">
-            <asp:Panel runat="server" ID="PCostos" Visible="false">
-            <div id="accordion">
-                    <h3><a href="#">Costos por proveedor</a></h3>
-                    <div class="hide">
+                    </td>
+                  </tr>
+            </table>
+            </div>
+            <asp:Panel runat="server" ID="PCostos" Visible="false" CssClass="hide">
+                <table>
+                  <tr>
+                    <td>Último Costo</td>
+                    <td><asp:TextBox runat="server" ID="TCosto" CssClass="dinero"></asp:TextBox></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="3" class="GridHeader">Costos por proveedor</td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
                         <asp:GridView ID="GCostos" runat="server" DataSourceID="SCostos" 
                             AutoGenerateColumns="false" AllowSorting="True" AllowPaging="true" EmptyDataText="No hay proveedores">
                             <RowStyle CssClass="GridRow"></RowStyle>
@@ -317,27 +345,104 @@
                                     <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="producto" />
                                 </SelectParameters>
                         </asp:SqlDataSource>
-                    </div>
-                </div>
-                </asp:Panel>
-            </td>
-          </tr>
-          <tr>
-              <td>&nbsp;</td>
-              <td align="right">
-                  <asp:Button ID="BAceptar" runat="server" onclick="BAceptar_Click" 
-                      Text="Aceptar" />
-                  <asp:Button ID="BCancelar" runat="server" CausesValidation="False" 
-                      onclick="BCancelar_Click" Text="Cancelar" />
-                  <asp:Button ID="BBuscar" runat="server" CausesValidation="false" 
-                      onclick="BBuscar_Click" Text="Filtrar" />
-              </td>
-              <td>
-                  <asp:CheckBox ID="CFiltrado" runat="server" CssClass="hide" />
-                  <asp:HiddenField ID="HTipo" runat="server" />
-              </td>
-          </tr>
-        </table></td>
+                    </td>
+                  </tr>
+                </table>
+            </asp:Panel>
+            <asp:UpdatePanel runat="server" ID="UPrecios" Visible="false" UpdateMode="Conditional">
+                <ContentTemplate>
+                <table>
+                  <tr>
+                    <td>Precio</td>
+                    <td><asp:TextBox runat="server" ID="TPrecio" CssClass="dinero"></asp:TextBox></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Último Precio</td>
+                    <td><asp:TextBox runat="server" ID="TUltimoPrecio" CssClass="dinero"></asp:TextBox></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td colspan="3" class="GridHeader">Precios por almacén</td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                        <asp:GridView ID="GPreciosA" runat="server" AutoGenerateColumns="False" 
+                            DataKeyNames="id" DataSourceID="SPreciosA" AllowSorting="true" AllowPaging="true">
+                            <RowStyle CssClass="GridRow"></RowStyle>
+                            <FooterStyle CssClass="GridFooter"></FooterStyle>
+                            <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                            <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                            <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                            <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                            <Columns>
+                                <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" />
+                                <asp:TemplateField HeaderText="Precio" SortExpression="valor">
+                                    <ItemTemplate>
+                                        <asp:TextBox runat="server" ID="TValor" CssClass="dinero" Text='<%# Eval("valor").ToString()=="" ? "" : Convert.ToDouble(Eval("valor")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                        </asp:GridView>
+                        <asp:SqlDataSource ID="SPreciosA" runat="server" 
+                            ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                            ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                            SelectCommand="SELECT almacen.id, almacen.nombre, valor_almacen.valor
+                                        FROM almacen
+                                        LEFT JOIN valor_almacen ON (valor_almacen.producto=@producto AND valor_almacen.almacen=almacen.id)
+                                        WHERE estado IS NULL ORDER BY almacen.nombre;">
+                            <SelectParameters>
+                                 <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="producto" DefaultValue="0" />
+                            </SelectParameters>
+                        </asp:SqlDataSource>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="3" class="GridHeader">Precios por cliente</td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">
+                        <asp:GridView ID="GPreciosC" runat="server" DataKeyNames="cliente" 
+                        AutoGenerateColumns="false" AllowSorting="True" AllowPaging="true" EmptyDataText="No hay clientes" OnRowDeleting="GPreciosC_RowDeleting" >
+                            <RowStyle CssClass="GridRow"></RowStyle>
+                            <FooterStyle CssClass="GridFooter"></FooterStyle>
+                            <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                            <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                            <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                            <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                            <Columns>
+                                <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
+                                <asp:BoundField HeaderText="Cliente" DataField="NombreCliente" SortExpression="NombreCliente" />
+                                <asp:BoundField DataField="valor" HeaderText="Valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
+                            </Columns>
+                        </asp:GridView>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Cliente<asp:RequiredFieldValidator ValidationGroup="cliente" ControlToValidate="TTerceroID" ErrorMessage="Por favor ingrese un cliente." ID="RCliente" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+                    <td colspan="2"><asp:TextBox ValidationGroup="cliente" runat="server" ID="TTercero" Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TTerceroID" CssClass="hide"></asp:TextBox></td>
+                  </tr>
+                  <tr>
+                    <td>Valor<asp:RequiredFieldValidator ValidationGroup="cliente" ControlToValidate="TValor" ErrorMessage="Por favor ingrese un valor unitario." ID="RValor" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                        <asp:RegularExpressionValidator ValidationGroup="cliente" ValidationExpression="^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*(?:\.[0-9]+)?$" ID="RValorF" runat="server" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TValor" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator></td>
+                    <td><asp:TextBox runat="server" ID="TValor" CssClass="dinero"></asp:TextBox></td>
+                    <td><asp:Button runat="server" ID="BAgregar" Text="Agregar" ValidationGroup="cliente" OnClick="BAgregar_Click" />
+                        <asp:Button runat="server" ID="BCAgregar" Text="Cancelar" CausesValidation="false" OnClick="BCAgregar_Click" />
+                    </td>
+                  </tr>
+                </table>
+                </ContentTemplate>
+            </asp:UpdatePanel>
+        </div>
+        </td>
+      </tr>
+      <tr>
+        <td align="right">
+             <asp:Button ID="BAceptar" runat="server" onclick="BAceptar_Click" Text="Aceptar" />
+             <asp:Button ID="BCancelar" runat="server" CausesValidation="False" onclick="BCancelar_Click" Text="Cancelar" />
+             <asp:Button ID="BBuscar" runat="server" CausesValidation="false" onclick="BBuscar_Click" Text="Filtrar" />
+             <asp:CheckBox ID="CFiltrado" runat="server" CssClass="hide" />
+        </td>
       </tr>
       <tr>
         <td>
@@ -370,7 +475,8 @@
                     <asp:BoundField DataField="maxmin_tipo" HeaderText="Mínimo y máximo por estados" SortExpression="maxmin_tipo" />
                     <asp:BoundField DataField="minimo" HeaderText="Mínimo global" SortExpression="minimo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
                     <asp:BoundField DataField="maximo" HeaderText="Máximo global" SortExpression="maximo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
-                    <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:F2}" />
+                    <asp:BoundField DataField="costo" HeaderText="Último costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
+                    <asp:BoundField DataField="valor" HeaderText="Precio" SortExpression="valor" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SResultados" runat="server" 
@@ -385,6 +491,7 @@
                         ,varios.nombre AS grupo
                         ,producto.formatolote
                         ,producto.costo
+                        ,producto.valor
                         ,producto.diasvencimiento
                         ,producto.dias_alerta
                         ,producto.minimo

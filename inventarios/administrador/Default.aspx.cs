@@ -53,7 +53,7 @@ public partial class administrador_Default : System.Web.UI.Page
             TreeNode parent = Add("Productos");
 
             Add("Grupos", 1, parent);
-            Add("Estados", 2, parent);
+            // Add("Estados", 2, parent);
 
             /*TreeNode parent = Add("Hoja de ingreso");
 

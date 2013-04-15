@@ -27,6 +27,10 @@
       <url>~/administrador/transformaciones.aspx</url>
     </pagina>
     <pagina>
+      <titulo>Estados</titulo>
+      <url>~/administrador/estados.aspx</url>
+    </pagina>
+    <pagina>
       <titulo>Terceros</titulo>
       <url>~/administrador/terceros.aspx</url>
     </pagina>

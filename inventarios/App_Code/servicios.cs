@@ -134,7 +134,64 @@ public class servicios : System.Web.Services.WebService {
         return lista;
     }
 
-    [WebMethod(EnableSession=true)]
+    [WebMethod]
+    public List<Producto> GetProductoSalida(String almacen, bool auto, String q, String productos, string t)
+    {
+        List<Producto> lista = new List<Producto>();
+        CConector conector = new CConector();
+
+        string query;
+        if (auto)
+            query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 AND varios.parametro1 IS NULL ", almacen);
+        else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 AND varios.parametro1 IS NULL ", almacen);
+
+        string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
+
+        for (int i = 0; i < split.Length; i++)
+        {
+            if (split[i].Length > 0)
+            { // verificamos que no este vacio
+                query += " AND ";
+                query += String.Format(" (producto.codigo LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
+            }
+        }
+        if (auto)
+            query += String.Format(" GROUP BY estado{0}.producto", almacen);
+        else query += String.Format(" GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.estado,estado{0}.szSerial", almacen);
+        query += " ORDER BY producto.nombre LIMIT 50;";
+        MySqlDataReader reader = conector.Query(query);
+        if (reader != null)
+        {
+            ProductoUsado productousado = new ProductoUsado(productos);
+            while (reader.Read())
+            {
+                Decimal cantidad = Convert.ToDecimal(reader["cantidad"]);
+                Producto info = new Producto(reader["producto"].ToString());
+                if (auto)
+                {
+                    cantidad -= productousado.GetProductoUsado(info.id);
+                }
+                else
+                {
+                    info.lote = reader["lote"].ToString();
+                    info.vence = CConector.GetFromMySQLDate(reader["vence"]);
+                    info.serial = reader["szSerial"].ToString();
+                    info.estado = Convert.ToInt32(reader["estado"]);
+                    cantidad -= productousado.GetProductoUsado(info.id, info.lote, info.vence);
+                }
+                if (cantidad > 0.0000001m)
+                {
+                    info.cantidad = cantidad;
+                    info.GetValor(t, Convert.ToInt32(almacen));
+                    lista.Add(info);
+                }
+            }
+            reader.Close();
+        }
+        return lista;
+    }
+
+    [WebMethod]
     public List<Producto> GetProductoDisponible(String almacen, bool auto, String q, String productos)
     {
         List<Producto> lista = new List<Producto>();

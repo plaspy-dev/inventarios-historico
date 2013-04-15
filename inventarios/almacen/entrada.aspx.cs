@@ -392,7 +392,7 @@ public partial class almacen_entrada : System.Web.UI.Page
             if (productos[i].Ingreso) {
                 if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
                     return;
-                if (!productos[i].UpdateCosto(conector, ((ing)Master).GetAlmacen(), TTerceroID.Text))
+                if (!productos[i].UpdateCosto(conector, TTerceroID.Text))
                     return;
             }
         }

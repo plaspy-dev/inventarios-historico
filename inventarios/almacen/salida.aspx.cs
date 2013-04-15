@@ -22,6 +22,13 @@ public partial class almacen_salida : System.Web.UI.Page
 
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
+            Utilidades.GetGridColumn(GProductos, "Valor U.").Visible =
+            Utilidades.GetGridColumn(GProductos, "Valor T.").Visible =
+            RValorF.Visible = RValor.Visible =
+            TValor.Visible = LValor.Visible = configuracion.nValor != 0;
+
+            TValor.ReadOnly = configuracion.nValorTipo == 1;
+
             // lote
             Utilidades.GetGridColumn(GProductos, "Lote").Visible =
             LLoteA.Visible = TLote.Visible = LLote.Visible = configuracion.bLote;
@@ -102,6 +109,7 @@ public partial class almacen_salida : System.Web.UI.Page
                     query += "estado";
                     query += "ingreso";
                     query += "costo";
+                    query += "valor";
 
                     reader = conector.Query(query.GetSelect("salida=" + HId.Value));
                     if (reader != null)
@@ -121,6 +129,7 @@ public partial class almacen_salida : System.Web.UI.Page
                             info.estado = Convert.ToInt32(reader["estado"]);
                             info.Ingreso = reader["ingreso"].ToString() != "";
                             info.Costo = Convert.ToDecimal(reader["costo"]);
+                            info.Valor = Convert.ToDecimal(reader["valor"]);
 
                             productoUsado.AddProducto(info);
                         }
@@ -130,6 +139,9 @@ public partial class almacen_salida : System.Web.UI.Page
                     HUsado.Value = productoUsado.SerializeBinary();
                     GProductos.DataBind();
 
+                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Valor T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
+                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
+                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
 
                     TProducto.Focus();
                     GProductos.Columns[0].Visible = usuario.CanDelete();
@@ -180,11 +192,11 @@ public partial class almacen_salida : System.Web.UI.Page
 
         if (saProducto.Length == 1)
         { // automatico
-            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen());
+            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), true);
         }
         else
         { // manual
-            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4]);
+            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4], true);
         }
         if (productos == null)
         {
@@ -195,6 +207,7 @@ public partial class almacen_salida : System.Web.UI.Page
         for (int i = 0; i < productos.Count; i++)
         {
             producto = (Producto)productos[i];
+            producto.Valor = Decimal.Parse(TValor.Text, NumberStyles.Currency, CultureInfo.InvariantCulture);
             productoUsado.AddProducto(producto);
         }
 
@@ -204,7 +217,7 @@ public partial class almacen_salida : System.Web.UI.Page
         GProductos.DataBind();
 
         LMensaje.Text = "";
-        TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = TSerial.Text = TEstado.Text = "";
+        TValor.Text= TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = TSerial.Text = TEstado.Text = "";
         TProducto.Focus();
 
         LVencimientoA.CssClass = LVencimiento.CssClass = TVencimiento.CssClass = CAutomatico.Checked ? "hide" : "";
@@ -219,6 +232,10 @@ public partial class almacen_salida : System.Web.UI.Page
 
         REntero.Enabled = true;
         RDecimal.Enabled = true;
+
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Valor T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
 
         HProductos.Value = productousadoNuevo.Serialize();
         HUsado.Value = productoUsado.SerializeBinary();
@@ -299,6 +316,7 @@ public partial class almacen_salida : System.Web.UI.Page
             }
         }
 
+        CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
         // agregamos los nuevos
         productos = productoUsado.GetProductosUsados();
         for (int i = 0; i < productos.Count; i++)
@@ -308,6 +326,12 @@ public partial class almacen_salida : System.Web.UI.Page
                 productos[i].GetCostoPromedio(((ing)Master).GetAlmacen()).ToString(CultureInfo.InvariantCulture);
 
             query = productos[i].GetQuery("salida_items" + ((ing)Master).GetAlmacen());
+
+            // recalculamos los precios para los que tienen lista de precios cerradas.
+            if (configuracion.nValorTipo == 1)
+                productos[i].GetValor(TTerceroID.Text, Convert.ToInt32(((ing)Master).GetAlmacen()));
+            
+            query["valor"] = productos[i].Valor.ToString(CultureInfo.InvariantCulture);
 
             if (string.IsNullOrEmpty(productos[i].IdTabla))
             {
@@ -322,9 +346,12 @@ public partial class almacen_salida : System.Web.UI.Page
             } else {
                 continue;
             }
-            if(productos[i].Ingreso)
+            if (productos[i].Ingreso)
+            {
                 if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
                     return;
+                productos[i].UpdateValor(conector);
+            }
         }
 
         conector.Commit();
@@ -355,6 +382,7 @@ public partial class almacen_salida : System.Web.UI.Page
             TProducto.Text = producto.NombreCompleto;
             TEstado.Text = producto.szEstado;
             TSerial.Text = producto.serial;
+            TValor.Text = producto.Valor.ToString(CultureInfo.InvariantCulture);
             BAgregar_Click(sender, e);
         }
     }
@@ -379,6 +407,11 @@ public partial class almacen_salida : System.Web.UI.Page
         GProductos.DataSource = productoUsado.GetProductosUsados();
         GProductos.DataBind();
         HUsado.Value = productoUsado.SerializeBinary();
+
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Valor T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
+
         e.Cancel = true;
     }
     protected void OnImprimir(object sender, EventArgs e)

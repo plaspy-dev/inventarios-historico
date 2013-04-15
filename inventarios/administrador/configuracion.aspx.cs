@@ -12,6 +12,8 @@ public partial class administrador_configuracion : System.Web.UI.Page
         if(!IsPostBack) {
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
             DCostos.SelectedValue = configuracion.nCosto.ToString();
+            DValores.SelectedValue = configuracion.nValor.ToString();
+            DTipoValores.SelectedValue = configuracion.nValorTipo.ToString();
             DCantidades.SelectedValue= configuracion.nCantidad.ToString();
             DUbicacion.SelectedValue = configuracion.nUbicacion.ToString();
 
@@ -37,6 +39,8 @@ public partial class administrador_configuracion : System.Web.UI.Page
         CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
         configuracion.nCosto= Convert.ToInt32(DCostos.SelectedValue);
+        configuracion.nValor = Convert.ToInt32(DValores.SelectedValue);
+        configuracion.nValorTipo= Convert.ToInt32(DTipoValores.SelectedValue);
         configuracion.nCantidad= Convert.ToInt32(DCantidades.SelectedValue);
         configuracion.nProductoVence = Convert.ToInt32(DVence.SelectedValue);
         configuracion.nProductoLote = Convert.ToInt32(DLote.SelectedValue);
