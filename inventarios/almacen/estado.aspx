@@ -64,6 +64,40 @@
                 $("#tmaximaestado").text(cantidad[4]);
                 $("#<%= TEstadoCantidad.ClientID %>").val(cantidad[4]);
             }).change();
+
+            $("#<%= TProducto.ClientID %>").autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "../webservices/servicios.asmx/GetProducto",
+                        data: "{ 'q': '" + request.term + "', 'p': null }",
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        dataFilter: function(data) { return data; },
+                        success: function(data) {
+                            response($.map(data.d, function(item) {
+                                item.label = item.ProductoCompleto;
+                                return item;
+                            }))
+                        },
+                        error: function(XMLHttpRequest, textStatus, errorThrown) {
+                            alert(textStatus);
+                        }
+                    });
+                },
+                autoFocus: true,
+                minLength: 3,
+                search: function() { $("#<%= TProductoID.ClientID %>").val(""); },
+                select: function(event, ui) {
+
+                    $("#<%= TProductoID.ClientID %>").val(ui.item.id);
+                    $("#<%= TProducto.ClientID %>").val(ui.item.value);
+                    return false;
+                }
+            }).change(function() {
+                if ($(this).val() == "")
+                    $("#<%= TProductoID.ClientID %>").val("");
+            });
         });
 </script>
 </asp:Content>
@@ -161,7 +195,7 @@
                 <asp:RangeValidator ID="RangeValidator1" runat="server" Type="Date" ErrorMessage="Por favor ingrese una fecha valida." Text="*" MinimumValue="01/01/1900" MaximumValue="01/01/3000" SetFocusOnError="True" Display="Dynamic" ControlToValidate="TVence"></asp:RangeValidator>
             </td>
             <td>
-                <asp:TextBox runat="server" ID="TNombre"></asp:TextBox>
+                <asp:TextBox runat="server" ID="TProducto"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox>
             </td>
             <td>
                 <asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
@@ -191,7 +225,7 @@
                 </asp:SqlDataSource>
                 </td>
             <td>
-                <asp:ListBox ID="DAlmacenes" runat="server" SelectionMode="Multiple">
+                <asp:ListBox ID="DAlmacenes" runat="server" SelectionMode="Multiple" CssClass="hide">
                 </asp:ListBox>
                 </td>
             <td nowrap=nowrap>
@@ -264,7 +298,8 @@
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
                         AND (@estado=-1 OR estado{0}.estado=@estado)
                         AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto IS NULL))
-                        AND (@nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
+                        AND (@producto=0 OR producto.id=@producto)
+                        AND (@producto!=0 OR @nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
                             OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
@@ -272,7 +307,8 @@
                         ORDER BY producto.codigo,producto.nombre">
                  <SelectParameters>
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />
-                    <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
+                    <asp:ControlParameter ControlID="TProducto" PropertyName="Text" Name="nombre" DefaultValue="_" />
+                    <asp:ControlParameter ControlID="TProductoID" PropertyName="Text" Name="producto" DefaultValue="0" />
                     <asp:ControlParameter ControlID="CTodos" PropertyName="Checked" Name="todos" />
                     <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
@@ -300,7 +336,8 @@
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
                         AND (@estado=-1 OR estado{0}.estado=@estado)
                         AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto IS NULL))
-                        AND (@nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
+                        AND (@producto=0 OR producto.id=@producto)
+                        AND (@producto!=0 OR @nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
                             OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
@@ -308,7 +345,8 @@
                         ORDER BY producto.codigo,producto.nombre,estado{0}.lote,estado{0}.vence">
                  <SelectParameters>
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />
-                    <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
+                    <asp:ControlParameter ControlID="TProducto" PropertyName="Text" Name="nombre" DefaultValue="_" />
+                    <asp:ControlParameter ControlID="TProductoID" PropertyName="Text" Name="producto" DefaultValue="0" />
                     <asp:ControlParameter ControlID="CTodos" PropertyName="Checked" Name="todos" />
                     <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />

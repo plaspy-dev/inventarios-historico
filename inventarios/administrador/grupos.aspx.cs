@@ -144,7 +144,24 @@ public partial class administrador_grupos : System.Web.UI.Page
             }
         }
 
+        if (conector.QueryMod("DELETE FROM alertas_grupo WHERE grupo=" + grupo) == -1)
+            return;
+        
+        query = new Query("alertas_grupo");
+        query["grupo"] = grupo;
+
+        for (int i = 0; i < GAlertas.Rows.Count; i++)
+        {
+            CheckBox check = (CheckBox)GAlertas.Rows[i].FindControl("CAlerta");
+            if(check.Checked) {
+                query["alerta"] = GAlertas.DataKeys[i].Value.ToString();
+                if (conector.QueryMod(query.GetInsert()) == -1)
+                    return;
+            }
+        }
+
         conector.Commit();
+        Session["alertas"] = null;
 
         ((ing)Master).SetResultado(mensaje);
     }
@@ -162,6 +179,7 @@ public partial class administrador_grupos : System.Web.UI.Page
         conector.InsertModificacion(LGrupos.SelectedValue);
         ((ing)Master).SetResultado("Grupo " + TNombre.Text + " Eliminado.");
     }
+
     protected void LGrupos_SelectedIndexChanged(object sender, EventArgs e)
     {
         ArrayList parents = new ArrayList();

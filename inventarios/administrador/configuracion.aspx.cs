@@ -28,6 +28,9 @@ public partial class administrador_configuracion : System.Web.UI.Page
             CLote.Checked = configuracion.bLote;
             CSerial.Checked = configuracion.bSerial;
             CEstado.Checked = configuracion.bEstado;
+
+            // salidas
+            DEntrega.SelectedValue = configuracion.bManejarEntrega ? "0" : "1";
         }
     }
 
@@ -53,6 +56,9 @@ public partial class administrador_configuracion : System.Web.UI.Page
         configuracion.bLote= CLote.Checked;
         configuracion.bSerial= CSerial.Checked;
         configuracion.bEstado= CEstado.Checked;
+
+        // salidas
+        configuracion.bManejarEntrega= DEntrega.SelectedValue=="0";
 
         if(configuracion.SaveConfiguracion()) {
             LMensaje.Text =  "Configuración guardada";

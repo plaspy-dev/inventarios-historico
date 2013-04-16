@@ -22,12 +22,17 @@ public partial class almacen_salida : System.Web.UI.Page
 
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
-            Utilidades.GetGridColumn(GProductos, "Valor U.").Visible =
-            Utilidades.GetGridColumn(GProductos, "Valor T.").Visible =
+            Utilidades.GetGridColumn(GProductos, "Precio U.").Visible =
+            Utilidades.GetGridColumn(GProductos, "Precio T.").Visible =
             RValorF.Visible = RValor.Visible =
             TValor.Visible = LValor.Visible = configuracion.nValor != 0;
 
             TValor.ReadOnly = configuracion.nValorTipo == 1;
+
+            // fecha de entrega
+            LEntrega.Visible = REntrega.Visible= 
+            TEntrega.Visible = configuracion.bManejarEntrega;
+
 
             // lote
             Utilidades.GetGridColumn(GProductos, "Lote").Visible =
@@ -80,6 +85,7 @@ public partial class almacen_salida : System.Web.UI.Page
                 query += "id";
                 query += "observaciones";
                 query += "fecha";
+                query += "entrega";
                 query += "documento";
                 query += "tercero";
 
@@ -91,6 +97,7 @@ public partial class almacen_salida : System.Web.UI.Page
                     ((ing)Master).SetModificacion(HId.Value, ((ing)Master).GetAlmacen());
                     TObservaciones.Text = reader["observaciones"].ToString();
                     TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
+                    TEntrega.Text = CConector.GetFromMySQLDate(reader["entrega"]);
                     TDocumento.Text = reader["documento"].ToString();
                     TTerceroID.Text = reader["tercero"].ToString();
                     TTercero.Text = Almacen.GetNombreTercero(reader["tercero"].ToString());
@@ -129,7 +136,10 @@ public partial class almacen_salida : System.Web.UI.Page
                             info.estado = Convert.ToInt32(reader["estado"]);
                             info.Ingreso = reader["ingreso"].ToString() != "";
                             info.Costo = Convert.ToDecimal(reader["costo"]);
-                            info.Valor = Convert.ToDecimal(reader["valor"]);
+                            try
+                            {
+                                info.Valor = Convert.ToDecimal(reader["valor"]);
+                            } catch {}
 
                             productoUsado.AddProducto(info);
                         }
@@ -139,7 +149,7 @@ public partial class almacen_salida : System.Web.UI.Page
                     HUsado.Value = productoUsado.SerializeBinary();
                     GProductos.DataBind();
 
-                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Valor T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
+                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Precio T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
                     GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
                     GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
 
@@ -233,7 +243,7 @@ public partial class almacen_salida : System.Web.UI.Page
         REntero.Enabled = true;
         RDecimal.Enabled = true;
 
-        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Valor T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Precio T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
         GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
         GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
 
@@ -263,11 +273,13 @@ public partial class almacen_salida : System.Web.UI.Page
             return;
         }
 
+        CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
         Query query = new Query("salida" + ((ing)Master).GetAlmacen());
         CConector conector = new CConector();
 
         query["observaciones"] = TObservaciones.Text;
         query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
+        query["entrega"] = CConector.GetMySQLDateFormat(configuracion.bManejarEntrega ? TEntrega.Text : TFecha.Text);
         query["documento"] = TDocumento.Text;
         query["tercero"] = TTerceroID.Text;
 
@@ -299,8 +311,6 @@ public partial class almacen_salida : System.Web.UI.Page
             return;
         }
 
-
-
         ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
 
         // eliminamos todos los productos
@@ -316,7 +326,6 @@ public partial class almacen_salida : System.Web.UI.Page
             }
         }
 
-        CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
         // agregamos los nuevos
         productos = productoUsado.GetProductosUsados();
         for (int i = 0; i < productos.Count; i++)
@@ -408,7 +417,7 @@ public partial class almacen_salida : System.Web.UI.Page
         GProductos.DataBind();
         HUsado.Value = productoUsado.SerializeBinary();
 
-        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Valor T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
+        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Precio T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
         GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
         GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
 

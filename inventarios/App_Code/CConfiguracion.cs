@@ -33,6 +33,10 @@ public class CConfiguracion
     public int nProductoSerial = 2;
     public int nProductoEstado = 2;
 
+
+    // salidas
+    public bool bManejarEntrega=true;
+
 	public CConfiguracion()
 	{
 	}
