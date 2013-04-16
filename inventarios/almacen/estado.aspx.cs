@@ -46,9 +46,12 @@ public partial class almacen_estado : System.Web.UI.Page
             }
         }
 
-        if (!todoslosalmacenes && seleccionado.Length > 0 && seleccionado != ((ing)Master).GetAlmacen())
+        if (!todoslosalmacenes)
         {
-            ((ing)Master).GetDropDownAlmacen().SelectedValue=seleccionado;
+            if (seleccionado.Length > 0 && seleccionado != ((ing)Master).GetAlmacen())
+                ((ing)Master).GetDropDownAlmacen().SelectedValue = seleccionado;
+            else if (seleccionado.Length == 0)
+                DAlmacenes.SelectedValue = ((ing)Master).GetAlmacen();
         }
 
         Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !todoslosalmacenes && CConfiguracion.GetConfiguracion().nUbicacion != 0;

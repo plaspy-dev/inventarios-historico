@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-15 · Guardar precios y valores de producto.** Añade los campos de precios y el modelo que convierte y guarda sus valores. La ficha de producto puede registrar importes como datos asociados al artículo.
+**2013-04-16 · Presentar gráficos de inventario y alertas por almacén.** Amplía los informes con rutinas para generar gráficos, ajusta las columnas visibles y filtra alertas por almacén. El lector puede examinar un resumen sin perder el contexto del lugar al que corresponden sus datos.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-15 · Save product prices and values.** Add price fields and a model that converts and saves their values. The product record can keep amounts associated with the item.
+**2013-04-16 · Show stock charts and warehouse-specific alerts.** Expand reports with chart generation, update visible columns, and filter alerts by warehouse. Readers can review a summary while keeping its warehouse context.
 
 ### How to explore the source
 

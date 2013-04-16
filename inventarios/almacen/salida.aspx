@@ -171,10 +171,17 @@
         <tr>
             <td>Número</td>
             <td><asp:TextBox runat="server" ID="TNumero" CssClass="likenumero"></asp:TextBox></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
             <td>Fecha<asp:RequiredFieldValidator ControlToValidate="TFecha" ErrorMessage="Por favor ingrese un fecha." ID="RequiredFieldValidator2" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
             <asp:RangeValidator ControlToValidate="TFecha" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator3" Display="Dynamic" Type="Date">*</asp:RangeValidator></td>
             <td><asp:TextBox runat="server" ID="TFecha" CssClass="fecha"></asp:TextBox>
             </td>
+            <td><asp:Label runat="server" ID="LEntrega" Text="Entrega"></asp:Label><asp:RangeValidator ControlToValidate="TEntrega" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="REntrega" Display="Dynamic" Type="Date">*</asp:RangeValidator></td>
+            <td><asp:TextBox runat="server" ID="TEntrega" CssClass="fecha"></asp:TextBox>
             <td></td>
         </tr>
         <tr>
@@ -223,8 +230,8 @@
                 <asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
                 <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator></td>
             <td><asp:TextBox ID="TCantidad" runat="server" CssClass="float"></asp:TextBox></td>
-            <td><asp:Label runat="server" ID="LValor" Text="Valor U."></asp:Label>
-            <asp:RequiredFieldValidator ControlToValidate="TValor" ValidationGroup="producto" ErrorMessage="Por favor ingrese un valor unitario." ID="RValor" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            <td><asp:Label runat="server" ID="LValor" Text="Precio U."></asp:Label>
+            <asp:RequiredFieldValidator ControlToValidate="TValor" ValidationGroup="producto" ErrorMessage="Por favor ingrese un precio unitario." ID="RValor" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
             <asp:RegularExpressionValidator ValidationExpression="^[+-]?[0-9]{1,3}(?:,?[0-9]{3})*(?:\.[0-9]+)?$" ID="RValorF" runat="server" ValidationGroup="producto" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TValor" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
             </td>
             <td><asp:TextBox runat="server" ID="TValor" CssClass="dinero"></asp:TextBox></td>
@@ -250,8 +257,8 @@
                         <asp:BoundField DataField="codigo" HeaderText="Código" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
-                        <asp:BoundField DataField="Valor" HeaderText="Valor U." SortExpression="Valor" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" />
-                        <asp:BoundField DataField="ValorTotal" HeaderText="Valor T." SortExpression="ValorTotal" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="Valor" HeaderText="Precio U." SortExpression="Valor" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="ValorTotal" HeaderText="Precio T." SortExpression="ValorTotal" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />

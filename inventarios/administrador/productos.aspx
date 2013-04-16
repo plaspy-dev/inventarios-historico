@@ -140,7 +140,7 @@
               </td>
           </tr>
           <tr>
-            <td>Unidad</td>
+            <td>Unidad de medida</td>
             <td>
                 <asp:TextBox ID="TUnidad" runat="server"></asp:TextBox>
               </td>
@@ -270,7 +270,7 @@
                   <tr>
                     <td colspan="3">
                         <asp:GridView ID="GAlmacenes" runat="server" AutoGenerateColumns="False" 
-                            DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true" AllowPaging="true">
+                            DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true">
                             <RowStyle CssClass="GridRow"></RowStyle>
                             <FooterStyle CssClass="GridFooter"></FooterStyle>
                             <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -368,7 +368,7 @@
                   <tr>
                     <td colspan="3">
                         <asp:GridView ID="GPreciosA" runat="server" AutoGenerateColumns="False" 
-                            DataKeyNames="id" DataSourceID="SPreciosA" AllowSorting="true" AllowPaging="true">
+                            DataKeyNames="id" DataSourceID="SPreciosA" AllowSorting="true">
                             <RowStyle CssClass="GridRow"></RowStyle>
                             <FooterStyle CssClass="GridFooter"></FooterStyle>
                             <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>

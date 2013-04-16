@@ -136,6 +136,17 @@
         <asp:Button runat="server" ID="BCancelar" Text="Cancelar" CausesValidation="false" onclick="BCancelar_Click" />
     </td>
   </tr>
+    <tr>
+        <td colspan="3" class="GridHeader">Salidas</td>
+    </tr>
+    <tr>
+        <td>Fecha de entrega</td>
+        <td><asp:DropDownList ID="DEntrega" runat="server">
+            <asp:ListItem Text="Los productos salen de inventario solo con la fecha de entrega" Value="0"></asp:ListItem>
+            <asp:ListItem Text="Los productos salen de inventario inmediatamente" Value="1"></asp:ListItem>
+        </asp:DropDownList></td>
+        <td></td>
+    </tr>
 </table>
 </asp:Content>
 

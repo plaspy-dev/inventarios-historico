@@ -8,25 +8,41 @@ using SDG.Componentes;
 
 public class Alertas
 {
+    public String id { get; set; }
     public String Nombre { get; set; }
-    public String Numero { get; set; }
+    public String Numero { 
+        get {
+            if (!string.IsNullOrEmpty(szAlmacen))
+            {
+                CConector conectortemp = new CConector();
+                _Numero = conectortemp.QueryString(string.Format(SelectCount, szAlmacen));
+                szAlmacen = null;
+            }
+            return _Numero;
+        } 
+    }
     public String URL { get; set; }
     public String SelectCommand { get; set; }
     public String SelectCount { get; set; }
+    public String szAlmacen { get; set;}
+    protected String _Numero;
 
-    public Alertas(string nombre, string numero, string url, string select, string selectcount)
+    public Alertas(string szId, string nombre, string url, string select, string selectcount, string almacen)
     {
+        id = szId;
         Nombre = nombre;
-        Numero = numero;
         SelectCommand = select;
         URL = url;
         SelectCount = selectcount;
+        szAlmacen = almacen;
     }
 
     public static void RemoveAlertas(string almacen) {
-        
-        HttpRuntime.Cache.Remove("alertas" + almacen);
-        HttpRuntime.Cache.Remove("alerta_global");
+
+        GetFullAlertas(almacen).ForEach( t => t.szAlmacen=almacen );
+        GetFullAlertas().ForEach(t => t.szAlmacen = "-1");
+        // HttpRuntime.Cache.Remove("alertas" + almacen);
+        // HttpRuntime.Cache.Remove("alerta_global");
     }
 
     public static List<Alertas> GetFullAlertas() {
@@ -37,22 +53,19 @@ public class Alertas
     public static List<Alertas> GetFullAlertas(string almacen)
     {
         List<Alertas> alertas = (List<Alertas>)HttpRuntime.Cache[almacen == null ? "alerta_global" : ("alertas" + almacen)];
-        
-        alertas = null;
-
         if (alertas == null)
         {
             alertas = new List<Alertas>();
 
             Query query = new Query("alertas");
-            
+
+            query += "id";
             query+="nombre";
             query += "consulta";
             query += "url";
             query += "consulta_contar";
 
             CConector conectorc = new CConector();
-            CConector conectortemp = new CConector();
             MySqlDataReader consultas = conectorc.Query(query.GetSelect(almacen==null ? "global=1" : "global IS NULL"));
 
             if (consultas != null)
@@ -64,12 +77,12 @@ public class Alertas
                     string consulta = consultas["consulta"].ToString();
                     string consultacount = consultas["consulta_contar"].ToString();
                     
-                    alertas.Add(new Alertas(
+                    alertas.Add(new Alertas(consultas["id"].ToString(),
                             consultas["nombre"].ToString(),
-                            conectortemp.QueryString(string.Format(consultacount, almacen)),
                             consultas["url"].ToString(),
                             consulta,
-                            consultacount
+                            consultacount,
+                            almacen==null ? "-1" : almacen
                     ));
                 }
             }
@@ -80,15 +93,35 @@ public class Alertas
 
     public static List<Alertas> GetAlertas(string almacen)
     {
-        List<Alertas> alertas = null;
-        alertas= (from p in GetFullAlertas(almacen)
-         where !string.IsNullOrEmpty(p.Numero) && p.Numero != "0"
-         select p).ToList();
+        List<string> alertas = (List<string>)HttpContext.Current.Session["alertas"];
+        if(alertas==null) {
+            Usuario usuario = Usuario.GetUsuario();
+            alertas = new List<string>();
+            CConector conector = new CConector();
+            MySqlDataReader reader= conector.Query(string.Format("SELECT alertas.id"
+                            + " FROM alertas"
+                            + " LEFT JOIN alertas_grupo ON (alertas_grupo.grupo={1} AND alertas_grupo.alerta=alertas.id)"
+                            + " LEFT JOIN alertas_usuario ON (alertas_usuario.usuario={0} AND alertas_usuario.alerta=alertas.id)"
+                            + " WHERE (IF({1}=0,1, alertas_grupo.alerta) IS NOT NULL AND (alertas_usuario.estado IS NULL OR alertas_usuario.estado=1))"
+                            + " OR (IF({1}=0,1, alertas_grupo.alerta) IS NULL AND (alertas_usuario.estado IS NOT NULL AND alertas_usuario.estado=1))"
+                            , usuario.GetID()
+                            , usuario.GetGrupo()));
+            if(reader!=null) {
+                while(reader.Read()) 
+                    alertas.Add(reader["id"].ToString());
+            }
+            HttpContext.Current.Session["alertas"]= alertas;
+        }
 
-        alertas.AddRange((from p in GetFullAlertas()
-         where !string.IsNullOrEmpty(p.Numero) && p.Numero != "0"
-         select p).ToList());
+        List<Alertas> listadoalertas = null;
+        listadoalertas = (from p in GetFullAlertas(almacen)
+                          where alertas.Contains(p.id) && !string.IsNullOrEmpty(p.Numero) && p.Numero != "0"
+                          select p).ToList();
 
-        return alertas;
+        listadoalertas.AddRange((from p in GetFullAlertas()
+                                 where alertas.Contains(p.id) && !string.IsNullOrEmpty(p.Numero) && p.Numero != "0"
+                                 select p).ToList());
+
+        return listadoalertas;
     }
 }

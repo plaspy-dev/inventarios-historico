@@ -3,6 +3,12 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 <script type="text/javascript">
     $(function() {
+        $("#alertas").accordion({
+            autoHeight: false,
+            navigation: true,
+            collapsible: true,
+            active: false
+        });
         $("#accordion").accordion({
             autoHeight: false,
             navigation: true,
@@ -65,7 +71,7 @@
             <td>
                 Grupo</td>
             <td>
-                <asp:DropDownList ID="DGrupos" runat="server" DataSourceID="SGrupos" DataTextField="nombre" DataValueField="id" AppendDataBoundItems="true">
+                <asp:DropDownList ID="DGrupos" runat="server" DataSourceID="SGrupos" DataTextField="nombre" DataValueField="id" AppendDataBoundItems="true" AutoPostBack="true">
                     <asp:ListItem Text="Administrador" Value="0" Selected="True"></asp:ListItem>
                 </asp:DropDownList>
                 <asp:SqlDataSource ID="SGrupos" runat="server" 
@@ -127,6 +133,47 @@
                                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                                 SelectCommand="(SELECT -2 AS id,'( Todos --Incluidos los nuevos)' AS nombre) UNION (SELECT -1 AS id,'(Ajustes)' AS nombre) UNION (SELECT id,nombre FROM almacen WHERE estado IS NULL) ORDER BY nombre;">
+                        </asp:SqlDataSource>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <div id="alertas">
+                    <h3><a href="#">Alertas</a></h3>
+                    <div class="hide">
+                        <asp:GridView ID="GAlertas" runat="server" DataSourceID="SAlertas" 
+                            DataKeyNames="id,alerta" AutoGenerateColumns="false" ShowHeader="false"
+                            AllowSorting="True">
+                            <RowStyle CssClass="GridRow"></RowStyle>
+                            <FooterStyle CssClass="GridFooter"></FooterStyle>
+                            <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                            <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                            <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                            <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                            <Columns>
+                                <asp:TemplateField HeaderText="Permiso">
+                                    <ItemTemplate>
+                                        <asp:CheckBox runat="server" ID="CAlerta" Checked='<%# Eval("alerta").ToString()=="" ? (Eval("estado").ToString()!="1" && Eval("estado").ToString()!="") : Eval("estado").ToString()!="-1" %>' Text='<%# Eval("nombre").ToString() %>' />
+                                    </ItemTemplate>
+                                </asp:TemplateField>
+                            </Columns>
+                        </asp:GridView>
+                        <asp:SqlDataSource ID="SAlertas" runat="server"
+                                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                                SelectCommand="SELECT alertas.id,alertas.nombre
+                                        ,IF(@grupo=0,1, alertas_grupo.alerta) AS alerta
+                                        ,alertas_usuario.estado
+                                        FROM alertas
+                                        LEFT JOIN alertas_grupo ON (alertas_grupo.grupo=@grupo AND alertas_grupo.alerta=alertas.id)
+                                        LEFT JOIN alertas_usuario ON (alertas_usuario.usuario=@usuario AND alertas_usuario.alerta=alertas.id)
+                                        ;">
+                                        <SelectParameters>
+                                            <asp:ControlParameter ControlID="DGrupos" PropertyName="SelectedValue" Name="grupo" DefaultValue="-1" />
+                                            <asp:ControlParameter ControlID="HId" PropertyName="Value" Name="usuario" DefaultValue="0" />
+                                        </SelectParameters>
                         </asp:SqlDataSource>
                     </div>
                 </div>

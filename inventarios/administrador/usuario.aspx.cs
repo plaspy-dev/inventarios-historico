@@ -89,7 +89,34 @@ public partial class administrador_usuario : System.Web.UI.Page
         if (conector.InsertModificacion(HId.Value) == -1)
             return;
 
+        if (conector.QueryMod("DELETE FROM alertas_usuario WHERE usuario=" + HId.Value) == -1)
+            return;
+
+        query = new Query("alertas_usuario");
+        query["usuario"] = HId.Value;
+
+        for (int i = 0; i < GAlertas.Rows.Count; i++)
+        {
+            CheckBox check = (CheckBox)GAlertas.Rows[i].FindControl("CAlerta");
+            if (check.Checked)
+            {
+                if (GAlertas.DataKeys[i].Values["alerta"].ToString().Length==0) { // el grupo originalmente no tenia esto
+                    query["alerta"] = GAlertas.DataKeys[i].Values["id"].ToString();
+                    query["estado"] = "1";
+                    if (conector.QueryMod(query.GetInsert()) == -1)
+                        return;
+                }
+            } else if (GAlertas.DataKeys[i].Values["alerta"].ToString().Length> 0)
+            { // el grupo originalmente lo tiene
+                query["alerta"] = GAlertas.DataKeys[i].Values["id"].ToString();
+                query["estado"] = "-1";
+                if (conector.QueryMod(query.GetInsert()) == -1)
+                    return;
+            }
+        }
+
         conector.Commit();
+        Session["alertas"] = null;
         ((ing)Master).SetResultado(mensaje);
     }
     protected void BCancelar_Click(object sender, EventArgs e)

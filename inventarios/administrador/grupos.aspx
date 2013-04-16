@@ -14,6 +14,12 @@
     }
     $(document).ready(function() {
 
+        $("#alertas").accordion({
+            autoHeight: false,
+            navigation: true,
+            collapsible: true,
+            active: false
+        });
         $("#accordion").accordion({
             autoHeight: false,
             navigation: true
@@ -95,6 +101,42 @@
                     </tr>
                     <tr>
                         <td>
+                            <div id="alertas">
+                                <h3><a href="#">Alertas</a></h3>
+                                <div class="hide">
+                                    <asp:GridView ID="GAlertas" runat="server" DataSourceID="SAlertas" 
+                                        DataKeyNames="id" AutoGenerateColumns="false" ShowHeader="false"
+                                        AllowSorting="True">
+                                        <RowStyle CssClass="GridRow"></RowStyle>
+                                        <FooterStyle CssClass="GridFooter"></FooterStyle>
+                                        <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                                        <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                                        <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                                        <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                                        <Columns>
+                                            <asp:TemplateField HeaderText="Permiso">
+                                                <ItemTemplate>
+                                                    <asp:CheckBox runat="server" ID="CAlerta" Checked='<%# Eval("alerta").ToString()=="" ? false : true %>' Text='<%# Eval("nombre").ToString() %>' />
+                                                </ItemTemplate>
+                                            </asp:TemplateField>
+                                        </Columns>
+                                    </asp:GridView>
+                                    <asp:SqlDataSource ID="SAlertas" runat="server"
+                                            ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                                            ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                                            SelectCommand="SELECT alertas.id,alertas.nombre,IF(@grupo=0,1, alertas_grupo.alerta) AS alerta
+                                                    FROM alertas
+                                                    LEFT JOIN alertas_grupo ON (alertas_grupo.grupo=@grupo AND alertas_grupo.alerta=alertas.id);">
+                                                    <SelectParameters>
+                                                        <asp:ControlParameter ControlID="LGrupos" PropertyName="SelectedValue" Name="grupo" DefaultValue="-1" />
+                                                    </SelectParameters>
+                                    </asp:SqlDataSource>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <asp:Repeater ID="R" runat="server" DataMember="parent" 
                                 onitemcreated="R_ItemCreated">
                                 <HeaderTemplate>
@@ -163,12 +205,9 @@
                     </tr>
                     <tr>
                         <td align="right">
-                            <asp:Button ID="BAceptar" runat="server" onclick="BAceptar_Click" 
-                                Text="Aceptar" />
-                            <asp:Button ID="BCancelar" runat="server" CausesValidation="False" 
-                                onclick="BCancelar_Click" Text="Cancelar" />
-                            <asp:Button ID="BEliminar" runat="server" CausesValidation="False" 
-                                onclick="BEliminar_Click" Text="Eliminar" />
+                            <asp:Button ID="BAceptar" runat="server" onclick="BAceptar_Click" Text="Aceptar" />
+                            <asp:Button ID="BCancelar" runat="server" CausesValidation="False" onclick="BCancelar_Click" Text="Cancelar" />
+                            <asp:Button ID="BEliminar" runat="server" CausesValidation="False" onclick="BEliminar_Click" Text="Eliminar" />
                         </td>
                     </tr>
                 </table>
