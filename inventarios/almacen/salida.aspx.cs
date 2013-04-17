@@ -33,7 +33,6 @@ public partial class almacen_salida : System.Web.UI.Page
             LEntrega.Visible = REntrega.Visible= 
             TEntrega.Visible = configuracion.bManejarEntrega;
 
-
             // lote
             Utilidades.GetGridColumn(GProductos, "Lote").Visible =
             LLoteA.Visible = TLote.Visible = LLote.Visible = configuracion.bLote;
@@ -54,6 +53,9 @@ public partial class almacen_salida : System.Web.UI.Page
             Utilidades.GetGridColumn(GProductos, "Estado").Visible =
             LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
+            // tercero
+            RTerceroID.Visible = configuracion.bTerceroSalida;
+            RDocumento.Visible = configuracion.bDocumentoSalida;
 
             if (Session["salida_clean"] != null)
             {
@@ -75,7 +77,8 @@ public partial class almacen_salida : System.Web.UI.Page
             ViewState["almacen"] = ((ing)Master).GetAlmacen();
 
             CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
-            CAutomatico.Enabled = usuario.CanAdmin();
+            CAutomatico.Enabled = usuario.CanAdmin() || configuracion.nSeleccionProducto!=0;
+            CAutomatico.Checked = configuracion.nSeleccionProducto != 2;
 
             if (!string.IsNullOrEmpty(Request.QueryString["si"]))
             {

@@ -57,7 +57,9 @@ public partial class almacen_traslado : System.Web.UI.Page
                 Session["ltraslado"] = null;
             }
 
-            CAutomatico.Enabled = usuario.CanAdmin();
+            CAutomatico.Enabled = usuario.CanAdmin() || configuracion.nSeleccionProducto != 0;
+            CAutomatico.Checked = configuracion.nSeleccionProducto != 2;
+
             TNumero.Focus();
             ViewState["almacen"] = ((ing)Master).GetAlmacen();
             SAlmacen.SelectCommand = SAlmacen.SelectCommand.Replace("@almacen", ((ing)Master).GetAlmacen());

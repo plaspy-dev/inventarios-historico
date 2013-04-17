@@ -16,6 +16,8 @@ public partial class administrador_configuracion : System.Web.UI.Page
             DTipoValores.SelectedValue = configuracion.nValorTipo.ToString();
             DCantidades.SelectedValue= configuracion.nCantidad.ToString();
             DUbicacion.SelectedValue = configuracion.nUbicacion.ToString();
+            DSeleccionProducto.SelectedValue = configuracion.nSeleccionProducto.ToString();
+
 
             DVence.SelectedValue = configuracion.nProductoVence.ToString();
             DLote.SelectedValue = configuracion.nProductoLote.ToString();
@@ -29,8 +31,14 @@ public partial class administrador_configuracion : System.Web.UI.Page
             CSerial.Checked = configuracion.bSerial;
             CEstado.Checked = configuracion.bEstado;
 
+            // entradas
+            CTerceroEntrada.Checked = configuracion.bTerceroEntrada;
+            CDocumentoEntrada.Checked = configuracion.bDocumentoEntrada;
+
             // salidas
             DEntrega.SelectedValue = configuracion.bManejarEntrega ? "0" : "1";
+            CTerceroSalida.Checked = configuracion.bTerceroSalida;
+            CDocumentoSalida.Checked = configuracion.bDocumentoSalida;
         }
     }
 
@@ -51,14 +59,21 @@ public partial class administrador_configuracion : System.Web.UI.Page
         configuracion.nProductoEstado = Convert.ToInt32(DEstado.SelectedValue);
         configuracion.nUbicacion = Convert.ToInt32(DUbicacion.SelectedValue);
         configuracion.nDiasVencimiento = Convert.ToInt32(TDiasVencimiento.Text);
+        configuracion.nSeleccionProducto = Convert.ToInt32(DSeleccionProducto.SelectedValue);
 
         configuracion.bVencimiento= CVencimiento.Checked;
         configuracion.bLote= CLote.Checked;
         configuracion.bSerial= CSerial.Checked;
         configuracion.bEstado= CEstado.Checked;
 
+        // entradas
+        configuracion.bTerceroEntrada= CTerceroEntrada.Checked;
+        configuracion.bDocumentoEntrada = CDocumentoEntrada.Checked;
+
         // salidas
         configuracion.bManejarEntrega= DEntrega.SelectedValue=="0";
+        configuracion.bTerceroSalida= CTerceroSalida.Checked;
+        configuracion.bDocumentoSalida = CDocumentoSalida.Checked;
 
         if(configuracion.SaveConfiguracion()) {
             LMensaje.Text =  "Configuración guardada";

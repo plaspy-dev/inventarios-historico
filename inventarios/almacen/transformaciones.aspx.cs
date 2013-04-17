@@ -34,11 +34,15 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             // estado
             LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.bEstado;
             LEstadoA2.Visible = DEstado2.Visible = LEstado2.Visible = configuracion.bEstado;
+            
+            CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
 
+            CAutomatico.Enabled = usuario.CanAdmin() || configuracion.nSeleccionProducto != 0;
+            CAutomatico.Checked = configuracion.nSeleccionProducto != 2;
 
             TNumero.Focus();
             ViewState["almacen"] = ((ing)Master).GetAlmacen();
-            CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
+            
             if (!string.IsNullOrEmpty(Request.QueryString["tri"]))
             {
                 CConector conector = new CConector();

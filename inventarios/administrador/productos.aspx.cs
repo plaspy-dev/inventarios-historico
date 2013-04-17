@@ -418,7 +418,10 @@ public partial class administrador_productos : System.Web.UI.Page
         Dictionary<string, string> diccionario = new Dictionary<string, string>();
 
         for (int i = 0; i < lista.Items.Count; i++)
-            diccionario[lista.Items[i].Text.ToLower()] = lista.Items[i].Value;
+        {
+            if(lista.Items[i].Value!="-1")
+                diccionario[lista.Items[i].Text.ToLower()] = lista.Items[i].Value;
+        }
 
         return diccionario;
     }
@@ -458,8 +461,10 @@ public partial class administrador_productos : System.Web.UI.Page
                     }
                 }
             }
+            if (textos[i].Length == 0)
+                break;
             if(!found) {
-                LMensaje.Text = "No se encontro la columna " + textos[i];
+                LMensaje.Text = "No se encontro la columna '" + textos[i] + "'";
                 return;
             }
         }
@@ -490,20 +495,28 @@ public partial class administrador_productos : System.Web.UI.Page
         Dictionary<string, string> maxmin_tipo = new Dictionary<string, string>();
         maxmin_tipo["si"] = "1";
         maxmin_tipo["no"] = "";
+        int linea = 1;
 
         while(reader.Peek()>=0) {
 
             header = reader.ReadLine();
             textos = header.Split(';');
             string currentID = "";
+            linea++;
 
-            for (int i = 0; i < textos.Length; i++)
+            for (int i = 0; i < textos.Length && i<campos.Count; i++)
             {
                 if(i==id) {
                     currentID = textos[i];
                 } else {
                     valor= textos[i];
                     switch(campos[i]) {
+                        case "nombre":
+                            if(valor.Length==0) {
+                                LMensaje.Text = "No se puede ingresar el nombre esta en blanco en la línea " + linea;
+                                return;
+                            }
+                            break;
                         case "grupo":
                             try {
                                 if (textos[i].Length > 0)
@@ -512,7 +525,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             } catch {
                                 int res = conector.QueryMod(string.Format("INSERT INTO varios (nombre,tipo) VALUES ({0}, 1)", Query.GetValor(textos[i])));
                                 if(res==-1) {
-                                    LMensaje.Text = "No se puede crear el grupo " + textos[i] + " en línea " + (i + 1);
+                                    LMensaje.Text = "No se puede crear el grupo " + textos[i] + " en línea " + linea;
                                     return;
                                 }
                                 grupos[textos[i].ToLower()] = valor = res.ToString();
@@ -522,7 +535,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             try {
                                 valor = manejocantidades[textos[i].ToLower()];
                             } catch {
-                                LMensaje.Text = "No existe el manejo de cantidades llamado '" + textos[i] + "' en línea " + (i+1);
+                                LMensaje.Text = "No existe el manejo de cantidades llamado '" + textos[i] + "' en línea " + linea;
                                 return;
                             }
                             break;
@@ -533,7 +546,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "No existe el serial llamado '" + textos[i] + "' en línea " + (i + 1);
+                                LMensaje.Text = "No existe el serial llamado '" + textos[i] + "' en línea " + linea;
                                 return;
                             }
                             break;
@@ -544,7 +557,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "No existe el estado llamado '" + textos[i] + "' en línea " + (i + 1);
+                                LMensaje.Text = "No existe el estado llamado '" + textos[i] + "' en línea " + linea;
                                 return;
                             }
                             break;
@@ -555,7 +568,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "No existe la fecha de vencimiento llamado '" + textos[i] + "' en línea " + (i + 1);
+                                LMensaje.Text = "No existe la fecha de vencimiento llamado '" + textos[i] + "' en línea " + linea;
                                 return;
                             }
                             break;
@@ -566,7 +579,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "No existe el lote llamado '" + textos[i] + "' en línea " + (i + 1);
+                                LMensaje.Text = "No existe el lote llamado '" + textos[i] + "' en línea " + linea;
                                 return;
                             }
                             break;
@@ -577,7 +590,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "No existe el Mínimo y máximo por estados llamado '" + textos[i] + "' en línea " + (i + 1);
+                                LMensaje.Text = "No existe el Mínimo y máximo por estados llamado '" + textos[i] + "' en línea " + linea;
                                 return;
                             }
                             break;
@@ -589,7 +602,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "Los días de vencimiento deben ser un entero (" + textos[i] + ") en línea " + (i + 1);
+                                LMensaje.Text = "Los días de vencimiento deben ser un entero (" + textos[i] + ") en línea " + linea;
                                 return;
                             }
                             break;
@@ -601,7 +614,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "Los días alerta vencimiento deben ser un entero (" + textos[i] + ") en línea " + (i + 1);
+                                LMensaje.Text = "Los días alerta vencimiento deben ser un entero (" + textos[i] + ") en línea " + linea;
                                 return;
                             }
                             break;
@@ -613,7 +626,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "El mínimo deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                LMensaje.Text = "El mínimo deben ser un decimal (" + textos[i] + ") en línea " + linea;
                                 return;
                             }
                             break;
@@ -625,7 +638,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "El máximo deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                LMensaje.Text = "El máximo deben ser un decimal (" + textos[i] + ") en línea " + linea;
                                 return;
                             }
                             break;
@@ -637,7 +650,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "El costo deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                LMensaje.Text = "El costo deben ser un decimal (" + textos[i] + ") en línea " + linea;
                                 return;
                             }
                             break;
@@ -649,7 +662,7 @@ public partial class administrador_productos : System.Web.UI.Page
                             }
                             catch
                             {
-                                LMensaje.Text = "El precio deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                LMensaje.Text = "El precio deben ser un decimal (" + textos[i] + ") en línea " + linea;
                                 return;
                             }
                             break;
@@ -671,6 +684,7 @@ public partial class administrador_productos : System.Web.UI.Page
 
         conector.Commit();
         DGrupo.DataBind();
+        GResultado.DataBind();
 
         LMensaje.Text = string.Format("Importacion realizada con exito.<br/>{0} productos, {1} Nuevos y {2} actualizados", nuevos+actualizados, nuevos, actualizados);
     }
