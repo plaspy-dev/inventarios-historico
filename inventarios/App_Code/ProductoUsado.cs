@@ -140,14 +140,14 @@ public class ProductoUsado
         bool actualizado=false;
         List<Producto> info = (from p in pProductos
                                where p.IdGrid == idGrid 
-                               && p.Ingreso != ingreso 
-                               && (p.pProductoAntiguo == null || p.pProductoAntiguo.Ingreso != ingreso)
+                               && p.bIngreso != ingreso 
+                               && (p.pProductoAntiguo == null || p.pProductoAntiguo.bIngreso != ingreso)
                                select p).ToList();
         for (int i = 0; i < info.Count; i++)
         {
             if(!string.IsNullOrEmpty(info[i].IdTabla) && info[i].pProductoAntiguo==null) 
                 info[i].pProductoAntiguo = info[i].CopiarProducto();
-            info[i].Ingreso = ingreso;
+            info[i].bIngreso = ingreso;
             actualizado = true;
         }
         return actualizado;

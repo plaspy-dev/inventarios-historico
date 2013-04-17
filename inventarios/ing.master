@@ -100,9 +100,6 @@
                                         </li>
                                     </ItemTemplate>
                                 </asp:Repeater>
-                                <li class="ui-state-default ui-corner-top" style="margin-right: 1px;" >
-                                    <asp:LinkButton ID="HAlertas" runat="server" onclick="HAlertas_Click" CausesValidation="false"></asp:LinkButton>
-                                </li>
                             </span>
                             <li id="lguardar" class="ui-state-default ui-corner-top" style="margin-right: 1px;" ><asp:HyperLink ID="HGuardar" runat="server" Visible="false">Guardar</asp:HyperLink></li>
                             <li id="limprimir" class="ui-state-default ui-corner-top" style="margin-right: 1px;" ><asp:HyperLink ID="HImprimir" runat="server" Visible="false">Imprimir</asp:HyperLink></li>

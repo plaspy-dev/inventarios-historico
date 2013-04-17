@@ -123,7 +123,8 @@
             <td>Producto</td>
             <td>Ubicación</td>
             <td>Grupo</td>
-            <td>Estado</td>
+            <td>Estado producto</td>
+            <td>Estado documento</td>
             <td></td>
         </tr>
         <tr>
@@ -182,6 +183,13 @@
                     SelectCommand="SELECT id, nombre FROM varios WHERE tipo=2 AND estado IS NULL ORDER BY nombre">
                 </asp:SqlDataSource>
                 </td>
+            <td>
+                <asp:DropDownList ID="DEstadoDoc" runat="server">
+                    <asp:ListItem Text="Activos" Value="1"></asp:ListItem>
+                    <asp:ListItem Text="Anulados" Value="2"></asp:ListItem>
+                    <asp:ListItem Text="Todos" Value="0"></asp:ListItem>
+                </asp:DropDownList>
+            </td>
             <td>
                 <asp:Button ID="BBuscar" runat="server" Text="Actualizar" onclick="BBuscar_Click" />
             </td>
@@ -272,6 +280,7 @@
             <asp:BoundField HeaderText="Cantidad" DataField="total" SortExpression="total" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
             <asp:BoundField HeaderText="Costo" DataField="costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" FooterStyle-HorizontalAlign="Right" />
             <asp:BoundField HeaderText="Precio" DataField="valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" FooterStyle-HorizontalAlign="Right" />
+            <asp:BoundField HeaderText="Estado" DataField="estado" SortExpression="estado" />
         </Columns>
     </asp:GridView>
     <div style="text-align: right;">
@@ -285,6 +294,7 @@
                             ,SUM(entrada_items{0}.cantidad*entrada_items{0}.costo) AS costo
                             ,NULL AS valor
                             ,IFNULL(a.nombre,'(Ajustes)') AS almacen
+                            ,IF(entrada{0}.estado IS NULL, 'Activo', 'Anulado') AS estado
                             FROM entrada{0}
                             LEFT JOIN tercero ON (tercero.id=entrada{0}.tercero)
                             LEFT JOIN almacen ON (almacen.id=entrada{0}.desde)
@@ -294,6 +304,7 @@
                         WHERE 
                         (@desde=' ' OR STR_TO_DATE(@desde, '%d/%m/%Y')<=entrada{0}.fecha)
                         AND (@hasta=' ' OR STR_TO_DATE(@hasta, '%d/%m/%Y')>=entrada{0}.fecha)
+                        AND (@estadodoc=0 OR (@estadodoc=1 AND entrada{0}.estado IS NULL) OR (@estadodoc=2 AND entrada{0}.estado=-1))
                         AND (@tercero=0 OR entrada{0}.tercero=@tercero)
                         AND (@ubicacion=-1 OR entrada_items{0}.ubicacion=@ubicacion)
                         AND (@estado=-1 OR entrada_items{0}.estado=@estado)
@@ -315,6 +326,7 @@
                     <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
+                    <asp:ControlParameter ControlID="DEstadoDoc" PropertyName="SelectedValue" Name="estadodoc" />
                  </SelectParameters>
     </asp:SqlDataSource>
     <asp:SqlDataSource ID="SResultados2" runat="server" 
@@ -325,6 +337,7 @@
                             ,SUM(traslado_items{0}.cantidad*traslado_items{0}.costo) AS costo
                             ,NULL AS valor
                             ,IFNULL(a.nombre,'(Ajustes)') AS almacen
+                            ,IF(traslado{0}.estado IS NULL, 'Activo', 'Anulado') AS estado
                             FROM traslado{0}
                             LEFT JOIN almacen ON (almacen.id=traslado{0}.destino)
                             LEFT JOIN traslado_items{0} ON (traslado{0}.id=traslado_items{0}.traslado)
@@ -333,6 +346,7 @@
                         WHERE 
                         (@desde=' ' OR STR_TO_DATE(@desde, '%d/%m/%Y')<=traslado{0}.envio)
                         AND (@hasta=' ' OR STR_TO_DATE(@hasta, '%d/%m/%Y')>=traslado{0}.envio)
+                        AND (@estadodoc=0 OR (@estadodoc=1 AND traslado{0}.estado IS NULL) OR (@estadodoc=2 AND traslado{0}.estado=-1))
                         AND (@ubicacion=-1 OR traslado_items{0}.ubicacion=@ubicacion)
                         AND (@estado=-1 OR traslado_items{0}.estado=@estado)
                         AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto IS NULL))
@@ -353,6 +367,7 @@
                     <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
+                    <asp:ControlParameter ControlID="DEstadoDoc" PropertyName="SelectedValue" Name="estadodoc" />
                  </SelectParameters>
     </asp:SqlDataSource>
     <asp:SqlDataSource ID="SResultados3" runat="server" 
@@ -363,6 +378,7 @@
                             ,SUM(salida_items{0}.cantidad*salida_items{0}.costo) AS costo
                             ,SUM(salida_items{0}.cantidad*salida_items{0}.valor) AS valor
                             ,IFNULL(a.nombre,'(Ajustes)') AS almacen
+                            ,IF(salida{0}.estado IS NULL, 'Activo', 'Anulado') AS estado
                             FROM salida{0}
                             LEFT JOIN tercero ON (tercero.id=salida{0}.tercero)
                             LEFT JOIN salida_items{0} ON (salida{0}.id=salida_items{0}.salida)
@@ -371,6 +387,7 @@
                         WHERE 
                         (@desde=' ' OR STR_TO_DATE(@desde, '%d/%m/%Y')<=salida{0}.fecha)
                         AND (@hasta=' ' OR STR_TO_DATE(@hasta, '%d/%m/%Y')>=salida{0}.fecha)
+                        AND (@estadodoc=0 OR (@estadodoc=1 AND salida{0}.estado IS NULL) OR (@estadodoc=2 AND salida{0}.estado=-1))
                         AND (@tercero=0 OR salida{0}.tercero=@tercero)
                         AND (@ubicacion=-1 OR salida_items{0}.ubicacion=@ubicacion)
                         AND (@estado=-1 OR salida_items{0}.estado=@estado)
@@ -392,6 +409,7 @@
                     <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
+                    <asp:ControlParameter ControlID="DEstadoDoc" PropertyName="SelectedValue" Name="estadodoc" />
                  </SelectParameters>
     </asp:SqlDataSource>
     <asp:SqlDataSource ID="SResultados4" runat="server" 
@@ -402,6 +420,7 @@
                             ,SUM(transformacion_entrada{0}.cantidad*transformacion_entrada{0}.costo) AS costo
                             ,NULL AS valor
                             ,IFNULL(a.nombre,'(Ajustes)') AS almacen
+                            ,'Activo' AS estado
                             FROM transformacion_entrada{0}
                             LEFT JOIN producto ON (producto.id=transformacion_entrada{0}.producto)
                             LEFT JOIN almacen AS a ON (a.id={0})

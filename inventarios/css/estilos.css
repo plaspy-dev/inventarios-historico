@@ -226,3 +226,12 @@ table .tablecollapse {
     color: #000;
 }
 .ui-autocomplete-loading { background: white url('../img/ui-anim_basic_16x16.gif') right center no-repeat; }
+
+.anulado 
+{
+    background: #FF0000;
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 20px;
+    padding: 5px;
+}

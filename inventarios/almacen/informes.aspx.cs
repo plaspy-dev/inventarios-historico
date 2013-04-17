@@ -279,6 +279,8 @@ public partial class almacen_informes : System.Web.UI.Page
             ((ing)Master).SetPrintFile("informes.html");
         }
 
+        Utilidades.GetGridColumn(GResultados, "Estado").Visible= DEstadoDoc.SelectedValue=="0";
+
         LCostos.Text = "";
         LCantidad.Text = "";
         LProductos.Text = "";

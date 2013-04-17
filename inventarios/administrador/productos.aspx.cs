@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -45,6 +47,9 @@ public partial class administrador_productos : System.Web.UI.Page
             Utilidades.GetGridColumn(GResultado, "Precio").Visible =
             lprecios.Visible=
             UPrecios.Visible = configuracion.nValor != 0;
+            
+            larchivos.Visible=
+            PArchivos.Visible = usuario.CanAdmin();
 
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
@@ -364,5 +369,309 @@ public partial class administrador_productos : System.Web.UI.Page
             GPreciosC.DataBind();
         }
         e.Cancel = true;
+    }
+
+    protected void BExportar_Click(object sender, EventArgs e)
+    {
+        bool paging = GResultado.AllowPaging;
+
+        if (paging)
+        {
+            GResultado.AllowPaging = false;
+            GResultado.DataBind();
+        }
+
+        Response.Clear();
+        Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(Page.Title + ".csv"));
+        Response.ContentEncoding = System.Text.Encoding.Unicode;
+
+        Response.Write("id;");
+        for (int i = 2; i < GResultado.Columns.Count; i++)
+        {
+            Response.Write(HttpUtility.HtmlDecode(GResultado.Columns[i].HeaderText).Trim());
+            Response.Write(";");
+        }
+        Response.Write("\n");
+
+        for (int i = 0; i < GResultado.Rows.Count; i++)
+        {
+            Response.Write(GResultado.DataKeys[i].Values["id"].ToString());
+            Response.Write(";");
+            for (int j = 2; j < GResultado.Columns.Count; j++)
+            {
+                Response.Write(HttpUtility.HtmlDecode(GResultado.Rows[i].Cells[j].Text).Trim());
+                Response.Write(";");
+            }
+            Response.Write("\n");
+        }
+
+        if (paging)
+        {
+            GResultado.AllowPaging = true;
+        }
+
+        Response.End();
+    }
+
+    public static Dictionary<string, string> GetDiccionario(DropDownList lista) {
+        
+        Dictionary<string, string> diccionario = new Dictionary<string, string>();
+
+        for (int i = 0; i < lista.Items.Count; i++)
+            diccionario[lista.Items[i].Text.ToLower()] = lista.Items[i].Value;
+
+        return diccionario;
+    }
+
+    protected void BImportar_Click(object sender, EventArgs e)
+    {
+        if(!IsValid)
+            return;
+        if (!FImportar.HasFile)
+            return;
+
+        List<string> campos=new List<string>();
+
+        int id = -1;
+
+        Query query = new Query("producto");
+        StreamReader reader = new StreamReader(FImportar.FileContent, System.Text.Encoding.UTF7);
+        if (reader.Peek() < 0)
+        {
+            LMensaje.Text = "No se puede leer el archivo";
+            return;
+        }
+        string header= reader.ReadLine();
+        string []textos= header.ToLower().Split(';');
+        for (int i = 0; i < textos.Length; i++) {
+            bool found = false;
+            if(textos[i]=="id") {
+                campos.Add(textos[i]);
+                id = i;
+                found = true;
+            } else {
+                for(int j=2; j<GResultado.Columns.Count; j++) {
+                    if(GResultado.Columns[j].HeaderText.ToLower()==textos[i]) {
+                        campos.Add(((BoundField)GResultado.Columns[j]).DataField);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if(!found) {
+                LMensaje.Text = "No se encontro la columna " + textos[i];
+                return;
+            }
+        }
+        if (id == -1)
+        {
+            // no se encontro el id
+            LMensaje.Text = "No se encontro la columna id";
+            return;
+        }
+        if(campos.Count==1) {
+            LMensaje.Text = "No se encontraron columnas a modificar";
+            return;
+        }
+
+        CConector conector= new CConector();
+        conector.StartTransaction();
+        int nuevos = 0, actualizados=0;
+        string valor;
+
+        // iniciamos los diccionarios
+        Dictionary<string, string> grupos = GetDiccionario(DGrupo);
+        Dictionary<string, string> manejocantidades = GetDiccionario(DCantidades);
+        Dictionary<string, string> serial = GetDiccionario(DSerial);
+        Dictionary<string, string> estado = GetDiccionario(DEstado);
+        Dictionary<string, string> vence = GetDiccionario(DVence);
+        Dictionary<string, string> lote = GetDiccionario(DLote);
+
+        Dictionary<string, string> maxmin_tipo = new Dictionary<string, string>();
+        maxmin_tipo["si"] = "1";
+        maxmin_tipo["no"] = "";
+
+        while(reader.Peek()>=0) {
+
+            header = reader.ReadLine();
+            textos = header.Split(';');
+            string currentID = "";
+
+            for (int i = 0; i < textos.Length; i++)
+            {
+                if(i==id) {
+                    currentID = textos[i];
+                } else {
+                    valor= textos[i];
+                    switch(campos[i]) {
+                        case "grupo":
+                            try {
+                                if (textos[i].Length > 0)
+                                    valor = grupos[textos[i].ToLower()];
+                                else valor = "0";
+                            } catch {
+                                int res = conector.QueryMod(string.Format("INSERT INTO varios (nombre,tipo) VALUES ({0}, 1)", Query.GetValor(textos[i])));
+                                if(res==-1) {
+                                    LMensaje.Text = "No se puede crear el grupo " + textos[i] + " en línea " + (i + 1);
+                                    return;
+                                }
+                                grupos[textos[i].ToLower()] = valor = res.ToString();
+                            }
+                            break;
+                        case "entero":
+                            try {
+                                valor = manejocantidades[textos[i].ToLower()];
+                            } catch {
+                                LMensaje.Text = "No existe el manejo de cantidades llamado '" + textos[i] + "' en línea " + (i+1);
+                                return;
+                            }
+                            break;
+                        case "serial":
+                            try
+                            {
+                                valor = serial[textos[i].ToLower()];
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "No existe el serial llamado '" + textos[i] + "' en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "nEstado":
+                            try
+                            {
+                                valor = estado[textos[i].ToLower()];
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "No existe el estado llamado '" + textos[i] + "' en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "vence":
+                            try
+                            {
+                                valor = vence[textos[i].ToLower()];
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "No existe la fecha de vencimiento llamado '" + textos[i] + "' en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "lote":
+                            try
+                            {
+                                valor = lote[textos[i].ToLower()];
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "No existe el lote llamado '" + textos[i] + "' en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "maxmin_tipo":
+                            try
+                            {
+                                valor = maxmin_tipo[textos[i].ToLower()];
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "No existe el Mínimo y máximo por estados llamado '" + textos[i] + "' en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "diasvencimiento":
+                            try
+                            {
+                                if(textos[i].Length>0) 
+                                    valor= Convert.ToInt32(textos[i]).ToString();
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "Los días de vencimiento deben ser un entero (" + textos[i] + ") en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "dias_alerta":
+                            try
+                            {
+                                if (textos[i].Length > 0)
+                                    valor = Convert.ToInt32(textos[i]).ToString();
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "Los días alerta vencimiento deben ser un entero (" + textos[i] + ") en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "minimo":
+                            try
+                            {
+                                if (textos[i].Length > 0)
+                                    valor = Convert.ToDecimal(textos[i]).ToString(CultureInfo.InvariantCulture);
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "El mínimo deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "maximo":
+                            try
+                            {
+                                if (textos[i].Length > 0)
+                                    valor = Convert.ToDecimal(textos[i]).ToString(CultureInfo.InvariantCulture);
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "El máximo deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "costo":
+                            try
+                            {
+                                if (textos[i].Length > 0)
+                                    valor = decimal.Parse(textos[i],NumberStyles.Currency).ToString(CultureInfo.InvariantCulture);
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "El costo deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                        case "valor":
+                            try
+                            {
+                                if (textos[i].Length > 0)
+                                    valor = decimal.Parse(textos[i], NumberStyles.Currency).ToString(CultureInfo.InvariantCulture);
+                            }
+                            catch
+                            {
+                                LMensaje.Text = "El precio deben ser un decimal (" + textos[i] + ") en línea " + (i + 1);
+                                return;
+                            }
+                            break;
+                    }
+                    query[campos[i]] = valor;
+                }
+            }
+            if(string.IsNullOrEmpty(currentID)) {
+                nuevos++;
+                if (conector.QueryMod(query.GetInsert()) == -1)
+                    return;
+            } else {
+                actualizados++;
+                if(conector.QueryMod(query.GetUpdate("id="+ Query.GetValor(currentID)))==-1)
+                    return;
+            }
+        }
+        reader.Close();
+
+        conector.Commit();
+        DGrupo.DataBind();
+
+        LMensaje.Text = string.Format("Importacion realizada con exito.<br/>{0} productos, {1} Nuevos y {2} actualizados", nuevos+actualizados, nuevos, actualizados);
     }
 }

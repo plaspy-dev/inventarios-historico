@@ -42,23 +42,6 @@ public partial class ing : System.Web.UI.MasterPage
             CheckAlmacen();
             LUsuario.Text = usuario.GetNombre();
 
-            CConector conector= new CConector();
-            string cantidad= conector.QueryString(string.Format("SELECT COUNT(*) FROM entrada{0} WHERE fecha IS NULL;", GetAlmacen()));
-            if(cantidad=="0") {
-                HAlertas.Visible = false;
-            } else {
-                HAlertas.Visible = true;
-                HAlertas.Text = cantidad;
-                if (cantidad == "1")
-                {
-                    HAlertas.Text += " Traslado pendiente";
-                }
-                else
-                {
-                    HAlertas.Text += " Traslados pendientes";
-                }
-            }
-
             RAlertas.DataSource = Alertas.GetAlertas(GetAlmacen());
             RAlertas.DataBind();
 
@@ -233,21 +216,6 @@ public partial class ing : System.Web.UI.MasterPage
                 catch { if (DAlmacen.Items.Count > 0) DAlmacen.SelectedIndex = 0; }
             }
             ViewState["almacen"] = DAlmacen.SelectedValue;
-        }
-    }
-    protected void HAlertas_Click(object sender, EventArgs e)
-    {
-        CConector conector = new CConector();
-        string cantidad = conector.QueryString(string.Format("SELECT COUNT(*) FROM entrada{0} WHERE fecha IS NULL;", GetAlmacen()));
-        if(cantidad=="1") {
-            cantidad= conector.QueryString(string.Format("SELECT id FROM entrada{0} WHERE fecha IS NULL;", GetAlmacen()));
-            Response.Redirect("~/almacen/entrada.aspx?ei=" + cantidad);
-            Response.End();
-        }
-        else
-        {
-            SAlertas.SelectCommand = string.Format(SAlertas.SelectCommand, GetAlmacen());
-            PAlertas.Visible = true;
         }
     }
     protected void OnAlerta_Click(object sender, EventArgs e) {

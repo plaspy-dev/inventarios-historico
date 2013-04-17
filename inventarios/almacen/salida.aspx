@@ -36,6 +36,8 @@
 
         if (hasStorage) 
           localStorage.salida = $("#<%= HProductos.ClientID %>").val();
+        
+        $("#<%= BAnular.ClientID %>").click(function() { return confirm('¿Esta seguro de anular este documento?. Esta acción no se puede deshacer.'); });
         $("#<%= BAceptar.ClientID %>").click(function() { window.onbeforeunload = null; });
         $("#<%= TNumero.ClientID %>").change(function() {
             $.goURL("si=" + $(this).val());
@@ -163,7 +165,8 @@
 </asp:Panel>
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
     <ContentTemplate>
-<asp:HiddenField runat="server" ID="HId" />
+    <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado">Anulada</asp:Panel>
+    <asp:HiddenField runat="server" ID="HId" />
     <table class="tablecollapse">
         <tr>
             <td colspan="5" align="right"><asp:HyperLink runat="server" ID="HEntrada"></asp:HyperLink></td>
@@ -280,7 +283,8 @@
             <td colspan="5"><asp:ValidationSummary runat="server" ID="ValidationSumary1" /><asp:ValidationSummary ValidationGroup="producto" runat="server" ID="ValidationSummary2" /></td>
         </tr>
         <tr>
-            <td colspan="5" align="right">
+            <td><asp:Button runat="server" ID="BAnular" Text="Anular" Visible="false" onclick="BAceptar_Click"/></td>
+            <td colspan="4" align="right">
                 <asp:Button runat="server" ID="BAceptar" Text="Aceptar" onclick="BAceptar_Click" />
                 <asp:Button runat="server" ID="BCancelar" Text="Cancelar" CausesValidation="false" onclick="BCancelar_Click" />
             </td>
