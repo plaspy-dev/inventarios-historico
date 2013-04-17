@@ -48,6 +48,17 @@
                 <td></td>    
             </tr>
             <tr>
+                <td>Como salen los productos</td>
+                <td>
+                    <asp:DropDownList runat="server" ID="DSeleccionProducto">
+                        <asp:ListItem Text="Automático (El sistema decide que producto sale, el mas antiguo o por vencer)" Value="0"></asp:ListItem>
+                        <asp:ListItem Text="Semi-Automático (El sistema decide el producto pero el usuario puede seleccionar manual)" Value="1"></asp:ListItem>
+                        <asp:ListItem Text="Manual (El usuario decide que productos salen)" Value="2"></asp:ListItem>
+                    </asp:DropDownList>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
                 <td colspan="3" class="GridHeader">Productos</td>
             </tr>
             <tr>
@@ -142,7 +153,22 @@
             </td>
           </tr>
             <tr>
+                <td colspan="3" class="GridHeader">Entradas</td>
+            </tr>
+            <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CTerceroEntrada" Text="El proveedor de la entrada es obligatorio" /></td>
+            </tr>
+            <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CDocumentoEntrada" Text="El documento equivalente de la entrada es obligatorio" /></td>
+            </tr>
+            <tr>
                 <td colspan="3" class="GridHeader">Salidas</td>
+            </tr>
+            <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CTerceroSalida" Text="El cliente en la salida es obligatorio" /></td>
+            </tr>
+            <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CDocumentoSalida" Text="El documento equivalente de la salida es obligatorio" /></td>
             </tr>
             <tr>
                 <td>Fecha de entrega</td>

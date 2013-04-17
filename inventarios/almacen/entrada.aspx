@@ -91,12 +91,18 @@
             },
             autoFocus: true,
             minLength: 3,
+            search: function() {
+                $("#<%= TTerceroID.ClientID %>").val("");
+            },
             select: function(event, ui) {
 
                 $("#<%= TTerceroID.ClientID %>").val(ui.item.item);
                 $("#<%= TTercero.ClientID %>").val(ui.item.value);
                 return false;
             }
+        }).change(function() { 
+            if($(this).val().length==0)
+                $("#<%= TTerceroID.ClientID %>").val("");
         });
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {
@@ -200,11 +206,11 @@
             <td>&nbsp;</td>
         </tr>
         <tr>
-            <td>Proveedor</td>
+            <td>Proveedor<asp:RequiredFieldValidator ControlToValidate="TTerceroID" ErrorMessage="Por favor ingrese un proveedor." ID="RTerceroID" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
             <td colspan="3"><asp:TextBox runat="server" ID="TTercero" Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TTerceroID" CssClass="hide"></asp:TextBox></td>
         </tr>
         <tr>
-            <td colspan="2">Documento equivalente<asp:RequiredFieldValidator ControlToValidate="TDocumento" ErrorMessage="Por favor ingrese un documento." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+            <td colspan="2">Documento equivalente<asp:RequiredFieldValidator ControlToValidate="TDocumento" ErrorMessage="Por favor ingrese un documento." ID="RDocumento" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
             <td colspan="2"><asp:TextBox runat="server" ID="TDocumento" Width="98%"></asp:TextBox></td>
         </tr>
         <tr>

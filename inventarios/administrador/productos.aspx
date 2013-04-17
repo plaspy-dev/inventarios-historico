@@ -185,23 +185,23 @@
             <td>Serial</td>
             <td><asp:DropDownList ID="DSerial" runat="server">
                     <asp:ListItem Text="(Ninguno)" Value="-1"></asp:ListItem>
-                    <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
+                    <asp:ListItem Text="Obligatorio" Value="1"></asp:ListItem>
                     <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
-                    <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
+                    <asp:ListItem Text="No requerido" Value="0"></asp:ListItem>
                 </asp:DropDownList>
             </td>
-            <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+            <td><asp:RequiredFieldValidator ControlToValidate="DSerial" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
           </tr>
           <tr>
             <td>Estado</td>
             <td><asp:DropDownList ID="DEstado" runat="server">
                     <asp:ListItem Text="(Ninguno)" Value="-1"></asp:ListItem>
-                    <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
+                    <asp:ListItem Text="Obligatorio" Value="1"></asp:ListItem>
                     <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
-                    <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
+                    <asp:ListItem Text="No requerido" Value="0"></asp:ListItem>
                 </asp:DropDownList>
             </td>
-            <td><asp:RequiredFieldValidator ControlToValidate="DVence" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+            <td><asp:RequiredFieldValidator ControlToValidate="DEstado" InitialValue="-1" ErrorMessage="Por favor seleccione un valor." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
           </tr>
           <tr>
             <td colspan="3" class="GridHeader">Vencimiento</td>
@@ -236,7 +236,7 @@
             <td>
                 <asp:DropDownList ID="DLote" runat="server">
                     <asp:ListItem Text="(Ninguno)" Value="-1"></asp:ListItem>
-                    <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
+                    <asp:ListItem Text="Obligatorio" Value="1"></asp:ListItem>
                     <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
                     <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
                 </asp:DropDownList>
@@ -450,6 +450,7 @@
                             <li>Para crear nuevos productos deje la columna 'id' en blanco. De lo contrario actualizara los existentes.</li>
                             <li>Si no se quiere modificar una columna se puede eliminar la columna. </li>
                             <li>Los grupos se crean automáticamente cuando no existen</li>
+                            <li>Despues de una columna con el título en blanco el resto son omitidas</li>
                             <li>Las unica columna obligatoria es el 'id'.</li>
                             <li>El archivo debe estar codificado en UTF-7.</li>
                         </ul>
@@ -464,7 +465,7 @@
                         <td class="tdr"></td>
                     </tr>
                     <tr>
-                        <td class="tdl tdb">Importar archivo separador por comas</td>
+                        <td class="tdl tdb">Importar archivo separador por comas (Max: 20MB)</td>
                         <td class="tdb"><asp:FileUpload runat="server" ID="FImportar" /></td>
                         <td class="tdr tdb"><asp:Button runat="server" ID="BImportar" Text="Importar" ValidationGroup="archivo" onclick="BImportar_Click" /></td>
                     </tr>
@@ -529,10 +530,10 @@
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT producto.id,producto.nombre,producto.descripcion,producto.codigo,producto.unidad,producto.empresa 
-                        ,CASE producto.vence WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguna)' END AS vence
-                        ,CASE producto.lote WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguno)' END AS lote
-                        ,CASE producto.nEstado WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguno)' END AS nEstado
-                        ,CASE producto.serial WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguno)' END AS serial
+                        ,CASE producto.vence WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'No requerida' END AS vence
+                        ,CASE producto.lote WHEN 1 THEN 'Obligatorio' WHEN 2 THEN 'Opcional' ELSE 'No requerido' END AS lote
+                        ,CASE producto.nEstado WHEN 1 THEN 'Obligatorio' WHEN 2 THEN 'Opcional' ELSE 'No requerido' END AS nEstado
+                        ,CASE producto.serial WHEN 1 THEN 'Obligatorio' WHEN 2 THEN 'Opcional' ELSE 'No requerido' END AS serial
                         ,CASE producto.entero WHEN 1 THEN 'Entero' ELSE 'Decimal' END AS entero
                         ,varios.nombre AS grupo
                         ,producto.formatolote

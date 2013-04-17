@@ -53,6 +53,9 @@ public partial class almacen_entrada : System.Web.UI.Page
             Utilidades.GetGridColumn(GProductos, "Estado").Visible =
             REstado.Visible = DEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
+            // tercero
+            RTerceroID.Visible = configuracion.bTerceroEntrada;
+            RDocumento.Visible = configuracion.bDocumentoEntrada;
 
             Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible = false;
 

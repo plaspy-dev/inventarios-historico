@@ -20,6 +20,7 @@ public class CConfiguracion
     public int nCantidad=0;
     public int nUbicacion = 2;
     public int nDiasVencimiento = 5;
+    public int nSeleccionProducto = 0;
 
     // 
     public bool bVencimiento = true;
@@ -36,6 +37,13 @@ public class CConfiguracion
 
     // salidas
     public bool bManejarEntrega=true;
+    public bool bTerceroSalida=false;
+    public bool bDocumentoSalida = false;
+
+    // entradas
+    public bool bTerceroEntrada = false;
+    public bool bDocumentoEntrada = false;
+
 
 	public CConfiguracion()
 	{

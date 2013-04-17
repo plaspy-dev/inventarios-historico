@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-17 · Ampliar los campos configurables de productos.** Reorganiza la pantalla de configuración y añade lógica al formulario de producto para procesar los valores que recibe. Esto conecta las opciones administrativas con los datos que se editan en la ficha.
+**2013-04-17 · Reorganizar la búsqueda y edición de terceros.** Modifica la pantalla y las consultas de terceros y ajusta la validación de valores enteros y decimales de productos. El usuario puede buscar el registro relacionado y completar los campos con el tipo previsto.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-17 · Expand configurable product fields.** Reorganize settings and add product form logic to process incoming values. This connects administration settings to fields edited on the product record.
+**2013-04-17 · Rework business contact search and editing.** Revise the contact screen and its queries and adjust integer and decimal product validation. Users can find the associated record and enter values in the expected type.
 
 ### How to explore the source
 
