@@ -56,6 +56,7 @@ public class Almacen
         }
         return nombre;
     }
+
     static public void RemoveEstado(string estado)
     {
         if (HttpRuntime.Cache["estado" + estado] != null)
@@ -74,6 +75,7 @@ public class Almacen
         }
         return nombre;
     }
+
     static public void RemoveTercero(string tercero)
     {
         if (HttpRuntime.Cache["tercero" + tercero] != null)

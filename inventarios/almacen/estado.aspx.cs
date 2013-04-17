@@ -230,7 +230,7 @@ public partial class almacen_estado : System.Web.UI.Page
         producto.ubicacion= Convert.ToInt32(detalle[3]);
         producto.serial= detalle[5];
         producto.estado=Convert.ToInt32(detalle[6]);
-        producto.Ingreso = true;
+        producto.bIngreso = true;
 
         producto.cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
 
@@ -343,7 +343,7 @@ public partial class almacen_estado : System.Web.UI.Page
         producto.ubicacion = Convert.ToInt32(detalle[6]);
         producto.serial = detalle[5];
         producto.estado = Convert.ToInt32(detalle[3]);
-        producto.Ingreso = true;
+        producto.bIngreso = true;
 
         producto.cantidad = Convert.ToDecimal(TEstadoCantidad.Text, CultureInfo.InvariantCulture);
 

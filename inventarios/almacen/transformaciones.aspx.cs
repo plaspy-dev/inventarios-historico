@@ -232,7 +232,7 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         for (int i = 0; i < productos.Count; i++)
         {
             Producto info = (Producto)productos[i];
-            info.Ingreso = true;
+            info.bIngreso = true;
             info.GetCostoPromedio(((ing)Master).GetAlmacen());
 
             Query salida = info.GetQuery("transformacion_salida" + ((ing)Master).GetAlmacen());

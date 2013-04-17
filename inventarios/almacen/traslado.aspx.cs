@@ -78,6 +78,7 @@ public partial class almacen_traslado : System.Web.UI.Page
                 query += "entrada";
                 query += "destino";
                 query += "documento";
+                query += "estado";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["ti"])));
                 if (reader != null && reader.Read())
@@ -91,6 +92,7 @@ public partial class almacen_traslado : System.Web.UI.Page
                     TDocumento.Text = reader["documento"].ToString();
                     DDestino.DataBind();
                     DDestino.SelectedValue = reader["destino"].ToString();
+                    PAnulado.Visible = reader["estado"].ToString() != "";
 
                     HEntrada.Text = "Entrada No. " + reader["entrada"].ToString() + " hacia " + DDestino.SelectedItem.Text;
                     HEntrada.NavigateUrl = "~/almacen/entrada.aspx?ei=" + reader["entrada"].ToString() + "&alm=" + DDestino.SelectedValue;
@@ -126,7 +128,7 @@ public partial class almacen_traslado : System.Web.UI.Page
                             info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
                             info.serial = reader["szSerial"].ToString();
                             info.estado = Convert.ToInt32(reader["estado"]);
-                            info.Ingreso = reader["ingreso"].ToString() != "";
+                            info.Ingreso = reader["ingreso"].ToString();
                             info.Costo = Convert.ToDecimal(reader["costo"]);
 
                             productoUsado.AddProducto(info);
@@ -141,6 +143,9 @@ public partial class almacen_traslado : System.Web.UI.Page
                     TProducto.Focus();
                     GProductos.Columns[0].Visible = usuario.CanDelete();
                     BAceptar.Enabled = usuario.CanUpdate();
+                    BAnular.Visible = usuario.CanAdmin();
+                    if (PAnulado.Visible)
+                        GProductos.Columns[0].Visible = BAnular.Enabled = BAceptar.Enabled = false;
                     return;
                 }
             }
@@ -250,6 +255,8 @@ public partial class almacen_traslado : System.Web.UI.Page
         query["envio"] = CConector.GetMySQLDateFormat(TFecha.Text);
         query["llegada"] = CConector.GetMySQLDateFormat(TLlegada.Text);
         query["documento"] = TDocumento.Text;
+        if (sender == BAnular)
+            query["estado"] = "-1";
 
         conector.StartTransaction();
         bool existe = HId.Value.Length != 0;
@@ -286,6 +293,8 @@ public partial class almacen_traslado : System.Web.UI.Page
 
         query["observaciones"] = TObservaciones.Text;
         query["fecha"] = CConector.GetMySQLDateFormat(TLlegada.Text);
+        if (sender == BAnular)
+            query["estado"] = "-1";
 
         if (existe)
         {
@@ -326,21 +335,21 @@ public partial class almacen_traslado : System.Web.UI.Page
         {
             if (conector.QueryMod(string.Format("DELETE FROM traslado_items{0} WHERE id={1}", ((ing)Master).GetAlmacen(), productos[i].IdTabla)) == -1)
                 return;
-            if (productos[i].Ingreso)
+            if (productos[i].bIngreso)
             {
                 if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
                     return;
             }
             if (conector.QueryMod(string.Format("DELETE FROM entrada_items{0} WHERE traslado={1} AND traslado_items={2}", DDestino.SelectedValue, HId.Value, productos[i].IdTabla)) == -1)
                 return;
-            bool ingresoold = productos[i].Ingreso;
-            productos[i].Ingreso = !string.IsNullOrEmpty((string)ViewState["llegada"]);
-            if (productos[i].Ingreso)
+            bool ingresoold = productos[i].bIngreso;
+            productos[i].bIngreso = !string.IsNullOrEmpty((string)ViewState["llegada"]);
+            if (productos[i].bIngreso)
             {
                 if (!productos[i].DeleteProductoFromEstado(conector, DDestino.SelectedValue))
                     return;
             }
-            productos[i].Ingreso = ingresoold;
+            productos[i].bIngreso = ingresoold;
         }
 
         // agregamos los nuevos
@@ -349,7 +358,30 @@ public partial class almacen_traslado : System.Web.UI.Page
         {
             string salidaid="";
 
-            productos[i].Ingreso = true;
+            if (sender == BAnular)
+            {
+                bool oldingresoantiguo = false;
+                bool oldingreso = productos[i].bIngreso;
+                productos[i].bIngreso = true;
+                if (productos[i].pProductoAntiguo != null)
+                {
+                    oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
+                    productos[i].pProductoAntiguo.bIngreso = false;
+                }
+                if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                    return;
+
+                productos[i].bIngreso = oldingreso;
+                if (productos[i].pProductoAntiguo != null)
+                {
+                    productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
+                }
+
+                productoUsado.UpdateProductoIngreso(productos[i].IdGrid, false);
+            } else {
+                productos[i].bIngreso = true;
+            }
+
             if (string.IsNullOrEmpty(productos[i].IdTabla))
                 productos[i].GetCostoPromedio(((ing)Master).GetAlmacen());
 
@@ -361,24 +393,41 @@ public partial class almacen_traslado : System.Web.UI.Page
                 if (res == -1)
                     return;
                 salidaid= res.ToString();
-                if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                    return;
-            }
-            else if (productos[i].pProductoAntiguo != null)
+                if (productos[i].bIngreso)
+                    if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
+            } else if (productos[i].pProductoAntiguo != null)
             { // fue actualizado
                 if (conector.QueryMod(query.GetUpdate("id=" + productos[i].IdTabla)) == -1)
                     return;
-                if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                    return;
+                if (productos[i].bIngreso)
+                    if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
             }
 
             // establecemos el ingreso de las entradas basados en la fecha de llegada
-            productos[i].Ingreso= !string.IsNullOrEmpty((string)ViewState["llegada"]);
+            productos[i].bIngreso = !string.IsNullOrEmpty((string)ViewState["llegada"]);
             if(productos[i].pProductoAntiguo!=null)
-                productos[i].pProductoAntiguo.Ingreso = !string.IsNullOrEmpty((string)ViewState["llegada"]);
+                productos[i].pProductoAntiguo.bIngreso = !string.IsNullOrEmpty((string)ViewState["llegada"]);
+
+            if (sender == BAnular && productos[i].bIngreso)
+            {
+                bool oldingreso = false;
+                if (productos[i].pProductoAntiguo != null)
+                {
+                    oldingreso = productos[i].pProductoAntiguo.bIngreso;
+                    productos[i].pProductoAntiguo.bIngreso = false;
+                }
+
+                productos[i].DeleteProductoFromEstado(conector, DDestino.SelectedValue);
+                if (productos[i].pProductoAntiguo != null)
+                {
+                    productos[i].pProductoAntiguo.bIngreso = oldingreso;
+                }
+            }
 
             // ahora agregamos la entrada
-            productoUsado.UpdateProductoIngreso(productos[i].IdGrid, TLlegada.Text.Length>0); // siempre salen
+            productoUsado.UpdateProductoIngreso(productos[i].IdGrid, sender != BAnular && TLlegada.Text.Length > 0); // siempre salen
             query = productos[i].GetQuery("entrada_items" + DDestino.SelectedValue);
             if (string.IsNullOrEmpty(productos[i].IdTabla))
             {
@@ -405,7 +454,7 @@ public partial class almacen_traslado : System.Web.UI.Page
             {
                 continue;
             }
-            if (productos[i].Ingreso)
+            if (productos[i].bIngreso)
             {
                 if (!productos[i].AddProductoFromEstado(conector, DDestino.SelectedValue))
                     return;

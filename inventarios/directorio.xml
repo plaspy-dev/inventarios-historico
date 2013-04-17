@@ -40,7 +40,7 @@
     </pagina>
   </seccion>
   <seccion>
-    <titulo>Almacen</titulo>
+    <titulo>Almacén</titulo>
     <pagina>
       <titulo>Entrada</titulo>
       <url>~/almacen/entrada.aspx</url>
@@ -50,20 +50,20 @@
       <url>~/almacen/traslado.aspx</url>
     </pagina>
     <pagina>
-      <titulo>Estado</titulo>
-      <url>~/almacen/estado.aspx</url>
-    </pagina>
-    <pagina>
       <titulo>Salida</titulo>
       <url>~/almacen/salida.aspx</url>
     </pagina>
     <pagina>
-      <titulo>Transformaciones</titulo>
-      <url>~/almacen/transformaciones.aspx</url>
+      <titulo>Estado</titulo>
+      <url>~/almacen/estado.aspx</url>
     </pagina>
     <pagina>
       <titulo>Informes</titulo>
       <url>~/almacen/informes.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Transformaciones</titulo>
+      <url>~/almacen/transformaciones.aspx</url>
     </pagina>
   </seccion>
 </paginas>

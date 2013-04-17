@@ -41,8 +41,14 @@ public class Producto
     public Decimal Valor { set; get; }
     public int DiasV { set; get; }
 
+    [XmlIgnore]
+    public bool bIngreso = false;
+
     [XmlIgnore] // este es el ingreso del repuesto
-    public bool Ingreso=false;
+    public string _Ingreso = "";
+
+    [XmlIgnore] // este es el ingreso del repuesto
+    public string Ingreso { set { _Ingreso = value; bIngreso = value.Length > 0; } get { return _Ingreso; } }
 
     [XmlIgnore]
     public string IdTabla { set; get; }
@@ -413,6 +419,46 @@ public class Producto
         serial=_serial;
     }
 
+    public bool GetAcumulado(string almacen, ref decimal saldo)
+    {
+        return GetAcumulado(almacen, CConector.GetMySQLDateFormat(Ingreso, true), ref saldo);
+    }
+
+    public bool GetAcumulado(string almacen, string desde_conhora, ref decimal saldo) {
+
+        if (string.IsNullOrEmpty(desde_conhora))
+            return false;
+        // iniciamos las variables
+        CConector conector = new CConector();
+        string query = "SET @i=0,@saldo=0;";
+        if (conector.QueryMod(query) == -1)
+            return false;
+
+        // falta validar tambien el lote, serial, etc...
+
+        // establecemos el costo promedio
+        query = string.Format("SELECT * FROM ("
+            + " SELECT @i:=@i+1 AS c,@saldo:=@saldo+cantidad AS saldo FROM ("
+            + " (SELECT cantidad AS cantidad,ingreso FROM entrada_items{0} WHERE producto={1} AND ingreso<{2} )"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM traslado_items{0} WHERE producto={1} AND ingreso<{2} )"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM salida_items{0} WHERE producto={1} AND ingreso<{2})"
+            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM transformacion_salida{0} WHERE producto={1} AND ingreso<{2})"
+            + " UNION ALL (SELECT cantidad AS cantidad,ingreso FROM transformacion_entrada{0} WHERE producto={1} AND ingreso<{2})"
+            + " ORDER BY ingreso) AS t"
+            + "  ) AS b WHERE c=@i;"
+             , almacen, id, Query.GetValor(desde_conhora));
+        MySqlDataReader reader = conector.Query(query);
+        saldo = 0;
+        if (reader == null)
+            return false;
+        if (reader.Read())
+        {
+            try { saldo = Convert.ToDecimal(reader["saldo"]); }
+            catch { }
+        }
+        return true;
+    }
+
     public bool GetAcumulado(string almacen, string desde, ref decimal costoacumulado, ref decimal saldo, ref decimal costop)
     {
         // iniciamos las variables
@@ -526,7 +572,7 @@ public class Producto
             if (!pProductoAntiguo.AddProductoFromEstado(conector, almacen))
                 return false;
         }
-        if (!Ingreso)
+        if (!bIngreso)
             return true;
 
         string szLote;
@@ -569,7 +615,7 @@ public class Producto
             if (!pProductoAntiguo.DeleteProductoFromEstado(conector, almacen))
                 return false;
         }
-        if (!Ingreso)
+        if (!bIngreso)
             return true;
 
         string szLote;
@@ -640,7 +686,7 @@ public class Producto
         query["vence"] = szVencimiento;
         query["ubicacion"]= ubicacion.ToString();
         query["estado"]= estado.ToString();
-        query["ingreso"] = Ingreso ? "SYSDATE()" : "";
+        query["ingreso"] = bIngreso ? "SYSDATE()" : "";
         query["costo"] = Costo.ToString(CultureInfo.InvariantCulture);
 
         query.AddCampo("lote", szLote, false);

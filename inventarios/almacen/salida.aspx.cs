@@ -88,6 +88,7 @@ public partial class almacen_salida : System.Web.UI.Page
                 query += "entrega";
                 query += "documento";
                 query += "tercero";
+                query += "estado";
 
                 MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["si"])));
                 if (reader != null && reader.Read())
@@ -101,7 +102,7 @@ public partial class almacen_salida : System.Web.UI.Page
                     TDocumento.Text = reader["documento"].ToString();
                     TTerceroID.Text = reader["tercero"].ToString();
                     TTercero.Text = Almacen.GetNombreTercero(reader["tercero"].ToString());
-
+                    PAnulado.Visible = reader["estado"].ToString() != "";
 
                     ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
                     query = new Query("salida_items" + ((ing)Master).GetAlmacen());
@@ -134,7 +135,7 @@ public partial class almacen_salida : System.Web.UI.Page
                             info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
                             info.serial = reader["szSerial"].ToString();
                             info.estado = Convert.ToInt32(reader["estado"]);
-                            info.Ingreso = reader["ingreso"].ToString() != "";
+                            info.Ingreso = reader["ingreso"].ToString();
                             info.Costo = Convert.ToDecimal(reader["costo"]);
                             try
                             {
@@ -156,6 +157,9 @@ public partial class almacen_salida : System.Web.UI.Page
                     TProducto.Focus();
                     GProductos.Columns[0].Visible = usuario.CanDelete();
                     BAceptar.Enabled = usuario.CanUpdate();
+                    BAnular.Visible = usuario.CanAdmin();
+                    if (PAnulado.Visible)
+                        GProductos.Columns[0].Visible = BAnular.Enabled = BAceptar.Enabled = false;
                     return;
                 }
             }
@@ -282,6 +286,8 @@ public partial class almacen_salida : System.Web.UI.Page
         query["entrega"] = CConector.GetMySQLDateFormat(configuracion.bManejarEntrega ? TEntrega.Text : TFecha.Text);
         query["documento"] = TDocumento.Text;
         query["tercero"] = TTerceroID.Text;
+        if (sender == BAnular)
+            query["estado"] = "-1";
 
         conector.StartTransaction();
         bool existe = HId.Value.Length != 0;
@@ -319,7 +325,7 @@ public partial class almacen_salida : System.Web.UI.Page
         {
             if (conector.QueryMod(string.Format("DELETE FROM salida_items{0} WHERE id={1}", ((ing)Master).GetAlmacen(), productos[i].IdTabla)) == -1)
                 return;
-            if (productos[i].Ingreso)
+            if (productos[i].bIngreso)
             {
                 if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
                     return;
@@ -330,7 +336,28 @@ public partial class almacen_salida : System.Web.UI.Page
         productos = productoUsado.GetProductosUsados();
         for (int i = 0; i < productos.Count; i++)
         {
-            productos[i].Ingreso = true;
+            productos[i].bIngreso = true;
+            if (sender == BAnular)
+            {
+                bool oldingresoantiguo = false;
+                bool oldingreso = productos[i].bIngreso;
+                productos[i].bIngreso = true;
+                if (productos[i].pProductoAntiguo != null)
+                {
+                    oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
+                    productos[i].pProductoAntiguo.bIngreso = false;
+                }
+                if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                    return;
+                productos[i].bIngreso = oldingreso;
+                if (productos[i].pProductoAntiguo != null)
+                {
+                    productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
+                }
+
+                productoUsado.UpdateProductoIngreso(productos[i].IdGrid, false);
+            }
+
             if (string.IsNullOrEmpty(productos[i].IdTabla))
                 productos[i].GetCostoPromedio(((ing)Master).GetAlmacen()).ToString(CultureInfo.InvariantCulture);
 
@@ -355,7 +382,7 @@ public partial class almacen_salida : System.Web.UI.Page
             } else {
                 continue;
             }
-            if (productos[i].Ingreso)
+            if (productos[i].bIngreso)
             {
                 if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
                     return;

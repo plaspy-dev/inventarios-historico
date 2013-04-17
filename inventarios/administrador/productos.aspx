@@ -4,6 +4,8 @@
 
     <script type="text/javascript">
         addFunctionToStart(function() {
+
+        $("#<%= BImportar.ClientID %>").click(function() { return confirm('Puede realizar una copia de seguridad de los productos en el boton "Exportar".\nEsta acción no se puede deshacer.\n¿Esta seguro de importar este archivo?.'); });
             $("#tpr").tabs();
             $("#<%= TTercero.ClientID %>").autocomplete({
                 source: function(request, response) {
@@ -100,6 +102,7 @@
                 <li><a href="#dMaxMin">Máximos y mínimos</a></li>
                 <li runat="server" visible="false" id="lcostos"><a href="#<%= PCostos.ClientID %>">Costos</a></li>
                 <li runat="server" visible="false" id="lprecios"><a href="#<%= UPrecios.ClientID %>">Precios</a></li>
+                <li runat="server" visible="false" id="larchivos"><a href="#<%= PArchivos.ClientID %>">Exportar e importar</a></li>
             </ul>
             <div id="dProducto">
             <table width="100%" border="0" style="border-collapse: collapse">
@@ -167,7 +170,6 @@
                   Manejo de cantidades</td>
               <td>
                   <asp:DropDownList ID="DCantidades" runat="server">
-                      <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
                       <asp:ListItem Text="Decimal" Value="0"></asp:ListItem>
                       <asp:ListItem Text="Entero" Value="1"></asp:ListItem>
                   </asp:DropDownList>
@@ -182,7 +184,7 @@
           <tr>
             <td>Serial</td>
             <td><asp:DropDownList ID="DSerial" runat="server">
-                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
+                    <asp:ListItem Text="(Ninguno)" Value="-1"></asp:ListItem>
                     <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
                     <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
                     <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
@@ -193,7 +195,7 @@
           <tr>
             <td>Estado</td>
             <td><asp:DropDownList ID="DEstado" runat="server">
-                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
+                    <asp:ListItem Text="(Ninguno)" Value="-1"></asp:ListItem>
                     <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
                     <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
                     <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
@@ -233,7 +235,7 @@
             <td class="tdl">Lote</td>
             <td>
                 <asp:DropDownList ID="DLote" runat="server">
-                    <asp:ListItem Text="(Ninguna)" Value="-1"></asp:ListItem>
+                    <asp:ListItem Text="(Ninguno)" Value="-1"></asp:ListItem>
                     <asp:ListItem Text="Obligatoria" Value="1"></asp:ListItem>
                     <asp:ListItem Text="Opcional" Value="2"></asp:ListItem>
                     <asp:ListItem Text="No requerida" Value="0"></asp:ListItem>
@@ -269,24 +271,27 @@
                   </tr>
                   <tr>
                     <td colspan="3">
-                        <asp:GridView ID="GAlmacenes" runat="server" AutoGenerateColumns="False" 
-                            DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true">
-                            <RowStyle CssClass="GridRow"></RowStyle>
-                            <FooterStyle CssClass="GridFooter"></FooterStyle>
-                            <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
-                            <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
-                            <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
-                            <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                        <asp:GridView ID="GAlmacenes" runat="server" AllowSorting="true" 
+                            AutoGenerateColumns="False" DataKeyNames="id" DataSourceID="SAlmaceness">
+                            <RowStyle CssClass="GridRow" />
+                            <FooterStyle CssClass="GridFooter" />
+                            <PagerStyle CssClass="GridPager" ForeColor="White" />
+                            <SelectedRowStyle CssClass="GridSelRow" />
+                            <HeaderStyle CssClass="GridHeader" ForeColor="White" />
+                            <AlternatingRowStyle CssClass="GridAltRow" />
                             <Columns>
-                                <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" />
+                                <asp:BoundField DataField="nombre" HeaderText="Almacén" 
+                                    SortExpression="nombre" />
                                 <asp:TemplateField HeaderText="Mínimo" SortExpression="minimo">
                                     <ItemTemplate>
-                                        <asp:TextBox runat="server" ID="TMinimo" CssClass="float" Text='<%# Eval("minimo").ToString()=="" ? "" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
+                                        <asp:TextBox ID="TMinimo" runat="server" CssClass="float" 
+                                            Text='<%# Eval("minimo").ToString()=="" ? "" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
                                     </ItemTemplate>
                                 </asp:TemplateField>
                                 <asp:TemplateField HeaderText="Máximo" SortExpression="maximo">
                                     <ItemTemplate>
-                                        <asp:TextBox runat="server" ID="TMaximo" CssClass="float" Text='<%# Eval("maximo").ToString()=="" ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
+                                        <asp:TextBox ID="TMaximo" runat="server" CssClass="float" 
+                                            Text='<%# Eval("maximo").ToString()=="" ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
                                     </ItemTemplate>
                                 </asp:TemplateField>
                             </Columns>
@@ -433,8 +438,49 @@
                 </table>
                 </ContentTemplate>
             </asp:UpdatePanel>
+            <asp:Panel runat="server" ID="PArchivos" CssClass="hide" Visible="false">
+                <table style="border-collapse: collapse">
+                    <tr>
+                        <td colspan="3">
+                        Consideraciones para importar los productos
+                        <ul>
+                            <li>Es importante tener una copia de seguridad de los productos. Puede realizarla con el boton Exportar.</li>
+                            <li>El archivo para importar tiene el mismo formato del exportado.</li>
+                            <li>Los archivos deben tener en la primera línea las columnas que se van a modificar. </li>
+                            <li>Para crear nuevos productos deje la columna 'id' en blanco. De lo contrario actualizara los existentes.</li>
+                            <li>Si no se quiere modificar una columna se puede eliminar la columna. </li>
+                            <li>Los grupos se crean automáticamente cuando no existen</li>
+                            <li>Las unica columna obligatoria es el 'id'.</li>
+                            <li>El archivo debe estar codificado en UTF-7.</li>
+                        </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="GridHeader">Productos</td>
+                    </tr>
+                    <tr>
+                        <td class="tdl">Exportar en archivo separador por comas</td>
+                        <td><asp:Button runat="server" ID="BExportar" Text="Exportar" CausesValidation="false" onclick="BExportar_Click" /></td>
+                        <td class="tdr"></td>
+                    </tr>
+                    <tr>
+                        <td class="tdl tdb">Importar archivo separador por comas</td>
+                        <td class="tdb"><asp:FileUpload runat="server" ID="FImportar" /></td>
+                        <td class="tdr tdb"><asp:Button runat="server" ID="BImportar" Text="Importar" ValidationGroup="archivo" onclick="BImportar_Click" /></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <asp:RegularExpressionValidator ValidationGroup="archivo" ID="RFoto1" SetFocusOnError="true" ValidationExpression="^.+\.((csv)|(CSV))$" Display="Dynamic" ControlToValidate="FImportar" runat="server" ErrorMessage="Por favor seleccione un archivo csv valido."></asp:RegularExpressionValidator>
+                            <asp:RequiredFieldValidator ValidationGroup="archivo" ControlToValidate="FImportar" ErrorMessage="Por favor seleccione una archivo." ID="RFFoto1" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
+                            </td>
+                    </tr>
+                </table>
+            </asp:Panel>
         </div>
         </td>
+      </tr>
+      <tr>
+        <td><asp:Label runat="server" ID="LMensaje" ForeColor="Red"></asp:Label></td>
       </tr>
       <tr>
         <td align="right">
@@ -466,7 +512,7 @@
                     <asp:BoundField DataField="grupo" HeaderText="Grupo" SortExpression="grupo" />
                     <asp:BoundField DataField="entero" HeaderText="Manejo de cantidades" SortExpression="entero" />
                     <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
-                    <asp:BoundField DataField="estado" HeaderText="Estado" SortExpression="estado" />
+                    <asp:BoundField DataField="nEstado" HeaderText="Estado" SortExpression="nEstado" />
                     <asp:BoundField DataField="vence" HeaderText="Fecha de vencimiento" SortExpression="vence" />
                     <asp:BoundField DataField="diasvencimiento" HeaderText="Días vencimiento" SortExpression="diasvencimiento" ItemStyle-HorizontalAlign="Right" />
                     <asp:BoundField DataField="dias_alerta" HeaderText="Días alerta vencimiento" SortExpression="dias_alerta" ItemStyle-HorizontalAlign="Right" />
@@ -483,10 +529,10 @@
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT producto.id,producto.nombre,producto.descripcion,producto.codigo,producto.unidad,producto.empresa 
-                        ,CASE producto.vence WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS vence
-                        ,CASE producto.lote WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS lote
-                        ,CASE producto.nEstado WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS estado
-                        ,CASE producto.serial WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE 'Ninguna' END AS serial
+                        ,CASE producto.vence WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguna)' END AS vence
+                        ,CASE producto.lote WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguno)' END AS lote
+                        ,CASE producto.nEstado WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguno)' END AS nEstado
+                        ,CASE producto.serial WHEN 1 THEN 'Obligatoria' WHEN 2 THEN 'Opcional' ELSE '(Ninguno)' END AS serial
                         ,CASE producto.entero WHEN 1 THEN 'Entero' ELSE 'Decimal' END AS entero
                         ,varios.nombre AS grupo
                         ,producto.formatolote
