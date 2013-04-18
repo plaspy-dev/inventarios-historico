@@ -147,7 +147,10 @@ public partial class almacen_traslado : System.Web.UI.Page
                     BAceptar.Enabled = usuario.CanUpdate();
                     BAnular.Visible = usuario.CanAdmin();
                     if (PAnulado.Visible)
+                    {
+                        LAnulado.Text = "Anulado";
                         GProductos.Columns[0].Visible = BAnular.Enabled = BAceptar.Enabled = false;
+                    }
                     return;
                 }
             }
@@ -521,5 +524,6 @@ public partial class almacen_traslado : System.Web.UI.Page
     protected void OnImprimir(object sender, EventArgs e)
     {
         GProductos.Columns[0].Visible = false;
+        PAnulado.Visible = true;
     }
 }

@@ -54,8 +54,12 @@ public partial class almacen_entrada : System.Web.UI.Page
             REstado.Visible = DEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
             // tercero
-            RTerceroID.Visible = configuracion.bTerceroEntrada;
             RDocumento.Visible = configuracion.bDocumentoEntrada;
+
+            RTerceroID.Visible = configuracion.bTerceroEntrada && !configuracion.bCrearTerceroEntradas;
+            TEMail.ReadOnly = TDireccion.ReadOnly = TTercero.ReadOnly = TTelefono.ReadOnly = !configuracion.bCrearTerceroEntradas;
+            RNombre.Visible = RIdentificacion.Visible = configuracion.bCrearTerceroEntradas && configuracion.bTerceroEntrada;
+            RDireccion.Visible = RTelefono.Visible = configuracion.bDatosComplementariosTerceroEntrada;
 
             Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible = false;
 
@@ -98,9 +102,15 @@ public partial class almacen_entrada : System.Web.UI.Page
                     TObservaciones.Text = reader["observaciones"].ToString();
                     TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
                     TDocumento.Text = reader["documento"].ToString();
-                    TTerceroID.Text = reader["tercero"].ToString();
-                    TTercero.Text = Almacen.GetNombreTercero(reader["tercero"].ToString());
                     PAnulado.Visible = reader["estado"].ToString() != "";
+
+                    Tercero tercero = new Tercero(reader["tercero"].ToString());
+                    TTerceroID.Text = tercero.Id;
+                    TTercero.Text = tercero.Documento;
+                    TNombre.Text = tercero.Nombre;
+                    TTelefono.Text = tercero.Telefono;
+                    TDireccion.Text = tercero.Direccion;
+                    TEMail.Text = tercero.Email;
 
                     if (!string.IsNullOrEmpty(reader["traslado"].ToString())) {
 
@@ -169,6 +179,7 @@ public partial class almacen_entrada : System.Web.UI.Page
                     BAnular.Visible = usuario.CanAdmin();
                     if (PAnulado.Visible)
                     {
+                        LAnulado.Text = "Anulado";
                         GProductos.Columns[0].Visible = GProductos.Columns[1].Visible=
                         BAnular.Enabled = BAceptar.Enabled = false;
                     }
@@ -301,10 +312,39 @@ public partial class almacen_entrada : System.Web.UI.Page
         Query query = new Query("entrada" + ((ing)Master).GetAlmacen());
         CConector conector = new CConector();
 
+        // agregamos el tercero
+        string terceroid = TTerceroID.Text;
+
+        if(TNombre.Text.Length>0 && TTercero.Text.Length>0) {
+
+            Query tercero = new Query("tercero");
+
+            tercero["tipo"] = "2";
+            tercero["nombre"] = TNombre.Text;
+            tercero["identificacion"] = TTercero.Text;
+            tercero["telefono"] = TTelefono.Text;
+            tercero["direccion"] = TDireccion.Text;
+            tercero["email"] = TEMail.Text;
+
+            if (terceroid.Length > 0)
+            {
+                if (conector.QueryMod(tercero.GetUpdate("id=" + Query.GetValor(terceroid))) == -1)
+                    return;
+            }
+            else
+            {
+                int res = conector.QueryMod(tercero.GetInsert());
+                if (res == -1)
+                    return;
+                terceroid = res.ToString();
+            }
+            Tercero.RemoveTercero(terceroid);
+        }
+
         query["observaciones"] = TObservaciones.Text;
         query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
         query["documento"] = TDocumento.Text;
-        query["tercero"] = TTerceroID.Text;
+        query["tercero"] = terceroid;
         if (sender == BAnular)
             query["estado"] = "-1";
 
@@ -516,5 +556,6 @@ public partial class almacen_entrada : System.Web.UI.Page
     {
         GProductos.Columns[1].Visible = 
         GProductos.Columns[0].Visible = false;
+        PAnulado.Visible = true;
     }
 }

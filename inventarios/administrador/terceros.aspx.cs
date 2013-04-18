@@ -19,6 +19,9 @@ public partial class administrador_terceros : System.Web.UI.Page
             BAceptar.Enabled = usuario.CanInsert();
             GResultado.Columns[1].Visible = usuario.CanDelete();
             GResultado.Columns[0].Visible = usuario.CanUpdate();
+            CConfiguracion configuracion= CConfiguracion.GetConfiguracion();
+
+            RDireccion.Visible = RTelefono.Visible = configuracion.bDatosComplementariosTerceroSalida || configuracion.bDatosComplementariosTerceroEntrada;
 
             if(!string.IsNullOrEmpty(Request.QueryString["ti"])) {
 
@@ -94,7 +97,7 @@ public partial class administrador_terceros : System.Web.UI.Page
 
         conector.Commit();
 
-        Almacen.RemoveTercero(HId.Value);
+        Tercero.RemoveTercero(HId.Value);
 
         ((ing)Master).SetResultado(mensaje);
     }

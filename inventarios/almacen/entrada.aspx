@@ -69,7 +69,7 @@
                 $("#" + $(this).attr("id") + "ID").val("-1");
         });
         
-          $("#<%= TTercero.ClientID %>").autocomplete({
+          $("#<%= TTercero.ClientID %>,#<%= TNombre.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
                     url: "../webservices/servicios.asmx/GetTercero",
@@ -80,7 +80,7 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            item.label= item.value;
+                            item.label= item.Documento + " " + item.Nombre;
                             return item;
                         }))
                     },
@@ -96,8 +96,12 @@
             },
             select: function(event, ui) {
 
-                $("#<%= TTerceroID.ClientID %>").val(ui.item.item);
-                $("#<%= TTercero.ClientID %>").val(ui.item.value);
+                $("#<%= TTerceroID.ClientID %>").val(ui.item.Id);
+                $("#<%= TTercero.ClientID %>").val(ui.item.Documento);
+                $("#<%= TNombre.ClientID %>").val(ui.item.Nombre);
+                $("#<%= TDireccion.ClientID %>").val(ui.item.Direccion);
+                $("#<%= TTelefono.ClientID %>").val(ui.item.Telefono);
+                $("#<%= TEMail.ClientID %>").val(ui.item.Email);
                 return false;
             }
         }).change(function() { 
@@ -188,7 +192,7 @@
 </asp:Panel>
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
 <ContentTemplate>
-    <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado">Anulada</asp:Panel>
+    <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado"><asp:Label runat="server" ID="LAnulado"></asp:Label></asp:Panel>
     <asp:HiddenField runat="server" ID="HId" />
     <table class="tablecollapse">
         <tr>
@@ -206,12 +210,35 @@
             <td>&nbsp;</td>
         </tr>
         <tr>
-            <td>Proveedor<asp:RequiredFieldValidator ControlToValidate="TTerceroID" ErrorMessage="Por favor ingrese un proveedor." ID="RTerceroID" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td colspan="3"><asp:TextBox runat="server" ID="TTercero" Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TTerceroID" CssClass="hide"></asp:TextBox></td>
-        </tr>
-        <tr>
             <td colspan="2">Documento equivalente<asp:RequiredFieldValidator ControlToValidate="TDocumento" ErrorMessage="Por favor ingrese un documento." ID="RDocumento" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
             <td colspan="2"><asp:TextBox runat="server" ID="TDocumento" Width="98%"></asp:TextBox></td>
+        </tr>
+        <tr>
+            <td colspan="5" class="GridHeader">Proveedor</td>
+        </tr>
+        <tr>
+            <td class="tdl">Nombre
+                <asp:RequiredFieldValidator ControlToValidate="TTerceroID" ErrorMessage="Por favor ingrese un proveedor." ID="RTerceroID" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                <asp:RequiredFieldValidator ControlToValidate="TNombre" ErrorMessage="Por favor ingrese un nombre." ID="RNombre" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            </td>
+            <td colspan="3"><asp:TextBox runat="server" ID="TNombre"  Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TTerceroID" CssClass="hide"></asp:TextBox></td>
+            <td class="tdr"></td>
+        </tr>
+        <tr>
+            <td class="tdl">Documento
+                <asp:RequiredFieldValidator ControlToValidate="TTercero" ErrorMessage="Por favor ingrese una identificación." ID="RIdentificacion" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+            </td>
+            <td><asp:TextBox runat="server" ID="TTercero"></asp:TextBox></td>
+            <td>Dirección<asp:RequiredFieldValidator ID="RDireccion" runat="server" ControlToValidate="TDireccion" Display="Dynamic" ErrorMessage="Por favor ingrese una dirección." SetFocusOnError="True">*</asp:RequiredFieldValidator></td>
+            <td><asp:TextBox runat="server" ID="TDireccion"></asp:TextBox></td>
+            <td class="tdr"></td>
+        </tr>
+        <tr>
+            <td class="tdl tdb">Teléfono<asp:RequiredFieldValidator ID="RTelefono" runat="server" ControlToValidate="TTelefono" Display="Dynamic" ErrorMessage="Por favor ingrese un teléfono." SetFocusOnError="True">*</asp:RequiredFieldValidator></td>
+            <td class="tdb"><asp:TextBox runat="server" ID="TTelefono"></asp:TextBox></td>
+            <td class="tdb">E-Mail</td>
+            <td class="tdb"><asp:TextBox runat="server" ID="TEMail"></asp:TextBox></td>
+            <td class="tdr tdb"></td>
         </tr>
         <tr>
             <td colspan="5" class="tdb">&nbsp;</td>

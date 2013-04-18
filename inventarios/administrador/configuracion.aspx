@@ -159,6 +159,12 @@
                 <td colspan="3"><asp:CheckBox runat="server" ID="CTerceroEntrada" Text="El proveedor de la entrada es obligatorio" /></td>
             </tr>
             <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CCrearTerceroEntrada" Text="El proveedor se puede modificar en la entrada" /></td>
+            </tr>
+            <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CDatosTerceroEntrada" Text="El proveedor debe tener teléfono y dirección" /></td>
+            </tr>
+            <tr>
                 <td colspan="3"><asp:CheckBox runat="server" ID="CDocumentoEntrada" Text="El documento equivalente de la entrada es obligatorio" /></td>
             </tr>
             <tr>
@@ -166,6 +172,12 @@
             </tr>
             <tr>
                 <td colspan="3"><asp:CheckBox runat="server" ID="CTerceroSalida" Text="El cliente en la salida es obligatorio" /></td>
+            </tr>
+            <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CCrearTerceroSalida" Text="El cliente se puede modificar en la salida" /></td>
+            </tr>
+            <tr>
+                <td colspan="3"><asp:CheckBox runat="server" ID="CDatosTerceroSalida" Text="El cliente debe tener teléfono y dirección" /></td>
             </tr>
             <tr>
                 <td colspan="3"><asp:CheckBox runat="server" ID="CDocumentoSalida" Text="El documento equivalente de la salida es obligatorio" /></td>
