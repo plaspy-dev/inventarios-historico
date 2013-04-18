@@ -35,9 +35,10 @@ public class servicios : System.Web.Services.WebService {
         //InitializeComponent(); 
     }
 
-    [WebMethod(EnableSession=true)]
-    public List<CJSon> GetTercero(String q, int tipo) {
-        List<CJSon> lista = new List<CJSon>();
+    [WebMethod]
+    public List<Tercero> GetTercero(String q, int tipo)
+    {
+        List<Tercero> lista = new List<Tercero>();
         CConector conector = new CConector();
 
         string szTipo = "(0,1,2)";
@@ -49,7 +50,7 @@ public class servicios : System.Web.Services.WebService {
                 szTipo = "(1,2)";
                 break;
         }
-        string query = "SELECT id,IF(identificacion IS NULL,nombre, CONCAT(identificacion,'-',nombre)) AS nombre FROM tercero WHERE estado IS NULL AND tipo IN " + szTipo;
+        string query = "SELECT id FROM tercero WHERE estado IS NULL AND tipo IN " + szTipo;
         string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
         for (int i = 0; i < split.Length; i++)
@@ -65,8 +66,7 @@ public class servicios : System.Web.Services.WebService {
         {
             while (reader.Read())
             {
-                CJSon info = new CJSon(reader["nombre"].ToString(), reader["id"].ToString());
-                lista.Add(info);
+                lista.Add(new Tercero(reader["id"].ToString()));
             }
             reader.Close();
         }

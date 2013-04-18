@@ -53,7 +53,7 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            item.label = item.value;
+                            item.label = item.Documento + " " + item.Nombre;
                             return item;
                         }))
                     },
@@ -67,7 +67,7 @@
             search: function() { $("#<%= TTerceroID.ClientID %>").val(""); },
             select: function(event, ui) {
 
-                $("#<%= TTerceroID.ClientID %>").val(ui.item.item);
+                $("#<%= TTerceroID.ClientID %>").val(ui.item.Id);
                 $("#<%= TTercero.ClientID %>").val(ui.item.value);
                 return false;
             }

@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-17 · Reorganizar la búsqueda y edición de terceros.** Modifica la pantalla y las consultas de terceros y ajusta la validación de valores enteros y decimales de productos. El usuario puede buscar el registro relacionado y completar los campos con el tipo previsto.
+**2013-04-18 · Vincular entradas y salidas con terceros.** Añade un modelo que recupera el nombre de un tercero y ajusta los campos y validadores de los movimientos. Los formularios pueden identificar el registro externo asociado a la entrada o salida.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-17 · Rework business contact search and editing.** Revise the contact screen and its queries and adjust integer and decimal product validation. Users can find the associated record and enter values in the expected type.
+**2013-04-18 · Link receipts and withdrawals to business contacts.** Add a model that looks up a business contact name and update the movement fields and validators. The forms can identify the external record associated with a receipt or withdrawal.
 
 ### How to explore the source
 

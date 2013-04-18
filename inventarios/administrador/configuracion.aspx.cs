@@ -34,11 +34,15 @@ public partial class administrador_configuracion : System.Web.UI.Page
             // entradas
             CTerceroEntrada.Checked = configuracion.bTerceroEntrada;
             CDocumentoEntrada.Checked = configuracion.bDocumentoEntrada;
+            CCrearTerceroEntrada.Checked = configuracion.bCrearTerceroEntradas;
+            CDatosTerceroEntrada.Checked = configuracion.bDatosComplementariosTerceroEntrada;
 
             // salidas
             DEntrega.SelectedValue = configuracion.bManejarEntrega ? "0" : "1";
             CTerceroSalida.Checked = configuracion.bTerceroSalida;
             CDocumentoSalida.Checked = configuracion.bDocumentoSalida;
+            CCrearTerceroSalida.Checked = configuracion.bCrearTerceroSalida;
+            CDatosTerceroSalida.Checked = configuracion.bDatosComplementariosTerceroSalida;
         }
     }
 
@@ -69,11 +73,15 @@ public partial class administrador_configuracion : System.Web.UI.Page
         // entradas
         configuracion.bTerceroEntrada= CTerceroEntrada.Checked;
         configuracion.bDocumentoEntrada = CDocumentoEntrada.Checked;
+        configuracion.bCrearTerceroEntradas= CCrearTerceroEntrada.Checked;
+        configuracion.bDatosComplementariosTerceroEntrada = CDatosTerceroEntrada.Checked;
 
         // salidas
         configuracion.bManejarEntrega= DEntrega.SelectedValue=="0";
         configuracion.bTerceroSalida= CTerceroSalida.Checked;
         configuracion.bDocumentoSalida = CDocumentoSalida.Checked;
+        configuracion.bCrearTerceroSalida = CCrearTerceroSalida.Checked;
+        configuracion.bDatosComplementariosTerceroSalida = CDatosTerceroSalida.Checked;
 
         if(configuracion.SaveConfiguracion()) {
             LMensaje.Text =  "Configuración guardada";

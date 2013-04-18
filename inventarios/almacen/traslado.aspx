@@ -133,7 +133,7 @@
 </asp:Panel>
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
 <ContentTemplate>
-    <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado">Anulada</asp:Panel>
+    <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado"><asp:Label runat="server" ID="LAnulado"></asp:Label></asp:Panel>
     <asp:HiddenField runat="server" ID="HId" />
     <table class="tablecollapse">
         <tr>

@@ -14,7 +14,7 @@
                     dataFilter: function(data) { return data; },
                     success: function(data) {
                         response($.map(data.d, function(item) {
-                            item.label = item.value;
+                            item.label = item.Documento + " " + item.Nombre;
                             return item;
                         }))
                     },
@@ -27,8 +27,8 @@
             minLength: 3,
             select: function(event, ui) {
 
-                $(this).val(ui.item.value);
-                $.goURL("ti=" + ui.item.item);
+                $(this).val(ui.item.label);
+                $.goURL("ti=" + ui.item.Id);
                 return false;
             }
         });
@@ -48,7 +48,9 @@
             <td>
                 <asp:TextBox ID="TIdentificacion" runat="server"></asp:TextBox>
               </td>
-              <td></td>
+              <td>
+                <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="TIdentificacion" Display="Dynamic" ErrorMessage="Por favor ingrese una identificación." SetFocusOnError="True"></asp:RequiredFieldValidator>
+              </td>
           </tr>
           <tr>
             <td>Nombre</td>
@@ -56,9 +58,7 @@
                 <asp:TextBox ID="TNombre" runat="server"></asp:TextBox>
               </td>
             <td>
-                <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" 
-                    ControlToValidate="TNombre" Display="Dynamic" 
-                    ErrorMessage="Por favor ingrese un nombre." SetFocusOnError="True"></asp:RequiredFieldValidator>
+                <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="TNombre" Display="Dynamic" ErrorMessage="Por favor ingrese un nombre." SetFocusOnError="True"></asp:RequiredFieldValidator>
               </td>
           </tr>
           <tr>
@@ -73,12 +73,16 @@
           <tr>
             <td>Dirección</td>
             <td><asp:TextBox runat="server" ID="TDireccion"></asp:TextBox></td>
-            <td></td>
+            <td>
+                <asp:RequiredFieldValidator ID="RDireccion" runat="server" ControlToValidate="TDireccion" Display="Dynamic" ErrorMessage="Por favor ingrese una dirección." SetFocusOnError="True"></asp:RequiredFieldValidator>
+            </td>
           </tr>
           <tr>
             <td>Teléfono</td>
             <td><asp:TextBox runat="server" ID="TTelefono"></asp:TextBox></td>
-            <td></td>
+            <td>
+                <asp:RequiredFieldValidator ID="RTelefono" runat="server" ControlToValidate="TTelefono" Display="Dynamic" ErrorMessage="Por favor ingrese un teléfono." SetFocusOnError="True"></asp:RequiredFieldValidator>
+            </td>
           </tr>
           <tr>
             <td>E-Mail</td>

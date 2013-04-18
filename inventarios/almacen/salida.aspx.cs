@@ -54,8 +54,12 @@ public partial class almacen_salida : System.Web.UI.Page
             LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.bEstado;
 
             // tercero
-            RTerceroID.Visible = configuracion.bTerceroSalida;
             RDocumento.Visible = configuracion.bDocumentoSalida;
+
+            RTerceroID.Visible = configuracion.bTerceroSalida && !configuracion.bCrearTerceroSalida;
+            TEMail.ReadOnly = TDireccion.ReadOnly = TTercero.ReadOnly = TTelefono.ReadOnly = !configuracion.bCrearTerceroSalida;
+            RNombre.Visible = RIdentificacion.Visible = configuracion.bCrearTerceroSalida && configuracion.bTerceroSalida;
+            RDireccion.Visible = RTelefono.Visible = configuracion.bDatosComplementariosTerceroSalida;
 
             if (Session["salida_clean"] != null)
             {
@@ -103,9 +107,15 @@ public partial class almacen_salida : System.Web.UI.Page
                     TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
                     TEntrega.Text = CConector.GetFromMySQLDate(reader["entrega"]);
                     TDocumento.Text = reader["documento"].ToString();
-                    TTerceroID.Text = reader["tercero"].ToString();
-                    TTercero.Text = Almacen.GetNombreTercero(reader["tercero"].ToString());
                     PAnulado.Visible = reader["estado"].ToString() != "";
+
+                    Tercero tercero = new Tercero(reader["tercero"].ToString());
+                    TTerceroID.Text = tercero.Id;
+                    TTercero.Text = tercero.Documento;
+                    TNombre.Text = tercero.Nombre;
+                    TTelefono.Text = tercero.Telefono;
+                    TDireccion.Text = tercero.Direccion;
+                    TEMail.Text = tercero.Email;
 
                     ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
                     query = new Query("salida_items" + ((ing)Master).GetAlmacen());
@@ -162,7 +172,10 @@ public partial class almacen_salida : System.Web.UI.Page
                     BAceptar.Enabled = usuario.CanUpdate();
                     BAnular.Visible = usuario.CanAdmin();
                     if (PAnulado.Visible)
+                    {
+                        LAnulado.Text = "Anulado";
                         GProductos.Columns[0].Visible = BAnular.Enabled = BAceptar.Enabled = false;
+                    }
                     return;
                 }
             }
@@ -284,11 +297,41 @@ public partial class almacen_salida : System.Web.UI.Page
         Query query = new Query("salida" + ((ing)Master).GetAlmacen());
         CConector conector = new CConector();
 
+
+        string terceroid = TTerceroID.Text;
+
+        if (TNombre.Text.Length > 0 && TTercero.Text.Length > 0)
+        {
+
+            Query tercero = new Query("tercero");
+
+            tercero["tipo"] = "2";
+            tercero["nombre"] = TNombre.Text;
+            tercero["identificacion"] = TTercero.Text;
+            tercero["telefono"] = TTelefono.Text;
+            tercero["direccion"] = TDireccion.Text;
+            tercero["email"] = TEMail.Text;
+
+            if (terceroid.Length > 0)
+            {
+                if (conector.QueryMod(tercero.GetUpdate("id=" + Query.GetValor(terceroid))) == -1)
+                    return;
+            }
+            else
+            {
+                int res = conector.QueryMod(tercero.GetInsert());
+                if (res == -1)
+                    return;
+                terceroid = res.ToString();
+            }
+            Tercero.RemoveTercero(terceroid);
+        }
+
         query["observaciones"] = TObservaciones.Text;
         query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
         query["entrega"] = CConector.GetMySQLDateFormat(configuracion.bManejarEntrega ? TEntrega.Text : TFecha.Text);
         query["documento"] = TDocumento.Text;
-        query["tercero"] = TTerceroID.Text;
+        query["tercero"] = terceroid;
         if (sender == BAnular)
             query["estado"] = "-1";
 
@@ -456,5 +499,6 @@ public partial class almacen_salida : System.Web.UI.Page
     protected void OnImprimir(object sender, EventArgs e)
     {
         GProductos.Columns[0].Visible = false;
+        PAnulado.Visible = true;
     }
 }

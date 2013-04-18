@@ -18,7 +18,7 @@
                         dataFilter: function(data) { return data; },
                         success: function(data) {
                             response($.map(data.d, function(item) {
-                                item.label = item.value;
+                                item.label = item.Documento + " " + item.Nombre;
                                 return item;
                             }))
                         },
@@ -29,13 +29,19 @@
                 },
                 autoFocus: true,
                 minLength: 3,
+                search: function() {
+                    $("#<%= TTerceroID.ClientID %>").val("");
+                },
                 select: function(event, ui) {
 
-                    $("#<%= TTerceroID.ClientID %>").val(ui.item.item);
-                    $("#<%= TTercero.ClientID %>").val(ui.item.value);
+                    $("#<%= TTerceroID.ClientID %>").val(ui.item.Id);
+                    $("#<%= TTercero.ClientID %>").val(ui.item.Documento + " " + ui.item.Nombre);
                     return false;
                 }
-            });
+            }).change(function() {
+                if ($(this).val().length == 0)
+                    $("#<%= TTerceroID.ClientID %>").val("");
+            }); ;
             $("#<%= TNombre.ClientID %>").autocomplete({
                 source: function(request, response) {
                     $.ajax({

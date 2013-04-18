@@ -39,10 +39,14 @@ public class CConfiguracion
     public bool bManejarEntrega=true;
     public bool bTerceroSalida=false;
     public bool bDocumentoSalida = false;
+    public bool bCrearTerceroSalida = true;
+    public bool bDatosComplementariosTerceroSalida = false;
 
     // entradas
     public bool bTerceroEntrada = false;
     public bool bDocumentoEntrada = false;
+    public bool bCrearTerceroEntradas = true;
+    public bool bDatosComplementariosTerceroEntrada = false;
 
 
 	public CConfiguracion()
