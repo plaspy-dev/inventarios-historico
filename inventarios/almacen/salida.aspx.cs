@@ -63,7 +63,6 @@ public partial class almacen_salida : System.Web.UI.Page
 
             if (Session["salida_clean"] != null)
             {
-
                 ViewState["clean"] = true;
                 Session["salida_clean"] = null;
             }
@@ -173,7 +172,7 @@ public partial class almacen_salida : System.Web.UI.Page
                     BAnular.Visible = usuario.CanAdmin();
                     if (PAnulado.Visible)
                     {
-                        LAnulado.Text = "Anulado";
+                        LAnulado.Text = "Anulada";
                         GProductos.Columns[0].Visible = BAnular.Enabled = BAceptar.Enabled = false;
                     }
                     return;

@@ -158,7 +158,7 @@ public class Utilidades
 		{
 			if (grid.Columns[i].Visible)
 			{
-				text = text + "<td><b>" + grid.Columns[i].HeaderText + "</b></td>";
+				text = text + "<td bgcolor='#EEEEEE'><b>" + grid.Columns[i].HeaderText + "</b></td>";
 			}
 		}
 		text += "</tr>";

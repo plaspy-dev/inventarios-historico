@@ -179,7 +179,7 @@ public partial class almacen_entrada : System.Web.UI.Page
                     BAnular.Visible = usuario.CanAdmin();
                     if (PAnulado.Visible)
                     {
-                        LAnulado.Text = "Anulado";
+                        LAnulado.Text = "Anulada";
                         GProductos.Columns[0].Visible = GProductos.Columns[1].Visible=
                         BAnular.Enabled = BAceptar.Enabled = false;
                     }
