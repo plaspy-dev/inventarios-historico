@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-18 · Vincular entradas y salidas con terceros.** Añade un modelo que recupera el nombre de un tercero y ajusta los campos y validadores de los movimientos. Los formularios pueden identificar el registro externo asociado a la entrada o salida.
+**2013-04-18 · Ajustar los comprobantes de movimientos.** Reorganiza columnas, anchos y alineación en las plantillas de entrada, salida y traslado. Los datos del movimiento quedan distribuidos en el comprobante que corresponde a cada operación.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-18 · Link receipts and withdrawals to business contacts.** Add a model that looks up a business contact name and update the movement fields and validators. The forms can identify the external record associated with a receipt or withdrawal.
+**2013-04-18 · Update movement document layout.** Rearrange columns, widths, and alignment in receipt, withdrawal, and transfer templates. Movement data appears in the document for its operation.
 
 ### How to explore the source
 
