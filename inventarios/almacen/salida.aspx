@@ -75,7 +75,7 @@
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(textStatus);
+                        alert(textStatus + ":" + errorThrown);
                     }
                 });
             },
@@ -116,7 +116,7 @@
                         }))
                     },
                     error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(textStatus);
+                        alert(textStatus + ":" + errorThrown);
                     }
                 });
             },

@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-18 · Ajustar los comprobantes de movimientos.** Reorganiza columnas, anchos y alineación en las plantillas de entrada, salida y traslado. Los datos del movimiento quedan distribuidos en el comprobante que corresponde a cada operación.
+**2013-04-19 · Revisar las consultas y los saldos de productos.** Reescribe consultas usadas por los servicios y los cálculos de saldo de producto, y retira una plantilla de salida del respaldo. El código de consultas permite seguir cómo el sistema obtiene la existencia de un artículo.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-18 · Update movement document layout.** Rearrange columns, widths, and alignment in receipt, withdrawal, and transfer templates. Movement data appears in the document for its operation.
+**2013-04-19 · Revise product lookups and stock balances.** Rework queries used by services and product balance calculations, and remove a withdrawal template from the snapshot. The query logic shows how the system obtains an item's stock level.
 
 ### How to explore the source
 

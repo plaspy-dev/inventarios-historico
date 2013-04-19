@@ -8,10 +8,12 @@
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+<asp:Label runat="server" ID="LMensajeGlobal"></asp:Label>
 <div id="tpr">
     <ul>
         <li><a href="#dConfiguracion">Configuración</a></li>
         <li><a href="#dConsecutivos">Consecutivos</a></li>
+        <li><a href="#dFormatos">Formatos de impresión</a></li>
     </ul>
     <div id="dConfiguracion">
         <table width="100%" border="0">
@@ -253,6 +255,48 @@
                 </asp:Panel>
             </ContentTemplate>
         </asp:UpdatePanel>
+    </div>
+    <div id="dFormatos">
+        <table style="border-collapse: collapse">
+            <tr>
+                <td colspan="4" class="GridHeader">Logo</td>
+            </tr>
+            <tr>
+                <td class="tdl"><asp:HyperLink runat="server" ID="HLogo" NavigateUrl="~/img/logo.ashx" Target="_blank" Text="Logo"></asp:HyperLink></td>
+                <td><asp:FileUpload runat="server" ID="FLogo" /></td>
+                <td><asp:Button runat="server" ID="BLogo" Text="Subir" ValidationGroup="logo" onclick="BLogo_Click" /></td>
+                <td class="tdr"><asp:Button runat="server" ID="BELogo" CausesValidation="false" Text="Restaurar original" onclick="BELogo_Click" /></td>
+            </tr>
+            <tr>
+                <td colspan="4" class="tdr tdl">
+                    <asp:RegularExpressionValidator ValidationGroup="logo" ControlToValidate="FLogo" ID="RFoto1" SetFocusOnError="true" ValidationExpression="^.+\.((jpg)|(JPG)|(png)|(PNG))$" Display="Dynamic" runat="server" ErrorMessage="Por favor seleccione un archivo de imagen jpg o png."></asp:RegularExpressionValidator>
+                    <asp:RequiredFieldValidator ValidationGroup="logo" ControlToValidate="FLogo" ErrorMessage="Por favor seleccione una archivo." ID="RFFoto1" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4" class="GridHeader">Formatos</td>
+            </tr>
+            <asp:Repeater runat="server" ID="RFormatos">
+                <ItemTemplate>
+                    <tr>
+                        <td class="tdl"><asp:HyperLink runat="server" ID="HFormato" NavigateUrl='<%# Eval("formato", "~/formatos/formato.ashx?t={0}") %>' Text='<%# Eval("formato") %>'></asp:HyperLink></td>
+                        <td><asp:FileUpload runat="server" ID="FFormato" /></td>
+                        <td><asp:Button runat="server" ID="BSubir" Text="Subir" ValidationGroup='<%# Eval("formato") %>' onclick="BSubirFormato_Click" /></td>
+                        <td class="tdr"><asp:Button runat="server" ID="BEliminar" CausesValidation="false" Text="Restaurar original" onclick="BEliminarFormato_Click" /></td>
+                    </tr>
+                    <tr>
+                        <td class="tdr tdl" colspan="4">
+                            <asp:RegularExpressionValidator ValidationGroup='<%# Eval("formato") %>' ControlToValidate="FFormato" ID="R1" SetFocusOnError="true" ValidationExpression="^.+\.((html)|(HTML)|(htm)|(HTM))$" Display="Dynamic" runat="server" ErrorMessage="Por favor seleccione un archivo html."></asp:RegularExpressionValidator>
+                            <asp:RequiredFieldValidator ValidationGroup='<%# Eval("formato") %>' ControlToValidate="FFormato" ErrorMessage="Por favor seleccione una archivo." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
+                        </td>
+                    </tr>
+                </ItemTemplate>
+            </asp:Repeater>
+            <tr>
+                <td colspan="4" class="tdr tdl tdb">
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
 </asp:Content>

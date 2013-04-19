@@ -178,6 +178,14 @@ public partial class almacen_informes : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         ((ing)Master).CheckAlmacen();
+        if (!IsPostBack)
+        {
+            ((ing)Master).InitAlmacen();
+            DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
+            for (int i = 0; i < almacenes.Items.Count; i++)
+                DAlmacenes.Items.Add(almacenes.Items[i]);
+            ((ing)Master).RestoreState();
+        }
 
         bool todoslosalmacenes = false;
         string seleccionado = "";
@@ -218,17 +226,21 @@ public partial class almacen_informes : System.Web.UI.Page
 
             LAlmacenes.Visible = DAlmacenes.Visible = Usuario.GetUsuario()["almacenes"].IndexOf(",") != -1 || Usuario.GetUsuario()["almacenes"] == "-2";
 
-            DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
-            for (int i = 0; i < almacenes.Items.Count; i++)
-                DAlmacenes.Items.Add(almacenes.Items[i]);
+            if (THasta.Text.Length == 0)
+            {
+                THasta.Text = DateTime.Now.ToShortDateString();
+                TDesde.Text = DateTime.Now.AddDays(-30).ToShortDateString();
+            }
 
-            THasta.Text= DateTime.Now.ToShortDateString();
-            TDesde.Text= DateTime.Now.AddDays(-30).ToShortDateString();
+            if(Request.QueryString["p"]=="1")
+                BBuscar_Click(sender, e);
         }
     }
 
     protected void BBuscar_Click(object sender, EventArgs e)
     {
+        Page.Title = DVer.SelectedItem.Text;
+
         CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
         PGraficas.Visible=
         GResultados.Visible = true;
@@ -276,7 +288,9 @@ public partial class almacen_informes : System.Web.UI.Page
 
         if (Utilidades.GetRowsCount(GResultados, LTotal) > 0)
         {
-            ((ing)Master).SetPrintFile("informes.html");
+            ((ing)Master).SetPrintFile("informes.html", true);
+        } else {
+            ((ing)Master).SetPrintFile(null);
         }
 
         Utilidades.GetGridColumn(GResultados, "Estado").Visible= DEstadoDoc.SelectedValue=="0";

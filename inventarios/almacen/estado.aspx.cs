@@ -32,6 +32,14 @@ public partial class almacen_estado : System.Web.UI.Page
     protected void Page_Load(object sender, EventArgs e)
     {
         ((ing)Master).CheckAlmacen();
+        if (!IsPostBack)
+        {
+            ((ing)Master).InitAlmacen();
+            DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
+            for (int i = 0; i < almacenes.Items.Count; i++)
+                DAlmacenes.Items.Add(almacenes.Items[i]);
+            ((ing)Master).RestoreState();
+        }
 
         bool todoslosalmacenes = false;
         string seleccionado = "";
@@ -123,10 +131,6 @@ public partial class almacen_estado : System.Web.UI.Page
 
             LAlmacenes.Visible= DAlmacenes.Visible = CAlmacen.Visible= Usuario.GetUsuario()["almacenes"].IndexOf(",") != -1 || Usuario.GetUsuario()["almacenes"] == "-2";
 
-            DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
-            for (int i = 0; i < almacenes.Items.Count; i++)
-                DAlmacenes.Items.Add(almacenes.Items[i]);
-
             if(!string.IsNullOrEmpty(Request.QueryString["pid"])) { // Kardex
 
                 Utilidades.GetGridColumn(GKardex, "Costo U.E.").Visible =
@@ -138,8 +142,11 @@ public partial class almacen_estado : System.Web.UI.Page
                 chart_costos.Visible = 
                 configuracion.nCosto != 0;
 
-                TDesde.Text = DateTime.Now.AddDays(-DateTime.Now.Day+1).ToShortDateString();
-                THasta.Text = DateTime.Now.ToShortDateString();
+                if (TDesde.Text.Length== 0)
+                {
+                    TDesde.Text = DateTime.Now.AddDays(-DateTime.Now.Day + 1).ToShortDateString();
+                    THasta.Text = DateTime.Now.ToShortDateString();
+                }
 
                 PKardex.Visible = true;
                 PBuscar.Visible = false;
@@ -174,7 +181,10 @@ public partial class almacen_estado : System.Web.UI.Page
         Utilidades.GetGridColumn(GResultados, "Vence").Visible = CDetallado.Checked && CConfiguracion.GetConfiguracion().bVencimiento;
 
         if(Utilidades.GetRowsCount(GResultados, LTotal)>0) {
-            ((ing)Master).SetPrintFile("estado.html");
+            ((ing)Master).SetPrintFile("estado.html", true);
+        } else
+        {
+            ((ing)Master).SetPrintFile(null);
         }
     }
     protected void GKardex_RowDataBound(object sender, GridViewRowEventArgs e)
@@ -374,7 +384,9 @@ public partial class almacen_estado : System.Web.UI.Page
         } catch {}
 
         GKardex.DataBind();
-        ((ing)Master).SetPrintFile("kardex.html");
+        if(GKardex.Rows.Count>0)
+            ((ing)Master).SetPrintFile("kardex.html", true);
+        else ((ing)Master).SetPrintFile(null);
 
         LSalidas.Text = "";
         LCostos.Text = "";

@@ -247,55 +247,63 @@ public class Producto
         if(producto==null) {
             producto = new Producto();
             Query query = new Query("producto");
-            CConector conector = CConector.GetConector();
-
-            query += "nombre";
-            query += "descripcion";
-            query += "codigo";
-            query += "unidad";
-            query += "vence";
-            query += "lote";
-            query += "serial";
-            query += "empresa";
-            query += "entero";
-            query += "nEstado";
-            query += "diasvencimiento";
-            query += "formatolote";
-
-            MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
-            if (reader != null && reader.Read())
+            using (CConector conector = new CConector())
             {
-                producto.id = id;
-                producto.nombre = reader["nombre"].ToString();
-                producto.descripcion = reader["descripcion"].ToString();
-                producto.codigo = reader["codigo"].ToString();
-                producto.unidad = reader["unidad"].ToString();
-                try
+
+                query += "nombre";
+                query += "descripcion";
+                query += "codigo";
+                query += "unidad";
+                query += "vence";
+                query += "lote";
+                query += "serial";
+                query += "empresa";
+                query += "entero";
+                query += "nEstado";
+                query += "diasvencimiento";
+                query += "formatolote";
+
+                MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
+                if (reader != null && reader.Read())
                 {
-                    producto.nVence = Convert.ToInt32(reader["vence"]);
-                } catch { producto.nVence = 0; }
-                try
-                {
-                    producto.nLote = Convert.ToInt32(reader["lote"]);
-                }catch { producto.nLote = 0; }
-                try
-                {
-                    producto.nSerial = Convert.ToInt32(reader["serial"]);
-                } catch { producto.nSerial = 0;  }
-                try
-                {
-                    producto.nNumero = Convert.ToInt32(reader["entero"]);
-                }catch { producto.nNumero = 0; }
-                try
-                {
-                    producto.nEstado = Convert.ToInt32(reader["nEstado"]);
+                    producto.id = id;
+                    producto.nombre = reader["nombre"].ToString();
+                    producto.descripcion = reader["descripcion"].ToString();
+                    producto.codigo = reader["codigo"].ToString();
+                    producto.unidad = reader["unidad"].ToString();
+                    try
+                    {
+                        producto.nVence = Convert.ToInt32(reader["vence"]);
+                    }
+                    catch { producto.nVence = 0; }
+                    try
+                    {
+                        producto.nLote = Convert.ToInt32(reader["lote"]);
+                    }
+                    catch { producto.nLote = 0; }
+                    try
+                    {
+                        producto.nSerial = Convert.ToInt32(reader["serial"]);
+                    }
+                    catch { producto.nSerial = 0; }
+                    try
+                    {
+                        producto.nNumero = Convert.ToInt32(reader["entero"]);
+                    }
+                    catch { producto.nNumero = 0; }
+                    try
+                    {
+                        producto.nEstado = Convert.ToInt32(reader["nEstado"]);
+                    }
+                    catch { producto.nEstado = 0; }
+                    try
+                    {
+                        producto.DiasV = Convert.ToInt32(reader["diasvencimiento"]);
+                    }
+                    catch { producto.DiasV = 0; }
+                    producto.Empresa = reader["empresa"].ToString();
+                    producto.FormatoLote = reader["formatolote"].ToString();
                 }
-                catch { producto.nEstado = 0; }
-                try {
-                    producto.DiasV = Convert.ToInt32(reader["diasvencimiento"]);
-                }catch { producto.DiasV = 0; }
-                producto.Empresa = reader["empresa"].ToString();
-                producto.FormatoLote = reader["formatolote"].ToString();
             }
             HttpRuntime.Cache.Insert("producto" + id, producto, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
@@ -316,11 +324,15 @@ public class Producto
             return Costo;
         }
 
-        CConector conector = new CConector();
-        string costo= conector.QueryString(string.Format("SELECT costo FROM estado{0} WHERE producto={1}", almacen, id));
-        try {
-            Costo = Convert.ToDecimal(costo);
-        } catch {}
+        using(CConector conector = new CConector()) 
+        {
+            string costo = conector.QueryString(string.Format("SELECT costo FROM estado{0} WHERE producto={1}", almacen, id));
+            try
+            {
+                Costo = Convert.ToDecimal(costo);
+            }
+            catch { }
+        }
         HttpRuntime.Cache.Insert("costopromedio" + almacen + "_" + id, Costo, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         return Costo;
     }
@@ -429,32 +441,34 @@ public class Producto
         if (string.IsNullOrEmpty(desde_conhora))
             return false;
         // iniciamos las variables
-        CConector conector = new CConector();
-        string query = "SET @i=0,@saldo=0;";
-        if (conector.QueryMod(query) == -1)
-            return false;
-
-        // falta validar tambien el lote, serial, etc...
-
-        // establecemos el costo promedio
-        query = string.Format("SELECT * FROM ("
-            + " SELECT @i:=@i+1 AS c,@saldo:=@saldo+cantidad AS saldo FROM ("
-            + " (SELECT cantidad AS cantidad,ingreso FROM entrada_items{0} WHERE producto={1} AND ingreso<{2} )"
-            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM traslado_items{0} WHERE producto={1} AND ingreso<{2} )"
-            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM salida_items{0} WHERE producto={1} AND ingreso<{2})"
-            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM transformacion_salida{0} WHERE producto={1} AND ingreso<{2})"
-            + " UNION ALL (SELECT cantidad AS cantidad,ingreso FROM transformacion_entrada{0} WHERE producto={1} AND ingreso<{2})"
-            + " ORDER BY ingreso) AS t"
-            + "  ) AS b WHERE c=@i;"
-             , almacen, id, Query.GetValor(desde_conhora));
-        MySqlDataReader reader = conector.Query(query);
-        saldo = 0;
-        if (reader == null)
-            return false;
-        if (reader.Read())
+        using (CConector conector = new CConector())
         {
-            try { saldo = Convert.ToDecimal(reader["saldo"]); }
-            catch { }
+            string query = "SET @i=0,@saldo=0;";
+            if (conector.QueryMod(query) == -1)
+                return false;
+
+            // falta validar tambien el lote, serial, etc...
+
+            // establecemos el costo promedio
+            query = string.Format("SELECT * FROM ("
+                + " SELECT @i:=@i+1 AS c,@saldo:=@saldo+cantidad AS saldo FROM ("
+                + " (SELECT cantidad AS cantidad,ingreso FROM entrada_items{0} WHERE producto={1} AND ingreso<{2} )"
+                + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM traslado_items{0} WHERE producto={1} AND ingreso<{2} )"
+                + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM salida_items{0} WHERE producto={1} AND ingreso<{2})"
+                + " UNION ALL (SELECT -cantidad AS cantidad,ingreso FROM transformacion_salida{0} WHERE producto={1} AND ingreso<{2})"
+                + " UNION ALL (SELECT cantidad AS cantidad,ingreso FROM transformacion_entrada{0} WHERE producto={1} AND ingreso<{2})"
+                + " ORDER BY ingreso) AS t"
+                + "  ) AS b WHERE c=@i;"
+                 , almacen, id, Query.GetValor(desde_conhora));
+            MySqlDataReader reader = conector.Query(query);
+            saldo = 0;
+            if (reader == null)
+                return false;
+            if (reader.Read())
+            {
+                try { saldo = Convert.ToDecimal(reader["saldo"]); }
+                catch { }
+            }
         }
         return true;
     }
@@ -462,32 +476,38 @@ public class Producto
     public bool GetAcumulado(string almacen, string desde, ref decimal costoacumulado, ref decimal saldo, ref decimal costop)
     {
         // iniciamos las variables
-        CConector conector = new CConector();
-        string query = "SET @i=0,@costoacumulado=0,@costop=0,@saldo=0;";
-        if (conector.QueryMod(query) == -1)
-            return false;
+        using (CConector conector = new CConector())
+        {
+            string query = "SET @i=0,@costoacumulado=0,@costop=0,@saldo=0;";
+            if (conector.QueryMod(query) == -1)
+                return false;
 
-        // establecemos el costo promedio
-        query = string.Format("SELECT * FROM ("
-            + " SELECT @i:=@i+1 AS c,@costoacumulado:=@costoacumulado+IFNULL(costot,@costop*cantidad) AS costoacumulado,@saldo:=@saldo+cantidad AS saldo,@costop:=@costoacumulado/@saldo AS costop FROM ("
-            + " (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM entrada_items{0} WHERE producto={1} AND DATE(ingreso)<{2} )"
-            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM traslado_items{0} WHERE producto={1} AND DATE(ingreso)<{2} )"
-            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM salida_items{0} WHERE producto={1} AND DATE(ingreso)<{2})"
-            + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM transformacion_salida{0} WHERE producto={1} AND DATE(ingreso)<{2})"
-            + " UNION ALL (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM transformacion_entrada{0} WHERE producto={1} AND DATE(ingreso)<{2})"
-            + " ORDER BY ingreso) AS t"
-            + "  ) AS b WHERE c=@i;"
-             , almacen, id, Query.GetValor(desde));
-        MySqlDataReader reader= conector.Query(query);
-        costop = 0;
-        costoacumulado = 0;
-        saldo = 0;
-        if (reader == null)
-            return false;
-        if(reader.Read()) {
-            try { costoacumulado = Convert.ToDecimal(reader["costoacumulado"]); } catch {}
-            try { costop = Convert.ToDecimal(reader["costop"]); } catch {}
-            try { saldo = Convert.ToDecimal(reader["saldo"]); } catch { }
+            // establecemos el costo promedio
+            query = string.Format("SELECT * FROM ("
+                + " SELECT @i:=@i+1 AS c,@costoacumulado:=@costoacumulado+IFNULL(costot,@costop*cantidad) AS costoacumulado,@saldo:=@saldo+cantidad AS saldo,@costop:=@costoacumulado/@saldo AS costop FROM ("
+                + " (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM entrada_items{0} WHERE producto={1} AND DATE(ingreso)<{2} )"
+                + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM traslado_items{0} WHERE producto={1} AND DATE(ingreso)<{2} )"
+                + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM salida_items{0} WHERE producto={1} AND DATE(ingreso)<{2})"
+                + " UNION ALL (SELECT -cantidad AS cantidad,ingreso,NULL AS costot FROM transformacion_salida{0} WHERE producto={1} AND DATE(ingreso)<{2})"
+                + " UNION ALL (SELECT cantidad AS cantidad,ingreso,costo*cantidad AS costot FROM transformacion_entrada{0} WHERE producto={1} AND DATE(ingreso)<{2})"
+                + " ORDER BY ingreso) AS t"
+                + "  ) AS b WHERE c=@i;"
+                 , almacen, id, Query.GetValor(desde));
+            MySqlDataReader reader = conector.Query(query);
+            costop = 0;
+            costoacumulado = 0;
+            saldo = 0;
+            if (reader == null)
+                return false;
+            if (reader.Read())
+            {
+                try { costoacumulado = Convert.ToDecimal(reader["costoacumulado"]); }
+                catch { }
+                try { costop = Convert.ToDecimal(reader["costop"]); }
+                catch { }
+                try { saldo = Convert.ToDecimal(reader["saldo"]); }
+                catch { }
+            }
         }
         return true;
     }
