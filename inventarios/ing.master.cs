@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -45,12 +46,6 @@ public partial class ing : System.Web.UI.MasterPage
             RAlertas.DataSource = Alertas.GetAlertas(GetAlmacen());
             RAlertas.DataBind();
 
-            HGuardar.NavigateUrl= HImprimir.NavigateUrl = Request.Url.AbsolutePath + Request.Url.Query;
-            HImprimir.NavigateUrl += Request.Url.Query.Length == 0 ? "?p=1" : "&p=1";
-            HGuardar.NavigateUrl += Request.Url.Query.Length == 0 ? "?e=1" : "&e=1";
-
-            HGuardar.Visible = HImprimir.Visible = !string.IsNullOrEmpty((string)ViewState["printfile"]) && usuario.CanPrint();
-
             if (!string.IsNullOrEmpty((string)ViewState["printfile"]) && usuario.CanPrint()) {
 
                 if (Request.QueryString["p"] == "1")
@@ -61,15 +56,15 @@ public partial class ing : System.Web.UI.MasterPage
                         _ImprimirClicked(this, null);
                     }
 
-                    StreamReader reader = new StreamReader(Server.MapPath(ViewState["printfile"].ToString()));
+                    StreamReader reader = new StreamReader(Formato.GetRutaFormatos(ViewState["printfile"].ToString()));
                     string Contenido = reader.ReadToEnd();
                     reader.Close();
 
                     Contenido = Utilidades.ReplaceContenido(Page.Controls, Contenido);
                     // agregamos el script para imprimir
 #if DEBUG
-                Contenido= Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {}</script></body>");
-                // contenido= contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.name=='popup')return;var venImp = window.open('../imp.htm', 'popup');venImp.document.write(document.documentElement.innerHTML);venImp.document.close();if(venImp.print) {venImp.print();}window.history.back();}</script></body>");
+                    Contenido= Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {}</script></body>");
+                    // contenido= contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.name=='popup')return;var venImp = window.open('../imp.htm', 'popup');venImp.document.write(document.documentElement.innerHTML);venImp.document.close();if(venImp.print) {venImp.print();}window.history.back();}</script></body>");
 #else
                     Contenido = Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.print) {window.print();}window.close();}</script></body>");
                     // contenido = contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.name=='popup')return;var venImp = window.open('../imp.htm', 'popup');venImp.document.write(document.documentElement.innerHTML);venImp.document.close();if(venImp.print) {venImp.print();venImp.close();}window.history.back();}</script></body>");
@@ -84,7 +79,7 @@ public partial class ing : System.Web.UI.MasterPage
                     {
                         _ImprimirClicked(this, null);
                     }
-                    StreamReader reader = new StreamReader(Server.MapPath(ViewState["printfile"].ToString()));
+                    StreamReader reader = new StreamReader(Formato.GetRutaFormatos(ViewState["printfile"].ToString()));
                     string Contenido = reader.ReadToEnd();
                     reader.Close();
 
@@ -93,7 +88,7 @@ public partial class ing : System.Web.UI.MasterPage
                     Response.Clear();
                     Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(Page.Title) + ".xls");
                     Response.ContentType = "application/vnd.ms-excel";
-                    Response.ContentEncoding = System.Text.Encoding.GetEncoding("utf-8");
+                    Response.ContentEncoding = Encoding.GetEncoding("utf-8");
                     Response.Write(Contenido);
                     Response.End();
                 }
@@ -101,8 +96,32 @@ public partial class ing : System.Web.UI.MasterPage
         }
         usuario.CreateMenu(TMenu, Session["parametros"] == null ? "" : Session["parametros"].ToString());
     }
-    public void SetPrintFile(string archivo) {
+    public void SetPrintFile(string archivo)
+    {
+        SetPrintFile(archivo, false);
+    }
+
+    public void RestoreState() {
+        try
+        {
+            if (!string.IsNullOrEmpty(Request.QueryString["ss"]))
+                Utilidades.RestoreState(ContentPlaceHolder1.Controls, Crypt.DesencriptarDES(Request.QueryString["ss"], System.Environment.GetEnvironmentVariable("INVENTORY_STATE_KEY")));
+        } catch {}
+    }
+
+    public void SetPrintFile(string archivo, bool savestate) {
+
+        HGuardar.NavigateUrl = HImprimir.NavigateUrl = Request.Url.AbsolutePath + Request.Url.Query;
+        HImprimir.NavigateUrl += Request.Url.Query.Length == 0 ? "?p=1" : "&p=1";
+        HGuardar.NavigateUrl += Request.Url.Query.Length == 0 ? "?e=1" : "&e=1";
+
+        if(savestate) {
+            HImprimir.NavigateUrl += "&ss=" + HttpUtility.UrlEncode(Crypt.EncriptarDES(Utilidades.SaveState(ContentPlaceHolder1.Controls), System.Environment.GetEnvironmentVariable("INVENTORY_STATE_KEY")));
+            HGuardar.NavigateUrl += "&ss=" + HttpUtility.UrlEncode(Crypt.EncriptarDES(Utilidades.SaveState(ContentPlaceHolder1.Controls), System.Environment.GetEnvironmentVariable("INVENTORY_STATE_KEY")));
+        }
+
         ViewState["printfile"] = archivo;
+        HGuardar.Visible = HImprimir.Visible = !string.IsNullOrEmpty((string)ViewState["printfile"]) && CUsuario.GetUsuario().CanPrint();
     }
     public void SetModificacion(string idModificaciones, string id2) {
         
@@ -163,7 +182,7 @@ public partial class ing : System.Web.UI.MasterPage
         return DAlmacen.SelectedValue;
     }
 
-    protected void InitAlmacen() {
+    public void InitAlmacen() {
 
         if (ViewState["almacen"] != null) // ya se inicio el almacen
             return;

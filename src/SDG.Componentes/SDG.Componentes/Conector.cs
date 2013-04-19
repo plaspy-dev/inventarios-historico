@@ -8,7 +8,7 @@ using MySql.Data.Types;
 
 namespace SDG.Componentes;
 
-public class Conector
+public class Conector : IDisposable
 {
 	protected string m_szLastError;
 
@@ -32,6 +32,16 @@ public class Conector
 	}
 
 	~Conector()
+	{
+		CloseAll();
+	}
+
+	void IDisposable.Dispose()
+	{
+		CloseAll();
+	}
+
+	private void CloseAll()
 	{
 		if (m_bTransaccion)
 		{

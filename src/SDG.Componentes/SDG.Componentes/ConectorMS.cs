@@ -7,7 +7,7 @@ using System.Web.UI.WebControls;
 
 namespace SDG.Componentes;
 
-public class ConectorMS
+public class ConectorMS : IDisposable
 {
 	protected string m_szLastError;
 
@@ -31,6 +31,16 @@ public class ConectorMS
 	}
 
 	~ConectorMS()
+	{
+		CloseAll();
+	}
+
+	void IDisposable.Dispose()
+	{
+		CloseAll();
+	}
+
+	private void CloseAll()
 	{
 		if (m_bTransaccion)
 		{

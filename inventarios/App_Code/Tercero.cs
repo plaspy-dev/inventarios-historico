@@ -36,23 +36,25 @@ public class Tercero
         Tercero info = (Tercero)HttpRuntime.Cache["ter" + Id];
         if (info == null)
         {
-            CConector conector = new CConector();
-            Query query = new Query("tercero");
-
-            query += "nombre";
-            query += "direccion";
-            query += "telefono";
-            query += "email";
-            query += "identificacion";
-
-            MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(id)));
-            if (reader != null && reader.Read())
+            using (CConector conector = new CConector())
             {
-                Nombre = reader["nombre"].ToString();
-                Direccion = reader["direccion"].ToString();
-                Telefono = reader["telefono"].ToString();
-                Email = reader["email"].ToString();
-                Documento = reader["identificacion"].ToString();
+                Query query = new Query("tercero");
+
+                query += "nombre";
+                query += "direccion";
+                query += "telefono";
+                query += "email";
+                query += "identificacion";
+
+                MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(id)));
+                if (reader != null && reader.Read())
+                {
+                    Nombre = reader["nombre"].ToString();
+                    Direccion = reader["direccion"].ToString();
+                    Telefono = reader["telefono"].ToString();
+                    Email = reader["email"].ToString();
+                    Documento = reader["identificacion"].ToString();
+                }
             }
             HttpRuntime.Cache.Insert("ter" + Id, this, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         } else {

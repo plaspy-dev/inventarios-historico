@@ -39,7 +39,7 @@
                             }))
                         },
                         error: function(XMLHttpRequest, textStatus, errorThrown) {
-                            alert(textStatus);
+                            alert(textStatus + ":" + errorThrown);
                         }
                     });
                 },
@@ -81,7 +81,7 @@
                             }))
                         },
                         error: function(XMLHttpRequest, textStatus, errorThrown) {
-                            alert(textStatus);
+                            alert(textStatus + ":" + errorThrown);
                         }
                     });
                 },
@@ -180,7 +180,7 @@
     <table>
         <tr>
             <td><asp:Label runat="server" ID="LVence" Text="Vence"></asp:Label></td>
-            <td>Nombre</td>
+            <td>Producto</td>
             <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
             <td>Grupo</td>
             <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label></td>
@@ -253,10 +253,10 @@
         <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
         <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
         <Columns>
-            <asp:HyperLinkField HeaderText="Código" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="codigo" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
-            <asp:HyperLinkField HeaderText="Producto" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="nombre" SortExpression="nombre" />
-            <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="empresa" SortExpression="empresa" />
-            <asp:HyperLinkField HeaderText="Descripción" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={3}&n={0}&l={1}&v={2:d}" DataNavigateUrlFields="nombre,lote,vence,producto" DataTextField="descripcion" SortExpression="descripcion" />
+            <asp:HyperLinkField HeaderText="Código" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="codigo" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
+            <asp:HyperLinkField HeaderText="Producto" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="nombre" SortExpression="nombre" />
+            <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="empresa" SortExpression="empresa" />
+            <asp:HyperLinkField HeaderText="Descripción" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="descripcion" SortExpression="descripcion" />
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
             <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" />

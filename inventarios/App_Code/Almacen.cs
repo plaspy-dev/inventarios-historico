@@ -50,7 +50,8 @@ public class Almacen
             return "(Ninguna)";
         string nombre= (string)HttpRuntime.Cache["ubicacion" + ubicacion.ToString()];
         if(nombre==null) {
-            nombre = new CConector().QueryString("SELECT nombre FROM ubicacion WHERE id=" + Query.GetValor(ubicacion.ToString()));
+            using( CConector conector= new CConector()) 
+                nombre = conector.QueryString("SELECT nombre FROM ubicacion WHERE id=" + Query.GetValor(ubicacion.ToString()));
             HttpRuntime.Cache.Insert("ubicacion" + ubicacion.ToString(), nombre, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
         return nombre;
@@ -68,7 +69,8 @@ public class Almacen
         string nombre = (string)HttpRuntime.Cache["estado" + estado.ToString()];
         if (nombre == null)
         {
-            nombre = new CConector().QueryString("SELECT nombre FROM varios WHERE id=" + Query.GetValor(estado.ToString()));
+            using (CConector conector = new CConector()) 
+                nombre = conector.QueryString("SELECT nombre FROM varios WHERE id=" + Query.GetValor(estado.ToString()));
             HttpRuntime.Cache.Insert("estado" + estado.ToString(), nombre, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
         }
         return nombre;

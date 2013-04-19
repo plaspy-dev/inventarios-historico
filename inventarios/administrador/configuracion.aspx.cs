@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.IO;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -43,6 +44,11 @@ public partial class administrador_configuracion : System.Web.UI.Page
             CDocumentoSalida.Checked = configuracion.bDocumentoSalida;
             CCrearTerceroSalida.Checked = configuracion.bCrearTerceroSalida;
             CDatosTerceroSalida.Checked = configuracion.bDatosComplementariosTerceroSalida;
+
+            string[] formatos = { "Entrada", "Traslado", "Salida", "Estado", "Kardex", "Informes" };
+
+            RFormatos.DataSource = from p in formatos select new { Formato=p};
+            RFormatos.DataBind();
         }
     }
 
@@ -128,5 +134,45 @@ public partial class administrador_configuracion : System.Web.UI.Page
         GAlmacenes.SelectedIndex = -1;
         TTraslado.Text= TSalida.Text= TEntrada.Text = "";
         PAlmacen.Visible = false;
+    }
+    protected void BLogo_Click(object sender, EventArgs e)
+    {
+        if (!IsValid)
+            return;
+        if (!FLogo.HasFile)
+            return;
+        if(FLogo.FileName.ToLower().IndexOf(".jpg")==-1)
+            FLogo.SaveAs(Formato.GetRutaFormatos("logo.png"));
+        else FLogo.SaveAs(Formato.GetRutaFormatos("logo.jpg"));
+        LMensajeGlobal.Text = "Se ha actualizado el logo correctamente.<br/> En algunos navegadores es necesario refrescar la página (Ctrl+F5)";
+    }
+
+    protected void BELogo_Click(object sender, EventArgs e)
+    {
+        File.Delete(Formato.GetRutaFormatos("logo.png"));
+        File.Delete(Formato.GetRutaFormatos("logo.jpg"));
+        LMensajeGlobal.Text = "Se ha restaurado el logo correctamente.<br/> En algunos navegadores es necesario refrescar la página (Ctrl+F5)";
+    }
+
+    protected void BSubirFormato_Click(object sender, EventArgs e)
+    {
+        if (!IsValid)
+            return;
+        Control b = (Control)sender;
+        HyperLink link= (HyperLink)b.FindControl("HFormato");
+        FileUpload file = (FileUpload)b.FindControl("FFormato");
+        if (!file.HasFile)
+            return;
+        file.SaveAs(Formato.GetRutaFormatos(link.Text.ToLower() + ".html"));
+        LMensajeGlobal.Text = "Se ha actualizado el formato de " + link.Text + " correctamente.";
+    }
+
+    protected void BEliminarFormato_Click(object sender, EventArgs e)
+    {
+        Control b = (Control)sender;
+        HyperLink link = (HyperLink)b.FindControl("HFormato");
+
+        File.Delete(Formato.GetRutaFormatos(link.Text.ToLower() + ".html"));
+        LMensajeGlobal.Text = "Se ha restaurado el formato " + link.Text + "correctamente.";
     }
 }
