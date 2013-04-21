@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-21 · Explicar los requisitos al cambiar la contraseña.** Añade indicaciones visuales en el formulario de contraseña y ajusta la lógica de usuario y mantenimiento de almacenes. Esto ayuda a reconocer los requisitos mientras se escribe un valor de prueba.
+**2013-04-21 · Retirar el producto de la caché tras editarlo.** Incorpora la llamada que elimina la entrada en caché de un producto y actualiza la solicitud de búsqueda. El catálogo puede volver a consultar ese artículo después de guardarlo.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-21 · Explain password requirements during changes.** Add visual guidance to the password form and revise user and warehouse maintenance logic. Users can recognize the requirements as they enter a test value.
+**2013-04-21 · Evict edited products from the cache.** Call the operation that evicts a cached product and update the lookup request. The catalog can look up the item again after a save.
 
 ### How to explore the source
 
