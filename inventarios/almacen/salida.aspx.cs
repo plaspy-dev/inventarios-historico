@@ -14,6 +14,7 @@ public partial class almacen_salida : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         ((ing)Master)._ImprimirClicked += new EventHandler(OnImprimir);
         ((ing)Master).CheckAlmacen();
 
@@ -236,7 +237,10 @@ public partial class almacen_salida : System.Web.UI.Page
         for (int i = 0; i < productos.Count; i++)
         {
             producto = (Producto)productos[i];
-            producto.Valor = Decimal.Parse(TValor.Text, NumberStyles.Currency, CultureInfo.InvariantCulture);
+            try
+            {
+                producto.Valor = Decimal.Parse(TValor.Text, NumberStyles.Currency, CultureInfo.InvariantCulture);
+            } catch {}
             productoUsado.AddProducto(producto);
         }
 

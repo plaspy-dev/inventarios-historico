@@ -6,6 +6,7 @@ using System.Collections;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
 
+[Serializable]
 public class Alertas
 {
     public String id { get; set; }
@@ -41,8 +42,6 @@ public class Alertas
 
         GetFullAlertas(almacen).ForEach( t => t.szAlmacen=almacen );
         GetFullAlertas().ForEach(t => t.szAlmacen = "-1");
-        // HttpRuntime.Cache.Remove("alertas" + almacen);
-        // HttpRuntime.Cache.Remove("alerta_global");
     }
 
     public static List<Alertas> GetFullAlertas() {
@@ -52,7 +51,7 @@ public class Alertas
 
     public static List<Alertas> GetFullAlertas(string almacen)
     {
-        List<Alertas> alertas = (List<Alertas>)HttpRuntime.Cache[almacen == null ? "alerta_global" : ("alertas" + almacen)];
+        List<Alertas> alertas = (List<Alertas>)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + almacen == null ? "ag" : ("a" + almacen));
         if (alertas == null)
         {
             alertas = new List<Alertas>();
@@ -86,7 +85,7 @@ public class Alertas
                     ));
                 }
             }
-            HttpRuntime.Cache.Insert(almacen == null ? "alerta_global" : ("alertas" + almacen), alertas, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + almacen == null ? "ag" : ("a" + almacen), alertas);
         }
         return alertas;
     }

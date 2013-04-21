@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.IO.Compression;
 using System.Xml;
 using System.Text;
 using System.Xml.Serialization;
@@ -11,9 +12,6 @@ using System.Web;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
 
-/// <summary>
-/// Descripción breve de ProductoUsado
-/// </summary>
 [Serializable]
 public class ProductoUsado
 {
@@ -25,20 +23,55 @@ public class ProductoUsado
         pProductosEliminados = new List<Producto>();
     }
 
+    private static byte[] Compress(byte[] bytes)
+    {
+        using (MemoryStream ms = new MemoryStream())
+        {
+            using (DeflateStream gzs = new DeflateStream(ms, CompressionMode.Compress, false))
+            {
+                gzs.Write(bytes, 0, bytes.Length);
+            }
+            ms.Close();
+            return ms.ToArray();
+        }
+    }
+
+    private static byte[] Decompress(byte[] bytes)
+    {
+        using (MemoryStream ms = new MemoryStream(bytes, false))
+        {
+            using (DeflateStream gzs = new DeflateStream(ms, CompressionMode.Decompress, false))
+            {
+                using (MemoryStream dest = new MemoryStream())
+                {
+                    byte[] tmp = new byte[bytes.Length];
+                    int read;
+                    while ((read = gzs.Read(tmp, 0, tmp.Length)) != 0)
+                    {
+                        dest.Write(tmp, 0, read);
+                    }
+                    dest.Close();
+                    return dest.ToArray();
+                }
+            }
+        }
+    }
+
 	public ProductoUsado(string productosserializados)
 	{
-        if (string.IsNullOrEmpty(productosserializados))
+        if (!string.IsNullOrEmpty(productosserializados))
         {
-            pProductos = new List<Producto>();
-            pProductosEliminados = new List<Producto>();
+            try
+            {
+                productosserializados = UTF8Encoding.UTF8.GetString(Decompress(Convert.FromBase64String(productosserializados)));
+                StringReader builder = new StringReader(productosserializados);
+                XmlSerializer s = new XmlSerializer(typeof(List<Producto>));
+                pProductos = (List<Producto>)s.Deserialize(builder);
+                return;
+            } catch {}
         }
-        else
-        {
-            productosserializados = Crypt.DesencriptarDES(productosserializados, "InvenTar");
-            StringReader builder = new StringReader(productosserializados);
-            XmlSerializer s = new XmlSerializer(typeof(List<Producto>));
-            pProductos = (List<Producto>)s.Deserialize(builder);
-        }
+        pProductos = new List<Producto>();
+        pProductosEliminados = new List<Producto>();
 	}
 
     public string SerializeBinary() {
@@ -50,22 +83,22 @@ public class ProductoUsado
         builder.Flush();
         builder.Position = 0;
 
-        return Convert.ToBase64String(builder.ToArray());
+        return Convert.ToBase64String(Compress(builder.ToArray()));
     }
 
     public static ProductoUsado DesSerialize(string variable) {
 
-        if (string.IsNullOrEmpty(variable))
-            return new ProductoUsado();
+        if (!string.IsNullOrEmpty(variable)) {
+            MemoryStream builder = new MemoryStream(Decompress(Convert.FromBase64String(variable)));
+            BinaryFormatter deserializer = new BinaryFormatter();
 
-        MemoryStream builder = new MemoryStream(Convert.FromBase64String(variable));
-        BinaryFormatter deserializer = new BinaryFormatter();
-        
-        ProductoUsado info= (ProductoUsado) deserializer.Deserialize(builder);
+            ProductoUsado info = (ProductoUsado)deserializer.Deserialize(builder);
 
-        builder.Close();
+            builder.Close();
 
-        return info;
+            return info;
+        }
+        return new ProductoUsado();
     }
 
     public string Serialize()
@@ -79,7 +112,7 @@ public class ProductoUsado
             s.Serialize(writer, pProductos);
         }
         string myXml = builder.ToString();
-        return Crypt.EncriptarDES(myXml, "InvenTar");
+        return Convert.ToBase64String(Compress(UTF8Encoding.UTF8.GetBytes(myXml)));
     }
 
     public List<Producto> GetProductosUsados()

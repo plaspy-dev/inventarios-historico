@@ -5,9 +5,7 @@ using System.Web;
 using SDG.Componentes;
 using MySql.Data.MySqlClient;
 
-/// <summary>
-/// Descripción breve de Tercero
-/// </summary>
+[Serializable]
 public class Tercero
 {
     public String Id { set; get; }
@@ -33,7 +31,7 @@ public class Tercero
         Id = id;
         if (string.IsNullOrEmpty(id))
             return;
-        Tercero info = (Tercero)HttpRuntime.Cache["ter" + Id];
+        Tercero info = (Tercero)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "t" + Id);
         if (info == null)
         {
             using (CConector conector = new CConector())
@@ -56,7 +54,7 @@ public class Tercero
                     Documento = reader["identificacion"].ToString();
                 }
             }
-            HttpRuntime.Cache.Insert("ter" + Id, this, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "t" + Id, this);
         } else {
             Nombre = info.Nombre;
             Direccion = info.Direccion;
@@ -68,6 +66,6 @@ public class Tercero
 
     static public void RemoveTercero(string id)
     {
-        HttpRuntime.Cache.Remove("ter" + id);
+        Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "t" + id);
     }
 }

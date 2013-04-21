@@ -41,37 +41,37 @@ public class Almacen
     }
 
     static public void RemoveUbicacion(int ubicacion) {
-        HttpRuntime.Cache.Remove("ubicacion" + ubicacion.ToString());
+        Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "u" + ubicacion.ToString());
     }
     
     static public string GetNombreUbicacion(int ubicacion) {
 
         if (ubicacion==0)
             return "(Ninguna)";
-        string nombre= (string)HttpRuntime.Cache["ubicacion" + ubicacion.ToString()];
+        string nombre = (string)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "u" + ubicacion.ToString());
         if(nombre==null) {
             using( CConector conector= new CConector()) 
                 nombre = conector.QueryString("SELECT nombre FROM ubicacion WHERE id=" + Query.GetValor(ubicacion.ToString()));
-            HttpRuntime.Cache.Insert("ubicacion" + ubicacion.ToString(), nombre, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "u" + ubicacion.ToString(), nombre);
         }
         return nombre;
     }
 
     static public void RemoveEstado(string estado)
     {
-        HttpRuntime.Cache.Remove("estado" + estado);
+        Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + estado);
     }
 
     static public string GetNombreEstado(int estado)
     {
         if (estado == 0)
             return "(Ninguno)";
-        string nombre = (string)HttpRuntime.Cache["estado" + estado.ToString()];
+        string nombre = (string)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + estado.ToString());
         if (nombre == null)
         {
             using (CConector conector = new CConector()) 
                 nombre = conector.QueryString("SELECT nombre FROM varios WHERE id=" + Query.GetValor(estado.ToString()));
-            HttpRuntime.Cache.Insert("estado" + estado.ToString(), nombre, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + estado.ToString(), nombre);
         }
         return nombre;
     }

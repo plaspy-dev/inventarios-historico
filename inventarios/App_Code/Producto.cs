@@ -237,13 +237,13 @@ public class Producto
     }
 
     static public void RemoveProducto(string id) {
-        HttpRuntime.Cache.Remove("producto" + id);
+        Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "p" + id);
         CProductoValor.Delete(id);
     }
 
     static public Producto GetProducto(string id)
     {
-        Producto producto = (Producto)HttpRuntime.Cache["producto" + id];
+        Producto producto = (Producto)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "p" + id);
         if(producto==null) {
             producto = new Producto();
             Query query = new Query("producto");
@@ -305,22 +305,22 @@ public class Producto
                     producto.FormatoLote = reader["formatolote"].ToString();
                 }
             }
-            HttpRuntime.Cache.Insert("producto" + id, producto, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "p" + id, producto);
         }
         return producto;
     }
 
     public void DeleteCostoPromedio(string almacen) {
 
-        HttpRuntime.Cache.Remove("costopromedio" + almacen + "_" + id);
+        Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "cp" + almacen + "_" + id);
     }
 
     public Decimal GetCostoPromedio(string almacen)
     {
         Costo = 0;
-        if (HttpRuntime.Cache["costopromedio" + almacen + "_" + id] != null)
+        if (Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "cp" + almacen + "_" + id) != null)
         {
-            Costo = (Decimal)HttpRuntime.Cache["costopromedio" + almacen + "_" + id];
+            Costo = (Decimal)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "cp" + almacen + "_" + id);
             return Costo;
         }
 
@@ -333,7 +333,7 @@ public class Producto
             }
             catch { }
         }
-        HttpRuntime.Cache.Insert("costopromedio" + almacen + "_" + id, Costo, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "cp" + almacen + "_" + id, Costo);
         return Costo;
     }
 

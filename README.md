@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-19 · Revisar las consultas y los saldos de productos.** Reescribe consultas usadas por los servicios y los cálculos de saldo de producto, y retira una plantilla de salida del respaldo. El código de consultas permite seguir cómo el sistema obtiene la existencia de un artículo.
+**2013-04-21 · Explicar los requisitos al cambiar la contraseña.** Añade indicaciones visuales en el formulario de contraseña y ajusta la lógica de usuario y mantenimiento de almacenes. Esto ayuda a reconocer los requisitos mientras se escribe un valor de prueba.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-19 · Revise product lookups and stock balances.** Rework queries used by services and product balance calculations, and remove a withdrawal template from the snapshot. The query logic shows how the system obtains an item's stock level.
+**2013-04-21 · Explain password requirements during changes.** Add visual guidance to the password form and revise user and warehouse maintenance logic. Users can recognize the requirements as they enter a test value.
 
 ### How to explore the source
 
