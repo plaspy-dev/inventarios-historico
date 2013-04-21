@@ -40,7 +40,7 @@ public partial class modificaciones : System.Web.UI.UserControl
 
     public void SetModificacion(String modificacionId, String modificacionId2)
     {
-        CConector conector = CConector.GetConector();
+        CConector conector = new CConector();
         Query query = new Query("modificaciones");
 
         query["usuario"] = "usuarios.nombre";

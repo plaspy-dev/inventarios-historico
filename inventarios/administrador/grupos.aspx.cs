@@ -31,6 +31,7 @@ public partial class administrador_grupos : System.Web.UI.Page
 
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         BEliminar.Visible = false;
         if(!IsPostBack) {
 
@@ -73,7 +74,7 @@ public partial class administrador_grupos : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query= new Query("grupo");
-        CConector conector = CConector.GetConector();
+        CConector conector = new CConector();
         string szQuery;
         string mensaje;
         string grupo = "";
@@ -171,7 +172,7 @@ public partial class administrador_grupos : System.Web.UI.Page
     }
     protected void BEliminar_Click(object sender, EventArgs e)
     {
-        CConector conector = CConector.GetConector();
+        CConector conector = new CConector();
         if (conector.QueryMod("DELETE FROM permisos WHERE grupo='" + LGrupos.SelectedValue + "'") == -1)
             return;
         if (conector.QueryMod("DELETE FROM grupo WHERE id='" + LGrupos.SelectedValue + "'") == -1)
@@ -227,7 +228,7 @@ public partial class administrador_grupos : System.Web.UI.Page
             BEliminar.Enabled = usuario.CanDelete();
             BEliminar.Visible = true;
 
-            CConector conector= CConector.GetConector();
+            CConector conector= new CConector();
 
             TNombre.Text = LGrupos.SelectedItem.Text;
             TDescripcion.Text = conector.QueryString("SELECT descripcion FROM grupo WHERE id='" + LGrupos.SelectedValue + "'");

@@ -4,7 +4,10 @@
     
     void Application_Start(object sender, EventArgs e) 
     {
-        // Código que se ejecuta al iniciarse la aplicación
+        if(!string.IsNullOrEmpty(System.Configuration.ConfigurationManager.AppSettings["MemCachedServers"]))
+            BeIT.MemCached.MemcachedClient.Setup("cache", new string[] { System.Configuration.ConfigurationManager.AppSettings["MemCachedServers"] });
+        // plaspycache.dcbhrp.cfg.use1.cache.amazonaws.com:11211
+        // MemcachedClient.Setup("MyOtherCache", new string[]{ "server1.example.com:12345", "server2.example.com:12345"});
     }
     
     void Application_End(object sender, EventArgs e) 

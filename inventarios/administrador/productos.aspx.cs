@@ -28,6 +28,7 @@ public partial class administrador_productos : System.Web.UI.Page
 
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         TNombre.Focus();
         if (!IsPostBack)
         {
@@ -58,7 +59,7 @@ public partial class administrador_productos : System.Web.UI.Page
             if(!string.IsNullOrEmpty(Request.QueryString["pid"])) {
 
                 Query query = new Query("producto");
-                CConector conector = CConector.GetConector();
+                CConector conector = new CConector();
 
                 query+="nombre";
                 query+="descripcion";

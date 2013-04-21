@@ -4,8 +4,10 @@ using System;
 using System.IO;
 using System.Configuration;
 using System.Web;
+using System.Web.SessionState;
 
-public class logo : IHttpHandler {
+public class logo : IHttpHandler, IRequiresSessionState
+{
     
     public void ProcessRequest (HttpContext context) {
 

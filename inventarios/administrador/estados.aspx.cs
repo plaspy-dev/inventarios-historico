@@ -10,6 +10,7 @@ public partial class administrador_estados : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         if (!IsPostBack)
         {
             TNombre.Focus();
@@ -26,7 +27,7 @@ public partial class administrador_estados : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query = new Query("varios");
-        CConector conector = CConector.GetConector();
+        CConector conector = new CConector();
         string szQuery;
         string mensaje;
 

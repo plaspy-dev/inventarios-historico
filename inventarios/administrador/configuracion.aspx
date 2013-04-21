@@ -227,9 +227,9 @@
                             ,salida.AUTO_INCREMENT AS salida
                             ,traslado.AUTO_INCREMENT AS traslado
                             FROM almacen
-                            LEFT JOIN INFORMATION_SCHEMA.TABLES AS entrada ON (entrada.TABLE_SCHEMA='demo_inventory' AND entrada.TABLE_NAME LIKE 'entrada%' AND entrada.TABLE_NAME NOT LIKE 'entrada_items%' AND almacen.id=CAST(REPLACE(entrada.TABLE_NAME,'entrada','') AS UNSIGNED))
-                            LEFT JOIN INFORMATION_SCHEMA.TABLES AS salida ON (salida.TABLE_SCHEMA='demo_inventory' AND salida.TABLE_NAME LIKE 'salida%' AND salida.TABLE_NAME NOT LIKE 'salida_items%' AND almacen.id=CAST(REPLACE(salida.TABLE_NAME,'salida','') AS UNSIGNED))
-                            LEFT JOIN INFORMATION_SCHEMA.TABLES AS traslado ON (traslado.TABLE_SCHEMA='demo_inventory' AND traslado.TABLE_NAME LIKE 'traslado%' AND traslado.TABLE_NAME NOT LIKE 'traslado_items%' AND almacen.id=CAST(REPLACE(traslado.TABLE_NAME,'traslado','') AS UNSIGNED))
+                            LEFT JOIN INFORMATION_SCHEMA.TABLES AS entrada ON (entrada.TABLE_SCHEMA='{0}' AND entrada.TABLE_NAME LIKE 'entrada%' AND entrada.TABLE_NAME NOT LIKE 'entrada_items%' AND almacen.id=CAST(REPLACE(entrada.TABLE_NAME,'entrada','') AS UNSIGNED))
+                            LEFT JOIN INFORMATION_SCHEMA.TABLES AS salida ON (salida.TABLE_SCHEMA='{0}' AND salida.TABLE_NAME LIKE 'salida%' AND salida.TABLE_NAME NOT LIKE 'salida_items%' AND almacen.id=CAST(REPLACE(salida.TABLE_NAME,'salida','') AS UNSIGNED))
+                            LEFT JOIN INFORMATION_SCHEMA.TABLES AS traslado ON (traslado.TABLE_SCHEMA='{0}' AND traslado.TABLE_NAME LIKE 'traslado%' AND traslado.TABLE_NAME NOT LIKE 'traslado_items%' AND almacen.id=CAST(REPLACE(traslado.TABLE_NAME,'traslado','') AS UNSIGNED))
                             WHERE estado IS NULL
                             ;">
                 </asp:SqlDataSource>

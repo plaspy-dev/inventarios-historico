@@ -31,6 +31,7 @@ public partial class almacen_estado : System.Web.UI.Page
 
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         ((ing)Master).CheckAlmacen();
         if (!IsPostBack)
         {

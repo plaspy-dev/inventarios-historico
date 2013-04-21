@@ -35,7 +35,7 @@ public class servicios : System.Web.Services.WebService {
         //InitializeComponent(); 
     }
 
-    [WebMethod]
+    [WebMethod(EnableSession = true)]
     public List<Tercero> GetTercero(String q, int tipo)
     {
         List<Tercero> lista = new List<Tercero>();
@@ -75,7 +75,7 @@ public class servicios : System.Web.Services.WebService {
         return lista;
     }
 
-    [WebMethod]
+    [WebMethod(EnableSession = true)]
     public List<CJSon> GetUbicacion(String q, string a)
     {
         List<CJSon> lista = new List<CJSon>();
@@ -140,7 +140,7 @@ public class servicios : System.Web.Services.WebService {
         return lista;
     }
 
-    [WebMethod]
+    [WebMethod(EnableSession = true)]
     public List<Producto> GetProductoSalida(String almacen, bool auto, String q, String productos, string t)
     {
         List<Producto> lista = new List<Producto>();
@@ -199,7 +199,7 @@ public class servicios : System.Web.Services.WebService {
         return lista;
     }
 
-    [WebMethod]
+    [WebMethod(EnableSession = true)]
     public List<Producto> GetProductoDisponible(String almacen, bool auto, String q, String productos)
     {
         List<Producto> lista = new List<Producto>();

@@ -40,7 +40,7 @@
     </pagina>
   </seccion>
   <seccion>
-    <titulo>Almacén</titulo>
+    <titulo>Inventario</titulo>
     <pagina>
       <titulo>Entrada</titulo>
       <url>~/almacen/entrada.aspx</url>

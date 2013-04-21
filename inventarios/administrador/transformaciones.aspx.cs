@@ -10,6 +10,7 @@ public partial class administrador_transformaciones : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         TProducto.Focus();
         if (!IsPostBack)
         {
@@ -26,7 +27,7 @@ public partial class administrador_transformaciones : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query = new Query("transformacion");
-        CConector conector = CConector.GetConector();
+        CConector conector = new CConector();
         string szQuery;
         string mensaje;
 

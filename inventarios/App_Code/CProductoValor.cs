@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using SDG.Componentes;
 
-/// <summary>
-/// Descripción breve de CProductoValor
-/// </summary>
+[Serializable]
 public class CProductoValor
 {
     protected String id;
@@ -28,7 +27,7 @@ public class CProductoValor
 
     public static CProductoValor GetProducto(string id) {
 
-        CProductoValor info = (CProductoValor)HttpRuntime.Cache["pvc" + id];
+        CProductoValor info = (CProductoValor)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "pvc" + id);
         if ( info!= null)
             return info;
 
@@ -38,11 +37,11 @@ public class CProductoValor
     }
 
     public static void Delete(string id) {
-        HttpRuntime.Cache.Remove("pvc" + id);
+        Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "pvc" + id);
     }
 
     public void Save() {
-        HttpRuntime.Cache.Insert("pvc" + id, this, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "pvc" + id, this);
     }
 
     public Decimal GetValorTemp() {

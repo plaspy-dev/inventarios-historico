@@ -14,6 +14,7 @@ public partial class almacen_entrada : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         ((ing)Master)._ImprimirClicked += new EventHandler(OnImprimir);
 
         ((ing)Master).CheckAlmacen();

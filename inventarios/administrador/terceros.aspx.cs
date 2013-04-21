@@ -13,6 +13,7 @@ public partial class administrador_terceros : System.Web.UI.Page
     {
         if (!IsPostBack)
         {
+            CConector.ReplaceConnectionString(Master.Controls);
             TIdentificacion.Focus();
             CUsuario usuario = (CUsuario)Usuario.GetUsuario();
 
@@ -62,7 +63,7 @@ public partial class administrador_terceros : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query = new Query("tercero");
-        CConector conector = CConector.GetConector();
+        CConector conector = new CConector();
         string szQuery;
         string mensaje;
 

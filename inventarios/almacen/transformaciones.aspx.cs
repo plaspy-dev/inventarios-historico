@@ -13,6 +13,7 @@ public partial class almacen_transformaciones : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         ((ing)Master).CheckAlmacen();
 
         if (!IsPostBack)

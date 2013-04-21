@@ -37,6 +37,8 @@ public partial class ing : System.Web.UI.MasterPage
             LAlerta.Text = "";
         }
 
+        ILogo.ImageUrl = Formato.GetLogo();
+
         if (!IsPostBack)
         {
             InitAlmacen();
@@ -56,9 +58,13 @@ public partial class ing : System.Web.UI.MasterPage
                         _ImprimirClicked(this, null);
                     }
 
-                    StreamReader reader = new StreamReader(Formato.GetRutaFormatos(ViewState["printfile"].ToString()));
-                    string Contenido = reader.ReadToEnd();
-                    reader.Close();
+                    string Contenido = "";
+                    using(StreamReader reader = Formato.GetStreamFormato(ViewState["printfile"].ToString())) {
+                        Contenido = reader.ReadToEnd();
+                        reader.Close();
+                    }
+
+                    Contenido= Contenido.Replace("../img/logo.ashx", ResolveUrl(Formato.GetLogo()));
 
                     Contenido = Utilidades.ReplaceContenido(Page.Controls, Contenido);
                     // agregamos el script para imprimir
@@ -79,10 +85,13 @@ public partial class ing : System.Web.UI.MasterPage
                     {
                         _ImprimirClicked(this, null);
                     }
-                    StreamReader reader = new StreamReader(Formato.GetRutaFormatos(ViewState["printfile"].ToString()));
-                    string Contenido = reader.ReadToEnd();
-                    reader.Close();
+                    string Contenido = "";
+                    using(StreamReader reader = Formato.GetStreamFormato(ViewState["printfile"].ToString())) {
+                        Contenido = reader.ReadToEnd();
+                        reader.Close();
+                    }
 
+                    Contenido = Contenido.Replace("../img/logo.ashx", ResolveUrl(Formato.GetLogo()));
                     Contenido = Utilidades.ReplaceContenido(Page.Controls, Contenido);
 
                     Response.Clear();

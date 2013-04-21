@@ -5,11 +5,16 @@ using System.Web;
 using System.IO;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using SDG.Componentes;
 
 public partial class administrador_configuracion : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
+        SAlmaceness.SelectCommand = string.Format(SAlmaceness.SelectCommand, ((CUsuario)Usuario.GetUsuario()).GetDatabase());
+        HLogo.NavigateUrl = Formato.GetLogo();
+
         if(!IsPostBack) {
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
             DCostos.SelectedValue = configuracion.nCosto.ToString();
@@ -141,16 +146,18 @@ public partial class administrador_configuracion : System.Web.UI.Page
             return;
         if (!FLogo.HasFile)
             return;
-        if(FLogo.FileName.ToLower().IndexOf(".jpg")==-1)
-            FLogo.SaveAs(Formato.GetRutaFormatos("logo.png"));
-        else FLogo.SaveAs(Formato.GetRutaFormatos("logo.jpg"));
+
+        Formato.RemoveLogo();
+
+        if(FLogo.FileName.ToLower().IndexOf(".png")==-1)
+            Formato.Guardar(FLogo, "logo.jpg", true);
+        else Formato.Guardar(FLogo, "logo.png", true);
         LMensajeGlobal.Text = "Se ha actualizado el logo correctamente.<br/> En algunos navegadores es necesario refrescar la página (Ctrl+F5)";
     }
 
     protected void BELogo_Click(object sender, EventArgs e)
     {
-        File.Delete(Formato.GetRutaFormatos("logo.png"));
-        File.Delete(Formato.GetRutaFormatos("logo.jpg"));
+        Formato.RemoveLogo();
         LMensajeGlobal.Text = "Se ha restaurado el logo correctamente.<br/> En algunos navegadores es necesario refrescar la página (Ctrl+F5)";
     }
 
@@ -163,7 +170,7 @@ public partial class administrador_configuracion : System.Web.UI.Page
         FileUpload file = (FileUpload)b.FindControl("FFormato");
         if (!file.HasFile)
             return;
-        file.SaveAs(Formato.GetRutaFormatos(link.Text.ToLower() + ".html"));
+        Formato.Guardar(file, link.Text.ToLower() + ".html", false);
         LMensajeGlobal.Text = "Se ha actualizado el formato de " + link.Text + " correctamente.";
     }
 
@@ -172,7 +179,7 @@ public partial class administrador_configuracion : System.Web.UI.Page
         Control b = (Control)sender;
         HyperLink link = (HyperLink)b.FindControl("HFormato");
 
-        File.Delete(Formato.GetRutaFormatos(link.Text.ToLower() + ".html"));
+        Formato.Remove(link.Text.ToLower() + ".html");
         LMensajeGlobal.Text = "Se ha restaurado el formato " + link.Text + "correctamente.";
     }
 }

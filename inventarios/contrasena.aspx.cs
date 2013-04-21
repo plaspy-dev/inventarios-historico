@@ -12,6 +12,7 @@ public partial class contrasena : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         if(!IsPostBack) {
         }
     }
@@ -19,10 +20,9 @@ public partial class contrasena : System.Web.UI.Page
     {
         if (!IsValid)
             return;
-        CConector conector = new CConector();
+        Conector conector = new Conector(ConfigurationManager.ConnectionStrings["ConexionUsuario"].ConnectionString);
         Usuario usuario = Usuario.GetUsuario();
         Query query = new Query("usuarios");
-
 
         String id=conector.QueryString("SELECT id FROM usuarios WHERE id='" + usuario.GetID() + "' AND contrasena=PASSWORD("+ Query.GetValor(m_EActual.Text) + ")");
         if(id.Length==0) {

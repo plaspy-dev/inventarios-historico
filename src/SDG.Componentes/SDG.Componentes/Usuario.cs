@@ -208,6 +208,11 @@ public class Usuario
 		return null;
 	}
 
+	protected virtual Usuario IsValidUsuario()
+	{
+		return this;
+	}
+
 	public static Usuario Validate(string usuario, string password)
 	{
 		if (!string.IsNullOrEmpty(ConfigurationSettings.AppSettings["Usuario"]))
@@ -246,10 +251,7 @@ public class Usuario
 		HttpContext.Current.Response.CacheControl = "Private";
 		HttpContext.Current.Response.Expires = 0;
 		Usuario usuario = (Usuario)HttpContext.Current.Session["Usuario"];
-		if (usuario == null)
-		{
-			usuario = Validate();
-		}
+		usuario = ((usuario != null) ? usuario.IsValidUsuario() : Validate());
 		if (usuario == null)
 		{
 			string text = HttpUtility.UrlEncode(HttpContext.Current.Request.Url.AbsolutePath + HttpContext.Current.Request.Url.Query);

@@ -12,6 +12,7 @@ using MySql.Data.MySqlClient;
 /// <summary>
 /// Descripción breve de CConfiguracion
 /// </summary>
+[Serializable]
 public class CConfiguracion
 {
     public int nCosto=2;
@@ -54,8 +55,9 @@ public class CConfiguracion
 	}
 
     static public CConfiguracion GetConfiguracion() {
-        CConfiguracion configuracion = (CConfiguracion)HttpRuntime.Cache["configuracion"];
-        if(configuracion==null) {            
+
+        CConfiguracion configuracion = (CConfiguracion)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "c");
+        if(configuracion==null) {
             
             CConector conector = new CConector();
             String texto = conector.QueryString("SELECT configuracion FROM configuracion");
@@ -70,8 +72,7 @@ public class CConfiguracion
                 XmlSerializer s = new XmlSerializer(typeof(CConfiguracion));
                 configuracion = (CConfiguracion)s.Deserialize(builder);
             }
-
-            HttpRuntime.Cache.Insert("configuracion", configuracion, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "c", configuracion);
         }
         return configuracion;
     }
@@ -94,7 +95,7 @@ public class CConfiguracion
         if (conector.QueryMod(query.GetInsert()) == -1)
             return false;
 
-        HttpRuntime.Cache.Insert("configuracion", this, null, DateTime.Now.AddHours(1), System.Web.Caching.Cache.NoSlidingExpiration);
+        Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "c", this);
         return true;
     }
 }
