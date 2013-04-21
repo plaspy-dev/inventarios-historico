@@ -46,7 +46,7 @@
                 source: function(request, response) {
                     $.ajax({
                         url: "../webservices/servicios.asmx/GetProducto",
-                        data: "{ 'q': '" + request.term + "', 'p': null }",
+                        data: "{ 'q': '" + request.term + "', 'p': '' }",
                         dataType: "json",
                         type: "POST",
                         contentType: "application/json; charset=utf-8",

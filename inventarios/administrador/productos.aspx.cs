@@ -679,6 +679,7 @@ public partial class administrador_productos : System.Web.UI.Page
                 actualizados++;
                 if(conector.QueryMod(query.GetUpdate("id="+ Query.GetValor(currentID)))==-1)
                     return;
+                Producto.RemoveProducto(currentID);
             }
         }
         reader.Close();
