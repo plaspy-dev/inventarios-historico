@@ -125,9 +125,9 @@ internal class SessionState
 					return false;
 				}
 			}
-			catch (MySqlException innerException2)
+			catch (MySqlException innerException)
 			{
-				throw new InvalidOperationException(querys.query + ": Error en la consulta", innerException2);
+				throw new InvalidOperationException(querys.query + ": Error en la consulta", innerException);
 			}
 		}
 		return true;
@@ -139,6 +139,7 @@ internal class SessionState
 		{
 			return false;
 		}
+		bool result = false;
 		DataRow dataRow = dataTable.Rows[pos];
 		if (dataRow["sqlexists"].ToString().Length == 0)
 		{
@@ -150,16 +151,19 @@ internal class SessionState
 					aCambios.RemoveAt(i);
 					i--;
 				}
+				else if (querys.pos > pos)
+				{
+					querys.pos--;
+				}
 			}
-			return true;
+			result = true;
 		}
-		return false;
+		return result;
 	}
 
 	public void DeleteRow(int pos)
 	{
 		DataRow dataRow = dataTable.Rows[pos];
-		CleanQuerys(pos);
 		dataRow.Delete();
 	}
 

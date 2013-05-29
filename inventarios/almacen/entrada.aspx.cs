@@ -173,15 +173,14 @@ public partial class almacen_entrada : System.Web.UI.Page
                     GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
 
                     TProducto.Focus();
-                    GProductos.Columns[0].Visible = string.IsNullOrEmpty((string)ViewState["TrasladoId"]);
                     BAgregar.Enabled = string.IsNullOrEmpty((string)ViewState["TrasladoId"]);
-                    GProductos.Columns[1].Visible = usuario.CanDelete();
+                    GProductos.Columns[0].Visible = usuario.CanDelete();
                     BAceptar.Enabled = usuario.CanUpdate();
                     BAnular.Visible = usuario.CanAdmin();
                     if (PAnulado.Visible)
                     {
                         LAnulado.Text = "Anulada";
-                        GProductos.Columns[0].Visible = GProductos.Columns[1].Visible=
+                        GProductos.Columns[0].Visible=
                         BAnular.Enabled = BAceptar.Enabled = false;
                     }
                     return;
@@ -520,6 +519,8 @@ public partial class almacen_entrada : System.Web.UI.Page
             TLote.Text = producto.lote;
             TVencimiento.Text = producto.vence;
             TProducto.Text = producto.NombreCompleto;
+            TUbicacionID.Text = producto.ubicacion.ToString();
+            TUbicacion.Text = producto.NombreUbicacion;
             try { DEstado.SelectedValue = producto.estado.ToString(); } catch {}
             TSerial.Text = producto.serial;
             TCosto.Text = producto.Costo.ToString(CultureInfo.InvariantCulture);

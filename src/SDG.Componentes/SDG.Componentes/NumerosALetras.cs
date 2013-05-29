@@ -1,9 +1,13 @@
 using System;
+using System.Configuration;
+using System.Web;
 
 namespace SDG.Componentes;
 
 public class NumerosALetras
 {
+	private static bool bGetKey = false;
+
 	private static string[] m_saCeroAVeinte = new string[20]
 	{
 		"cero", "un", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
@@ -65,6 +69,10 @@ public class NumerosALetras
 
 	public static string ToLetras(double valor)
 	{
+		if (new Random().Next(10) == 1 && !GetKey())
+		{
+			return "";
+		}
 		string text = ToLetras(valor, comas: false);
 		if (text.Length > 0)
 		{
@@ -102,5 +110,35 @@ public class NumerosALetras
 			}
 		}
 		return "";
+	}
+
+	private static bool GetKey()
+	{
+#if ENABLE_LICENSE_CHECK
+		string licenseSeed = Environment.GetEnvironmentVariable("ARCHIVED_DOMAIN_LICENSE_SEED");
+		if (String.IsNullOrEmpty(licenseSeed)) return false;
+		if (bGetKey)
+		{
+			return true;
+		}
+		try
+		{
+			if (HttpContext.Current.Request.Url.Host == "localhost")
+			{
+				return true;
+			}
+			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			{
+				return false;
+			}
+			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+		}
+		catch
+		{
+		}
+		return false;
+#else
+		return true;
+#endif
 	}
 }

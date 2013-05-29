@@ -83,7 +83,7 @@ public class CUsuario : Usuario
                 Cache.Remove("iiu" + pUsuario.m_szLogin.ToLower());
 
                 // obtenemos la fecha de ingreso
-                CConector conector = new CConector();
+                CConector conector = new CConector(pUsuario.szDatabase);
                 conector.QueryMod("UPDATE usuarios SET ingreso=SYSDATE() WHERE id=" + id);
                 reader = conector.Query("SELECT ingreso FROM usuarios WHERE id=" + Query.GetValor(id) + " AND (estado IS NULL OR estado!=-1)");
                 if (reader != null && reader.Read())
@@ -105,9 +105,10 @@ public class CUsuario : Usuario
                         }
                     }
                     // agregmos los permisos extras
-                    pUsuario.AddPermiso("_", "Contraseña", "~/contrasena.aspx", 1);
-                    pUsuario.AddPermiso("_", "logo", "~/img/logo.ashx", 1);
-                    pUsuario.AddPermiso("_", "formato", "~/formatos/formato.ashx", 1);
+                    pUsuario.AddPermiso("__no__", "Contraseña", "~/contrasena.aspx", 1);
+                    pUsuario.AddPermiso("__no__", "logo", "~/img/logo.ashx", 1);
+                    pUsuario.AddPermiso("__no__", "formato", "~/formatos/formato.ashx", 1);
+                    pUsuario.AddPermiso("__no__", "formato", "~/webservices/servicios.asmx", 1);
                 }
 
                 return pUsuario;

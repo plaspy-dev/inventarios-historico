@@ -74,7 +74,7 @@
                         response($.map(data.d, function(item) {
                             item.label= item.ProductoCompleto;
                             if(!$("#<%= CAutomatico.ClientID %>").is(':checked'))
-                                item.id= item.id +";" + item.lote +";" + item.vence + ";" + item.estado + ";" + item.serial;
+                                item.id= item.id +";" + item.lote +";" + item.vence + ";" + item.estado + ";" + item.serial + ";" + item.ubicacion;
                             return item;
                         }))
                     },
@@ -263,7 +263,7 @@
         <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><asp:Label runat="server" ID="LVencimientoA" Text="Automático"></asp:Label></td>
     </tr>
     <tr>
-        <td class="tdl"></td>
+        <td class="tdl"><asp:Label runat="server" ID="LUbicacion" Text="Ubicación: "></asp:Label><asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LUbicacionA" Text="Automática"></asp:Label></td>
         <td align="right"><asp:Label runat="server" ID="LSerial" Text="Serial:"></asp:Label></td>
         <td><asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LSerialA" Text="Automático"></asp:Label></td>
         <td align="right"><asp:Label runat="server" ID="LEstado" Text="Estado:"></asp:Label></td>

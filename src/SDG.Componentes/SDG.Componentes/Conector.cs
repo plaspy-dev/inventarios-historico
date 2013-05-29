@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -10,13 +11,15 @@ namespace SDG.Componentes;
 
 public class Conector : IDisposable
 {
+	private static bool bGetKey = false;
+
 	protected string m_szLastError;
 
 	protected string m_szQuery;
 
 	protected string m_szConexion;
 
-	protected bool m_bTransaccion;
+	protected bool m_bTransaccion = false;
 
 	protected MySqlConnection m_pSQLConector;
 
@@ -41,7 +44,12 @@ public class Conector : IDisposable
 		CloseAll();
 	}
 
-	private void CloseAll()
+	public void Dispose()
+	{
+		CloseAll();
+	}
+
+	public void CloseAll()
 	{
 		if (m_bTransaccion)
 		{
@@ -107,8 +115,6 @@ public class Conector : IDisposable
 
 	public void ShowError(string error)
 	{
-		string logs = DateTime.Now.ToString() + " Error[Conector] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
-		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -128,7 +134,7 @@ public class Conector : IDisposable
 
 	protected bool IsConect()
 	{
-		if (m_pSQLConector == null)
+		if (m_pSQLConector == null && GetKey())
 		{
 			string szConexion = m_szConexion;
 			try
@@ -409,6 +415,7 @@ public class Conector : IDisposable
 
 	public static string GetMySQLDateFormat(DateTime fecha, bool horas)
 	{
+		bool flag = 0 == 0;
 		string text = fecha.Year + "-" + fecha.Month.ToString().PadLeft(2, '0') + "-" + fecha.Day.ToString().PadLeft(2, '0');
 		if (horas)
 		{
@@ -492,12 +499,47 @@ public class Conector : IDisposable
 	public bool RoolBack()
 	{
 		m_bTransaccion = false;
-		return QueryMod("ROLLBACK;") != -1;
+		bool result = QueryMod("ROLLBACK;") != -1;
+		CloseAll();
+		return result;
 	}
 
 	public bool Commit()
 	{
 		m_bTransaccion = false;
-		return QueryMod("COMMIT;") != -1;
+		bool result = QueryMod("COMMIT;") != -1;
+		CloseAll();
+		return result;
+	}
+
+	private static bool GetKey()
+	{
+#if ENABLE_LICENSE_CHECK
+		string licenseSeed = Environment.GetEnvironmentVariable("ARCHIVED_DOMAIN_LICENSE_SEED");
+		if (String.IsNullOrEmpty(licenseSeed)) return false;
+		if (bGetKey)
+		{
+			return true;
+		}
+		try
+		{
+			if (HttpContext.Current.Request.Url.Host == "localhost")
+			{
+				return true;
+			}
+			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			{
+				return false;
+			}
+			bGetKey = Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+			return bGetKey;
+		}
+		catch
+		{
+		}
+		return false;
+#else
+		return true;
+#endif
 	}
 }

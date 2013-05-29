@@ -35,6 +35,29 @@ public partial class almacen_estado : System.Web.UI.Page
         ((ing)Master).CheckAlmacen();
         if (!IsPostBack)
         {
+            if (!string.IsNullOrEmpty(Request.QueryString["vid"]))
+            {
+                Producto info = Producto.GetProducto(Request.QueryString["vid"]);
+                TProductoID.Text = info.id;
+                TProducto.Text = info.NombreCompleto;
+                CDetallado.Checked = true;
+
+                TVence.Text = DateTime.Now.ToShortDateString();
+            } else if (!string.IsNullOrEmpty(Request.QueryString["pvid"])) {
+                Producto info= Producto.GetProducto(Request.QueryString["pvid"]);
+                TProductoID.Text = info.id;
+                TProducto.Text = info.NombreCompleto;
+
+                CConector conector = new CConector();
+                string dias= conector.QueryString("SELECT dias_alerta FROM producto WHERE id=" + Query.GetValor(info.id));
+                try
+                {
+                    TVence.Text = DateTime.Now.AddDays(Convert.ToInt32(dias)).ToShortDateString();
+                } catch { }
+                conector.Dispose();
+                CDetallado.Checked = true;
+            }
+
             ((ing)Master).InitAlmacen();
             DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
             for (int i = 0; i < almacenes.Items.Count; i++)
@@ -267,6 +290,7 @@ public partial class almacen_estado : System.Web.UI.Page
     protected void GResultados_SelectedIndexChanged(object sender, EventArgs e)
     {
         ViewState["producto"] = ((HyperLink)GResultados.SelectedRow.Cells[Utilidades.GetGridColumnIndex(GResultados, "Producto")].Controls[0]).Text;
+
         DProductoUbicaciones.Items.Clear();
         ArrayList productos;
 
@@ -289,7 +313,17 @@ public partial class almacen_estado : System.Web.UI.Page
                 nombre+= " [" + producto.szEstado + "]";
                 nombre+= " " + producto.NombreUbicacion;
                 string value = producto.id + ";" + producto.vence + ";" + producto.lote + ";" + producto.ubicacion + ";" + producto.cantidad.ToString(CultureInfo.InvariantCulture) + ";" + producto.serial + ";" + producto.estado;
-                DProductoUbicaciones.Items.Add(new ListItem(nombre, value));
+
+                ListItem item = new ListItem(nombre, value);
+                
+                if(producto.lote==GResultados.SelectedDataKey.Values["lote"].ToString()
+                    && producto.vence == CConector.GetDateFormat(GResultados.SelectedDataKey.Values["vence"].ToString())
+                    && producto.NombreUbicacion == GResultados.SelectedDataKey.Values["ubicacion"].ToString()
+                    && producto.szEstado==GResultados.SelectedDataKey.Values["estado"].ToString()
+                    ) {
+                    item.Selected = true;
+                }
+                DProductoUbicaciones.Items.Add(item);
             }
 
             PUbicacion.Visible = true;
@@ -327,7 +361,18 @@ public partial class almacen_estado : System.Web.UI.Page
                     nombre += " " + producto.NombreUbicacion;
 
                     string value = producto.id + ";" + producto.vence + ";" + producto.lote + ";" + producto.estado + ";" + producto.cantidad.ToString(CultureInfo.InvariantCulture) + ";" + producto.serial + ";" + producto.ubicacion;
-                    DProductoEstado.Items.Add(new ListItem(nombre, value));
+
+                    ListItem item = new ListItem(nombre, value);
+
+                    if (producto.lote == GResultados.SelectedDataKey.Values["lote"].ToString()
+                        && producto.vence == CConector.GetDateFormat(GResultados.SelectedDataKey.Values["vence"].ToString())
+                        && producto.NombreUbicacion == GResultados.SelectedDataKey.Values["ubicacion"].ToString()
+                        && producto.szEstado == GResultados.SelectedDataKey.Values["estado"].ToString()
+                        )
+                    {
+                        item.Selected = true;
+                    }
+                    DProductoEstado.Items.Add(item);
                 }
 
                 PEstado.Visible = true;

@@ -69,7 +69,7 @@
                 source: function(request, response) {
                     $.ajax({
                         url: "../webservices/servicios.asmx/GetProducto",
-                        data: "{ 'q': '" + request.term + "', 'p': null }",
+                        data: "{ 'q': '" + request.term + "', 'p': '' }",
                         dataType: "json",
                         type: "POST",
                         contentType: "application/json; charset=utf-8",
@@ -256,7 +256,6 @@
             <asp:HyperLinkField HeaderText="Código" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="codigo" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
             <asp:HyperLinkField HeaderText="Producto" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="nombre" SortExpression="nombre" />
             <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="empresa" SortExpression="empresa" />
-            <asp:HyperLinkField HeaderText="Descripción" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="descripcion" SortExpression="descripcion" />
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
             <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" />
@@ -282,7 +281,7 @@
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa
-                        ,producto.unidad,producto.codigo,producto.descripcion
+                        ,producto.unidad,producto.codigo
                         ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,'' AS lote,'' AS vence,'' AS szSerial,estado{0}.costo AS costo
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
@@ -321,7 +320,7 @@
                 SelectCommand="SELECT estado{0}.producto,estado{0}.lote
                         ,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence
                         ,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa,estado{0}.szSerial,estado{0}.costo AS costo
-                        ,producto.unidad,producto.codigo,producto.descripcion                        
+                        ,producto.unidad,producto.codigo
                         ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
                         ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado

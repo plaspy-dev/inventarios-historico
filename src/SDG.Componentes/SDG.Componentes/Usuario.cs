@@ -9,6 +9,8 @@ namespace SDG.Componentes;
 
 public class Usuario
 {
+	private static bool bGetKey = false;
+
 	protected string m_szNombre;
 
 	protected int m_nGrupo;
@@ -49,13 +51,16 @@ public class Usuario
 
 	public Usuario(string id, string nombre, int grupo, string login)
 	{
-		m_szNombre = nombre;
-		m_nGrupo = grupo;
-		m_szID = id;
-		m_szLogin = login;
-		m_pGrupo = new Grupo();
-		m_szUrl = "";
-		HttpContext.Current.Session["Usuario"] = this;
+		if (GetKey())
+		{
+			m_szNombre = nombre;
+			m_nGrupo = grupo;
+			m_szID = id;
+			m_szLogin = login;
+			m_pGrupo = new Grupo();
+			m_szUrl = "";
+			HttpContext.Current.Session["Usuario"] = this;
+		}
 	}
 
 	public string GetLogin()
@@ -184,6 +189,10 @@ public class Usuario
 		{
 			return true;
 		}
+		if (HttpContext.Current.Request.Url.AbsolutePath.IndexOf(".asmx") != -1)
+		{
+			return true;
+		}
 		if (HttpContext.Current.Request.Url.AbsolutePath == HttpContext.Current.Request.ApplicationPath + "/inicio.aspx")
 		{
 			return true;
@@ -245,6 +254,11 @@ public class Usuario
 		return null;
 	}
 
+	public static Usuario GetInstance()
+	{
+		return GetUsuario();
+	}
+
 	public static Usuario GetUsuario()
 	{
 		HttpContext.Current.Response.AddHeader("pragma", "no-cache");
@@ -282,5 +296,35 @@ public class Usuario
 			m_saValores.Add("");
 		}
 		return num;
+	}
+
+	private static bool GetKey()
+	{
+#if ENABLE_LICENSE_CHECK
+		string licenseSeed = Environment.GetEnvironmentVariable("ARCHIVED_DOMAIN_LICENSE_SEED");
+		if (String.IsNullOrEmpty(licenseSeed)) return false;
+		if (bGetKey)
+		{
+			return true;
+		}
+		try
+		{
+			if (HttpContext.Current.Request.Url.Host == "localhost")
+			{
+				return true;
+			}
+			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			{
+				return false;
+			}
+			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+		}
+		catch
+		{
+		}
+		return false;
+#else
+		return true;
+#endif
 	}
 }

@@ -173,11 +173,18 @@ public partial class administrador_grupos : System.Web.UI.Page
     protected void BEliminar_Click(object sender, EventArgs e)
     {
         CConector conector = new CConector();
+        conector.StartTransaction();
+        if (conector.QueryMod("DELETE FROM alertas_grupo WHERE grupo=" + LGrupos.SelectedValue) == -1)
+            return;
         if (conector.QueryMod("DELETE FROM permisos WHERE grupo='" + LGrupos.SelectedValue + "'") == -1)
             return;
         if (conector.QueryMod("DELETE FROM grupo WHERE id='" + LGrupos.SelectedValue + "'") == -1)
+        {
+            ((ing)Master).SetAlerta("Todavia existen usuarios en este grupo.");
             return;
+        }
         conector.InsertModificacion(LGrupos.SelectedValue);
+        conector.Commit();
         ((ing)Master).SetResultado("Grupo " + TNombre.Text + " Eliminado.");
     }
 

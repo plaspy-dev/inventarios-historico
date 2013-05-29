@@ -266,12 +266,12 @@ public class ProductoUsado
         pProductos.RemoveAll(p => p.id == producto && p.cantidad == cantidad && p.lote == lote && p.vence == vencimiento && p.ubicacion == ubicacion && p.serial==serial && p.estado==estado);
     }
 
-    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, string lote, string vencimiento, int estado, string serial/*, bool salida=false*/)
+    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, string lote, string vencimiento, int estado, string serial, int ubicacion/*, bool salida=false*/)
     {
-        return GetProductos(producto, cantidad, almacen, lote, vencimiento, estado, serial, false);
+        return GetProductos(producto, cantidad, almacen, lote, vencimiento, estado, serial, ubicacion, false);
     }
 
-    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, string lote, string vencimiento, int estado, string serial, bool salida)
+    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, string lote, string vencimiento, int estado, string serial, int ubicacion, bool salida)
     {
         ArrayList productos = new ArrayList();
         CConector conector = new CConector();
@@ -292,6 +292,7 @@ public class ProductoUsado
         string consulta = string.Format("SELECT SUM(estado{0}.cantidad) FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
             + " AND estado{0}.lote=" + szLote + " AND estado{0}.vence=" + szVencimiento
             + " AND estado{0}.estado=" + estado.ToString() + " AND estado{0}.szSerial=" + szSerial
+            + " AND estado{0}.ubicacion=" + ubicacion.ToString()
             , almacen);
         if (salida)
             consulta += " AND varios.parametro1 IS NULL";
@@ -303,9 +304,10 @@ public class ProductoUsado
         if (dCantidad < cantidad)
             return null;
 
-        consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.ubicacion,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
+        consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
             + " AND estado{0}.lote=" + szLote + " AND estado{0}.vence=" + szVencimiento
             + " AND estado{0}.estado=" + estado.ToString() + " AND estado{0}.szSerial=" + szSerial
+            + " AND estado{0}.ubicacion=" + ubicacion.ToString()
             , almacen);
         if (salida)
             consulta += " AND varios.parametro1 IS NULL";
@@ -316,8 +318,6 @@ public class ProductoUsado
             while (reader.Read())
             {
                 dCantidad = Convert.ToDecimal(reader["cantidad"]);
-
-                int ubicacion = Convert.ToInt32(reader["ubicacion"]);
                 int nEstado= Convert.ToInt32(reader["estado"]);
                 object vence = null;
                 try { vence = reader["vence"]; }

@@ -22,6 +22,10 @@ public class Crypt
 
 	public static string DesencriptarDES(string palabra, string key)
 	{
+		if (string.IsNullOrEmpty(palabra) || string.IsNullOrEmpty(key))
+		{
+			return "";
+		}
 		byte[] array = Convert.FromBase64String(palabra);
 		byte[] bytes = Encoding.UTF8.GetBytes(key);
 		DESCryptoServiceProvider dESCryptoServiceProvider = new DESCryptoServiceProvider();
@@ -41,6 +45,10 @@ public class Crypt
 
 	public static string EncriptarDES(string palabra, string key)
 	{
+		if (string.IsNullOrEmpty(palabra) || string.IsNullOrEmpty(key))
+		{
+			return "";
+		}
 		byte[] bytes = Encoding.UTF8.GetBytes(key);
 		byte[] bytes2 = Encoding.UTF8.GetBytes(palabra);
 		DESCryptoServiceProvider dESCryptoServiceProvider = new DESCryptoServiceProvider();
@@ -53,6 +61,10 @@ public class Crypt
 
 	public static string Encriptar3DES(string palabra, string key)
 	{
+		if (string.IsNullOrEmpty(palabra) || string.IsNullOrEmpty(key))
+		{
+			return "";
+		}
 		byte[] bytes = Encoding.ASCII.GetBytes(key);
 		byte[] bytes2 = Encoding.ASCII.GetBytes(palabra);
 		TripleDESCryptoServiceProvider tripleDESCryptoServiceProvider = new TripleDESCryptoServiceProvider();
@@ -66,6 +78,10 @@ public class Crypt
 
 	public static string Desencriptar3DES(string palabra, string key)
 	{
+		if (string.IsNullOrEmpty(palabra) || string.IsNullOrEmpty(key))
+		{
+			return "";
+		}
 		byte[] array = Convert.FromBase64String(palabra);
 		byte[] bytes = Encoding.UTF8.GetBytes(key);
 		TripleDESCryptoServiceProvider tripleDESCryptoServiceProvider = new TripleDESCryptoServiceProvider();

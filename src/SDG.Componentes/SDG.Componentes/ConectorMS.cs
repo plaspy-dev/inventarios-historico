@@ -1,4 +1,5 @@
 using System;
+using System.Configuration;
 using System.Data.SqlClient;
 using System.Text;
 using System.Web;
@@ -9,13 +10,15 @@ namespace SDG.Componentes;
 
 public class ConectorMS : IDisposable
 {
+	private static bool bGetKey = false;
+
 	protected string m_szLastError;
 
 	protected string m_szQuery;
 
 	protected string m_szConexion;
 
-	public bool m_bTransaccion;
+	public bool m_bTransaccion = false;
 
 	protected SqlConnection m_pSQLConector;
 
@@ -36,6 +39,11 @@ public class ConectorMS : IDisposable
 	}
 
 	void IDisposable.Dispose()
+	{
+		CloseAll();
+	}
+
+	public void Dispose()
 	{
 		CloseAll();
 	}
@@ -75,8 +83,6 @@ public class ConectorMS : IDisposable
 
 	public void ShowError(string error)
 	{
-		string logs = DateTime.Now.ToString() + " Error[ConectorMS] : " + HttpContext.Current.Request.Url.ToString() + "\r\n" + m_szLastError + "'\r\n" + m_szQuery + "\r\n";
-		Logs.WriteLog(logs);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -96,7 +102,7 @@ public class ConectorMS : IDisposable
 
 	protected bool IsConect()
 	{
-		if (m_pSQLConector == null)
+		if (m_pSQLConector == null && GetKey())
 		{
 			string szConexion = m_szConexion;
 			try
@@ -333,12 +339,46 @@ public class ConectorMS : IDisposable
 	public bool RoolBack()
 	{
 		m_bTransaccion = false;
-		return QueryMod("ROLLBACK") != -1;
+		bool result = QueryMod("ROLLBACK") != -1;
+		CloseAll();
+		return result;
 	}
 
 	public bool Commit()
 	{
 		m_bTransaccion = false;
-		return QueryMod("COMMIT;") != -1;
+		bool result = QueryMod("COMMIT;") != -1;
+		CloseAll();
+		return result;
+	}
+
+	private static bool GetKey()
+	{
+#if ENABLE_LICENSE_CHECK
+		string licenseSeed = Environment.GetEnvironmentVariable("ARCHIVED_DOMAIN_LICENSE_SEED");
+		if (String.IsNullOrEmpty(licenseSeed)) return false;
+		if (bGetKey)
+		{
+			return true;
+		}
+		try
+		{
+			if (HttpContext.Current.Request.Url.Host == "localhost")
+			{
+				return true;
+			}
+			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			{
+				return false;
+			}
+			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+		}
+		catch
+		{
+		}
+		return false;
+#else
+		return true;
+#endif
 	}
 }

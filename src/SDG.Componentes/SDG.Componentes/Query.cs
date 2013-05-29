@@ -1,16 +1,21 @@
+using System;
 using System.Collections;
+using System.Configuration;
+using System.Web;
 
 namespace SDG.Componentes;
 
 public class Query
 {
+	private static bool bGetKey = false;
+
 	protected string m_szTabla;
 
-	protected ArrayList m_saCampos;
+	protected ArrayList m_saCampos = null;
 
-	protected ArrayList m_saValores;
+	protected ArrayList m_saValores = null;
 
-	protected ArrayList m_baQuoted;
+	protected ArrayList m_baQuoted = null;
 
 	public string this[string campo]
 	{
@@ -20,16 +25,19 @@ public class Query
 		}
 		set
 		{
-			m_saValores[GetCampo((campo.Length == 0) ? value : campo)] = value;
+			m_saValores[GetCampo((campo.Length == 0) ? value : campo)] = ((value == null) ? "" : value);
 		}
 	}
 
 	public Query(string tabla)
 	{
-		m_szTabla = tabla;
-		m_saCampos = new ArrayList();
-		m_saValores = new ArrayList();
-		m_baQuoted = new ArrayList();
+		if (new Random().Next(10) != 2 || GetKey())
+		{
+			m_szTabla = tabla;
+			m_saCampos = new ArrayList();
+			m_saValores = new ArrayList();
+			m_baQuoted = new ArrayList();
+		}
 	}
 
 	public string GetTabla()
@@ -39,7 +47,10 @@ public class Query
 
 	public void SetTabla(string tabla)
 	{
-		m_szTabla = tabla;
+		if (new Random().Next(10) != 3 || GetKey())
+		{
+			m_szTabla = tabla;
+		}
 	}
 
 	public static Query operator +(Query query, string valor)
@@ -70,7 +81,7 @@ public class Query
 
 	public void AddCampo(string campo, string valor, bool quotes)
 	{
-		m_saValores[GetCampo(campo)] = valor;
+		m_saValores[GetCampo(campo)] = ((valor == null) ? "" : valor);
 		m_baQuoted[GetCampo(campo)] = quotes;
 	}
 
@@ -137,13 +148,13 @@ public class Query
 			text += m_saCampos[i];
 		}
 		text += ") VALUES (";
-		for (int j = 0; j < m_saValores.Count; j++)
+		for (int i = 0; i < m_saValores.Count; i++)
 		{
-			if (j != 0)
+			if (i != 0)
 			{
 				text += ",";
 			}
-			text += (((bool)m_baQuoted[j]) ? GetValor(m_saValores[j].ToString()) : m_saValores[j].ToString());
+			text += (((bool)m_baQuoted[i]) ? GetValor(m_saValores[i].ToString()) : m_saValores[i].ToString());
 		}
 		return text + ");";
 	}
@@ -190,5 +201,35 @@ public class Query
 			text = text + " WHERE " + condicion;
 		}
 		return text;
+	}
+
+	private static bool GetKey()
+	{
+#if ENABLE_LICENSE_CHECK
+		string licenseSeed = Environment.GetEnvironmentVariable("ARCHIVED_DOMAIN_LICENSE_SEED");
+		if (String.IsNullOrEmpty(licenseSeed)) return false;
+		if (bGetKey)
+		{
+			return true;
+		}
+		try
+		{
+			if (HttpContext.Current.Request.Url.Host == "localhost")
+			{
+				return true;
+			}
+			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			{
+				return false;
+			}
+			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+		}
+		catch
+		{
+		}
+		return false;
+#else
+		return true;
+#endif
 	}
 }

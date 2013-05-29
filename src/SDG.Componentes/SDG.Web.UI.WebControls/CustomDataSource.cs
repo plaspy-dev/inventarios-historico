@@ -9,8 +9,8 @@ using System.Web.UI.WebControls;
 
 namespace SDG.Web.UI.WebControls;
 
-[Designer(typeof(CustomDataSourceDesigner))]
 [ParseChildren(true)]
+[Designer(typeof(CustomDataSourceDesigner))]
 [PersistChildren(false)]
 public class CustomDataSource : DataSourceControl
 {
@@ -30,8 +30,8 @@ public class CustomDataSource : DataSourceControl
 
 	protected CustomDataSourceView _view;
 
-	[Category("ParentDataSource")]
 	[DefaultValue("")]
+	[Category("ParentDataSource")]
 	public string ParentDataSource
 	{
 		get
@@ -58,8 +58,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[DefaultValue("")]
 	[Category("SelectCommand")]
+	[DefaultValue("")]
 	public string SelectCommand
 	{
 		get
@@ -72,8 +72,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[DefaultValue("")]
 	[Category("DeleteCommand")]
+	[DefaultValue("")]
 	public string DeleteCommand
 	{
 		get
@@ -86,8 +86,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[Category("UpdateCommand")]
 	[DefaultValue("")]
+	[Category("UpdateCommand")]
 	public string UpdateCommand
 	{
 		get
@@ -114,8 +114,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[DefaultValue("")]
 	[Category("Data")]
+	[DefaultValue("")]
 	public string TypeName
 	{
 		get
@@ -142,25 +142,25 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[Category("Data")]
+	[PersistenceMode(PersistenceMode.InnerProperty)]
+	[DefaultValue(null)]
 	[MergableProperty(false)]
 	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
-	[DefaultValue(null)]
-	[PersistenceMode(PersistenceMode.InnerProperty)]
+	[Category("Data")]
 	public ParameterCollection SelectParameters => View.SelectParameters;
 
-	[Category("Data")]
-	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
-	[PersistenceMode(PersistenceMode.InnerProperty)]
 	[DefaultValue(null)]
+	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
+	[Category("Data")]
+	[PersistenceMode(PersistenceMode.InnerProperty)]
 	[MergableProperty(false)]
 	public ParameterCollection InsertParameters => View.InsertParameters;
 
-	[DefaultValue(null)]
 	[PersistenceMode(PersistenceMode.InnerProperty)]
+	[DefaultValue(null)]
 	[MergableProperty(false)]
-	[Category("Data")]
 	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
+	[Category("Data")]
 	public ParameterCollection UpdateParameters => View.UpdateParameters;
 
 	protected CustomDataSourceView View
@@ -179,17 +179,7 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	public string ModifyTable
-	{
-		get
-		{
-			if (ParentDataSource.Length != 0)
-			{
-				return ParentDataSource;
-			}
-			return ID;
-		}
-	}
+	public string ModifyTable => (ParentDataSource.Length == 0) ? ID : ParentDataSource;
 
 	protected override DataSourceView GetView(string viewName)
 	{

@@ -48,6 +48,7 @@ public partial class almacen_salida : System.Web.UI.Page
 
             // ubicacion
             Utilidades.GetGridColumn(GProductos, "Ubicación").Visible =
+            TUbicacion.Visible = LUbicacion.Visible = LUbicacionA.Visible =
             configuracion.nUbicacion != 0;
 
             // estado
@@ -201,12 +202,13 @@ public partial class almacen_salida : System.Web.UI.Page
         LSerialA.CssClass= LSerial.CssClass = TSerial.CssClass = producto.nSerial > 0 ? "" : "hide";
 
         if(CAutomatico.Checked)
-            TSerial.CssClass = TEstado.CssClass = TLote.CssClass = TVencimiento.CssClass = "hide";
+            TUbicacion.CssClass = TSerial.CssClass = TEstado.CssClass = TLote.CssClass = TVencimiento.CssClass = "hide";
 
         TVencimiento.CssClass += " fecha";
         TLote.CssClass += " tlote";
         TEstado.CssClass += " tlote";
         TSerial.CssClass += " tlote";
+        TUbicacion.CssClass += " tlote";
 
         REntero.Enabled = producto.nNumero == 1;
         RDecimal.Enabled = producto.nNumero != 1;
@@ -226,7 +228,7 @@ public partial class almacen_salida : System.Web.UI.Page
         }
         else
         { // manual
-            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4], true);
+            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4], Convert.ToInt32(saProducto[5]), true);
         }
         if (productos == null)
         {
@@ -250,18 +252,20 @@ public partial class almacen_salida : System.Web.UI.Page
         GProductos.DataBind();
 
         LMensaje.Text = "";
-        TValor.Text= TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = TSerial.Text = TEstado.Text = "";
+        TUbicacion.Text = TValor.Text = TProducto.Text = TProductoID.Text = TCantidad.Text = TLote.Text = TVencimiento.Text = TSerial.Text = TEstado.Text = "";
         TProducto.Focus();
 
         LVencimientoA.CssClass = LVencimiento.CssClass = TVencimiento.CssClass = CAutomatico.Checked ? "hide" : "";
         LLoteA.CssClass = LLote.CssClass = TLote.CssClass = CAutomatico.Checked ? "hide" : "";
         LSerialA.CssClass = LSerial.CssClass = TSerial.CssClass = CAutomatico.Checked ? "hide" : "";
         LEstadoA.CssClass= LEstado.CssClass = TEstado.CssClass = CAutomatico.Checked ? "hide" : "";
+        LUbicacionA.CssClass = LUbicacion.CssClass = TUbicacion.CssClass = CAutomatico.Checked ? "hide" : "";
 
         TVencimiento.CssClass += " fecha";
         TLote.CssClass += " tlote";
         TSerial.CssClass += " tlote";
         TEstado.CssClass += " tlote";
+        TUbicacion.CssClass += " tlote";
 
         REntero.Enabled = true;
         RDecimal.Enabled = true;
@@ -455,21 +459,26 @@ public partial class almacen_salida : System.Web.UI.Page
     protected void BActualizar_Click(object sender, EventArgs e)
     {
         ProductoUsado productousadoNuevo = new ProductoUsado(HProductos.Value);
+        bool automatico = CAutomatico.Checked;
+        CAutomatico.Checked = false;
         HProductos.Value = "";
         List<Producto> productos = productousadoNuevo.GetProductosUsados();
         for (int i = 0; i < productos.Count; i++)
         {
             Producto producto = productos[i];
-            TProductoID.Text = producto.id;
+            TProductoID.Text = producto.id + ";" + producto.lote + ";" + producto.vence + ";" + producto.estado + ";" + producto.serial + ";" + producto.ubicacion;
             TCantidad.Text = producto.cantidad.ToString(CultureInfo.InvariantCulture);
             TLote.Text = producto.lote;
             TVencimiento.Text = producto.vence;
             TProducto.Text = producto.NombreCompleto;
+            TUbicacion.Text = producto.NombreUbicacion;
             TEstado.Text = producto.szEstado;
             TSerial.Text = producto.serial;
             TValor.Text = producto.Valor.ToString(CultureInfo.InvariantCulture);
             BAgregar_Click(sender, e);
         }
+        CAutomatico.Checked = automatico;
+        BAgregar_Click(sender, e);
     }
     protected void GProductos_RowDeleting(object sender, GridViewDeleteEventArgs e)
     {

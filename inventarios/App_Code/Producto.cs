@@ -232,6 +232,8 @@ public class Producto
                 completo += " - " + serial;
             if(estado!=0) 
                 completo += " [" + szEstado +"]";
+            if (ubicacion != 0)
+                completo += " {" + NombreUbicacion +"}";
             return completo.Trim();
         }
     }
@@ -263,7 +265,7 @@ public class Producto
                 query += "diasvencimiento";
                 query += "formatolote";
 
-                MySqlDataReader reader = conector.Query(query.GetSelect("id=" + id));
+                MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(id)));
                 if (reader != null && reader.Read())
                 {
                     producto.id = id;

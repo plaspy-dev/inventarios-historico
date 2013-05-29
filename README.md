@@ -9,7 +9,7 @@ Archived Web Forms site for recording stock receipts, issues and transfers acros
 > [!WARNING]
 > **Status: Archived.** The website compiles today with the documented Windows toolchain.
 
-This 2013-04-21 source snapshot tracks stock and movements separately for each warehouse.
+This 2013-05-29 source snapshot tracks stock and movements separately for each warehouse.
 
 ### Overview
 
@@ -36,6 +36,8 @@ python demo/compilar.py --output "$env:TEMP/inventarios-compilado"
 
 To run the site, host it in IIS Express and configure an isolated MySQL database through `MySql.Data.MySqlClient`. The build template omits deployment connections.
 
+The application runs without activation. The original own license check is kept under `ENABLE_LICENSE_CHECK`.
+
 The optional forms storage uses LitS3. Leave `s3Key` and `s3Password` empty to use local files via `ruta_formatos`. This checkout was tested with the MySQL fixture. The historical S3 adapter requires a storage account. The mock storage service was tested separately in the 2026 demo edition.
 
 See [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) for the notices and SHA-256 values of recovered dependencies.
@@ -50,7 +52,7 @@ MySQL Connector/NET 6.3.5.0 is included. The archived optional adapters use BeIT
 
 ### Project structure
 
-The recovery includes the archived menu definition `inventarios/directorio.xml` dated 2013-04-21, and 22 interface graphics from the same source.
+The recovery includes the archived menu definition `inventarios/directorio.xml` dated 2013-05-29, and 22 interface graphics from the same source.
 
 `inventarios/` has the pages and stock workflows. `src/SDG.Componentes/` builds the C# reconstruction of the period assembly. `demo/` contains the build script and Web Forms configuration template.
 
@@ -66,7 +68,7 @@ The later 2026 reconstruction trial runs the exact revision with ASP.NET Compile
 
 ### History
 
-This source snapshot comes from a dated RAR archive. The original date is 2013-04-21. The 2026 reconstruction supplies the build, bilingual guide and local database fixture.
+This source snapshot comes from a dated RAR archive. The original date is 2013-05-29. The 2026 reconstruction supplies the build, bilingual guide and local database fixture.
 
 ### Keys for IIS
 
@@ -93,7 +95,7 @@ Archivado — Sitio Web Forms para registrar entradas, salidas y traslados de ex
 > [!WARNING]
 > **Estado: archivado.** El sitio compila hoy con las herramientas de Windows indicadas.
 
-Este respaldo de fuentes del 2013-04-21 controla existencias y movimientos por almacén.
+Este respaldo de fuentes del 2013-05-29 controla existencias y movimientos por almacén.
 
 ### Descripción general
 
@@ -120,6 +122,8 @@ python demo/compilar.py --output "$env:TEMP/inventarios-compilado"
 
 Para ejecutar el sitio, hospédalo en IIS Express y configura una base MySQL aislada con el proveedor `MySql.Data.MySqlClient`. La plantilla de compilación deja fuera las conexiones de despliegue.
 
+El código propio se ejecuta sin activación. La comprobación original queda bajo `ENABLE_LICENSE_CHECK`.
+
 El almacenamiento opcional de formatos usa LitS3. Deja vacíos `s3Key` y `s3Password` para usar archivos locales mediante `ruta_formatos`. En este corte se probó la base MySQL ficticia. El adaptador histórico de S3 requiere una cuenta. El almacenamiento ficticio se probó por separado en la edición de demostración de 2026.
 
 Los avisos y SHA-256 de las dependencias recuperadas están en [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
@@ -134,7 +138,7 @@ El árbol incluye MySQL Connector/NET 6.3.5.0. Los adaptadores opcionales usan B
 
 ### Estructura
 
-La recuperación incluye la definición del menú archivado `inventarios/directorio.xml` del 2013-04-21 y 22 gráficos de interfaz del mismo respaldo.
+La recuperación incluye la definición del menú archivado `inventarios/directorio.xml` del 2013-05-29 y 22 gráficos de interfaz del mismo respaldo.
 
 `inventarios/` contiene las páginas y los movimientos. `src/SDG.Componentes/` compila la reconstrucción C# del ensamblado de época. `demo/` contiene el lanzador de compilación y la plantilla Web Forms.
 
@@ -150,7 +154,7 @@ En la prueba posterior de reconstrucción de 2026 se usa esta revisión exacta c
 
 ### Historial
 
-Este corte proviene de un respaldo RAR con fecha original del 2013-04-21. La reconstrucción de 2026 aporta compilación, guía bilingüe y base de datos local ficticia.
+Este corte proviene de un respaldo RAR con fecha original del 2013-05-29. La reconstrucción de 2026 aporta compilación, guía bilingüe y base de datos local ficticia.
 
 ### Claves de IIS
 
