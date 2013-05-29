@@ -17,6 +17,12 @@ public class CConector : Conector
         m_szConexion= string.Format(m_szConexion, ((CUsuario)Usuario.GetUsuario()).GetDatabase());
     }
 
+    public CConector(string szDb)
+        : base(ConfigurationManager.ConnectionStrings["MySQLConnectionString"].ConnectionString)
+    {
+        m_szConexion = string.Format(m_szConexion, szDb);
+    }
+
     static public void ReplaceConnectionString(ControlCollection controles)
     {
         ReplaceConnectionString(controles, (CUsuario)Usuario.GetUsuario());

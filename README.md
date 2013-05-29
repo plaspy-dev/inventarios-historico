@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-04-21 · Retirar el producto de la caché tras editarlo.** Incorpora la llamada que elimina la entrada en caché de un producto y actualiza la solicitud de búsqueda. El catálogo puede volver a consultar ese artículo después de guardarlo.
+**2013-05-29 · Abrir el detalle de existencias de un producto.** Carga el producto indicado en la consulta y activa la vista detallada. También ajusta las consultas de ubicación para vincular el resultado con el almacén que se está revisando.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-04-21 · Evict edited products from the cache.** Call the operation that evicts a cached product and update the lookup request. The catalog can look up the item again after a save.
+**2013-05-29 · Open stock details for a selected product.** Load the product identified in the request and enable detailed view. Update location lookups so the result stays tied to the warehouse under review.
 
 ### How to explore the source
 

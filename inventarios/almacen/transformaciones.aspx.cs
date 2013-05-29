@@ -36,6 +36,10 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             LEstadoA.Visible = TEstado.Visible = LEstado.Visible = configuracion.bEstado;
             LEstadoA2.Visible = DEstado2.Visible = LEstado2.Visible = configuracion.bEstado;
             
+            // ubicacion
+            TUbicacion.Visible = LUbicacion.Visible = LUbicacionA.Visible =
+            configuracion.nUbicacion != 0;
+
             CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
 
             CAutomatico.Enabled = usuario.CanAdmin() || configuracion.nSeleccionProducto != 0;
@@ -141,11 +145,12 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         LSerialA.CssClass = LSerial.CssClass = TSerial.CssClass = pProducto.nSerial > 0 ? "" : "hide";
 
         if (CAutomatico.Checked)
-            TSerial.CssClass = TEstado.CssClass = TLote.CssClass = TVencimiento.CssClass = "hide";
+            TUbicacion.CssClass = TSerial.CssClass = TEstado.CssClass = TLote.CssClass = TVencimiento.CssClass = "hide";
 
         TVencimiento.CssClass += " fecha";
         TEstado.CssClass += " tlote";
         TSerial.CssClass += " tlote";
+        TUbicacion.CssClass += " tlote";
 
         REntero.Enabled = pProducto.nNumero == 1;
         RDecimal.Enabled = pProducto.nNumero != 1;
@@ -226,7 +231,7 @@ public partial class almacen_transformaciones : System.Web.UI.Page
         }
         else
         { // manual
-            productos = productousado.GetProductos(producto[0], cantidad, ((ing)Master).GetAlmacen(), producto[1], producto[2], Convert.ToInt32(producto[3]), producto[4]);
+            productos = productousado.GetProductos(producto[0], cantidad, ((ing)Master).GetAlmacen(), producto[1], producto[2], Convert.ToInt32(producto[3]), producto[4], Convert.ToInt32(producto[5]));
         }
         if (productos == null)
         {

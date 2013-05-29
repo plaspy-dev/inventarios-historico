@@ -126,25 +126,12 @@ public partial class administrador_almacenes : System.Web.UI.Page
                 CConector conector2= new CConector();
 
                 HId.Value= reader["id"].ToString();
-
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE estado_global,(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado0 GROUP BY producto,estado) AS t SET estado_global.modificacion=SYSDATE(),estado_global.cantidad=estado_global.cantidad+t.cantidad WHERE estado_global.producto=t.producto AND estado_global.estado=t.estado;", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) SELECT producto,estado,SUM(cantidad),SYSDATE() FROM estado0 GROUP BY producto,estado;", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 ADD valor DECIMAL(60,15) DEFAULT 0;", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida0 ADD entrega DATE;", HId.Value));
-                conector2.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE salida0 SET entrega=fecha;", HId.Value));
-                // conector2.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE entrada_items0 CHANGE costo costo DECIMAL(60,15);", HId.Value));
             }
         }
 
         HId.Value = "0";
         
         CConector conector3 = new CConector();
-
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE estado_global,(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado0 GROUP BY producto,estado) AS t SET estado_global.modificacion=SYSDATE(),estado_global.cantidad=estado_global.cantidad+t.cantidad WHERE estado_global.producto=t.producto AND estado_global.estado=t.estado;", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) SELECT producto,estado,SUM(cantidad),SYSDATE() FROM estado0 GROUP BY producto,estado;", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida_items0 ADD valor DECIMAL(60,15) DEFAULT 0;", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("ALTER TABLE salida0 ADD entrega DATE;", HId.Value));
-        conector3.QueryMod(Almacen.ReplaceAlmacenTables("UPDATE salida0 SET entrega=fecha;", HId.Value));
 
         ((ing)Master).SetResultado("Almacenes actualizados");
     }

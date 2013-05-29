@@ -44,13 +44,13 @@
         });
         $("#<%= CAutomatico.ClientID %>").change(function() {
             if($(this).is(':checked')) {    
-                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").hide();
-                $("#<%= LLoteA.ClientID %>,#<%= LVencimientoA.ClientID %>,#<%= LSerialA.ClientID %>,#<%= LEstadoA.ClientID %>").show();
+                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>,#<%= TUbicacion.ClientID %>").hide();
+                $("#<%= LLoteA.ClientID %>,#<%= LVencimientoA.ClientID %>,#<%= LSerialA.ClientID %>,#<%= LEstadoA.ClientID %>,#<%= LUbicacionA.ClientID %>").show();
             } else { 
-                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").show();
-                $("#<%= LLoteA.ClientID %>,#<%= LVencimientoA.ClientID %>,#<%= LSerialA.ClientID %>,#<%= LEstadoA.ClientID %>").hide();
+                $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>,#<%= TUbicacion.ClientID %>").show();
+                $("#<%= LLoteA.ClientID %>,#<%= LVencimientoA.ClientID %>,#<%= LSerialA.ClientID %>,#<%= LEstadoA.ClientID %>,#<%= LUbicacionA.ClientID %>").hide();
             }
-            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>,#<%= LSerial.ClientID %>,#<%= LEstado.ClientID %>").show();
+            $("#<%= LLote.ClientID %>,#<%= LVencimiento.ClientID %>,#<%= LSerial.ClientID %>,#<%= LEstado.ClientID %>,#<%= LUbicacion.ClientID %>").show();
             $("#<%= TProductoID.ClientID %>").val("");
             $("#tdescripcion").text("");
             $("#<%= TProducto.ClientID %>").val("").focus();
@@ -58,7 +58,7 @@
         if(iniciando)
             $("#<%= CAutomatico.ClientID %>").change();
         iniciando=false;
-        $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>").attr("readonly", true);
+        $("#<%= TLote.ClientID %>,#<%= TVencimiento.ClientID %>,#<%= TSerial.ClientID %>,#<%= TEstado.ClientID %>,#<%= TUbicacion.ClientID %>").attr("readonly", true);
         $("#<%= TProducto.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -72,7 +72,7 @@
                         response($.map(data.d, function(item) {
                             item.label= item.ProductoCompleto;
                             if(!$("#<%= CAutomatico.ClientID %>").is(':checked'))
-                                item.id= item.id +";" + item.lote +";" + item.vence + ";" + item.estado + ";" + item.serial;
+                                item.id= item.id +";" + item.lote +";" + item.vence + ";" + item.estado + ";" + item.serial + ";" + item.ubicacion;
                             return item;
                         }))
                     },
@@ -96,6 +96,7 @@
                 if(!$("#<%= CAutomatico.ClientID %>").is(':checked')) {
                     $("#<%= TLote.ClientID %>").val(ui.item.lote);
                     $("#<%= TVencimiento.ClientID %>").val(ui.item.vence);
+                    $("#<%= TUbicacion.ClientID %>").val(ui.item.NombreUbicacion);
                     $("#<%= TSerial.ClientID %>").val(ui.item.serial);
                     $("#<%= TEstado.ClientID %>").val(ui.item.szEstado);
                     ui.item.nVence>0 ? $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").show() : $("#<%= TVencimiento.ClientID %>,#<%= LVencimiento.ClientID %>").hide();
@@ -105,6 +106,7 @@
                 } else {
                     $("#<%= TLote.ClientID %>").val("");
                     $("#<%= TVencimiento.ClientID %>").val("");
+                    $("#<%= TUbicacion.ClientID %>").val("");
                     $("#<%= TSerial.ClientID %>").val("");
                     $("#<%= TEstado.ClientID %>").val("");
                     ui.item.nLote>0 ? $("#<%= LLoteA.ClientID %>,#<%= LLote.ClientID %>").show() : $("#<%= LLoteA.ClientID %>,#<%= LLote.ClientID %>").hide();
@@ -192,7 +194,7 @@
             </td>
         </tr>
         <tr>
-            <td class="tdl"></td>
+            <td class="tdl"><asp:Label runat="server" ID="LUbicacion" Text="Ubicación: "></asp:Label><asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LUbicacionA" Text="Automática"></asp:Label></td>
             <td align="right"><asp:Label runat="server" ID="LSerial" Text="Serial:"></asp:Label></td>
             <td><asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LSerialA" Text="Automático"></asp:Label></td>
             <td align="right"><asp:Label runat="server" ID="LEstado" Text="Estado:"></asp:Label></td>

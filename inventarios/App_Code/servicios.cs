@@ -61,7 +61,7 @@ public class servicios : System.Web.Services.WebService {
                     query += String.Format(" AND (identificacion LIKE '%{0}%' OR nombre LIKE '%{0}%' OR descripcion LIKE '%{0}%') ", split[i]);
                 }
             }
-            query += " ORDER BY nombre LIMIT 50;";
+            query += " ORDER BY nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
@@ -81,7 +81,6 @@ public class servicios : System.Web.Services.WebService {
         List<CJSon> lista = new List<CJSon>();
         using (CConector conector = new CConector())
         {
-
             string query = string.Format("SELECT id, nombre FROM ubicacion WHERE almacen={0} AND estado IS NULL", a);
             string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
@@ -92,7 +91,7 @@ public class servicios : System.Web.Services.WebService {
                     query += String.Format(" AND nombre LIKE '%{0}%'", split[i]);
                 }
             }
-            query += " ORDER BY nombre LIMIT 50;";
+            query += " ORDER BY nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
@@ -124,7 +123,7 @@ public class servicios : System.Web.Services.WebService {
                     query += String.Format(" AND (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR nombre LIKE '%{0}%' OR empresa LIKE '%{0}%') ", split[i]);
                 }
             }
-            query += " ORDER BY nombre LIMIT 50;";
+            query += " ORDER BY nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
@@ -150,7 +149,7 @@ public class servicios : System.Web.Services.WebService {
             string query;
             if (auto)
                 query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 AND varios.parametro1 IS NULL ", almacen);
-            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 AND varios.parametro1 IS NULL ", almacen);
+            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion) WHERE estado{0}.cantidad>0 AND varios.parametro1 IS NULL ", almacen);
 
             string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
@@ -159,13 +158,15 @@ public class servicios : System.Web.Services.WebService {
                 if (split[i].Length > 0)
                 { // verificamos que no este vacio
                     query += " AND ";
-                    query += String.Format(" (producto.codigo LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
+                    if(auto)
+                        query += String.Format(" (producto.codigo LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
+                    else query += String.Format(" (codigo LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%' OR ubicacion.nombre LIKE '%{0}%' OR estado{1}.lote LIKE '%{0}%' OR estado{1}.vence LIKE '%{0}%' OR estado{1}.szSerial LIKE '%{0}%' OR varios.nombre LIKE '%{0}%') ", split[i], almacen);
                 }
             }
             if (auto)
                 query += String.Format(" GROUP BY estado{0}.producto", almacen);
-            else query += String.Format(" GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.estado,estado{0}.szSerial", almacen);
-            query += " ORDER BY producto.nombre LIMIT 50;";
+            else query += String.Format(" GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion", almacen);
+            query += " ORDER BY producto.nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
@@ -184,6 +185,7 @@ public class servicios : System.Web.Services.WebService {
                         info.vence = CConector.GetFromMySQLDate(reader["vence"]);
                         info.serial = reader["szSerial"].ToString();
                         info.estado = Convert.ToInt32(reader["estado"]);
+                        info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
                         cantidad -= productousado.GetProductoUsado(info.id, info.lote, info.vence);
                     }
                     if (cantidad > 0.0000001m)
@@ -209,7 +211,7 @@ public class servicios : System.Web.Services.WebService {
             string query;
             if (auto)
                 query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) WHERE estado{0}.cantidad>0 ", almacen);
-            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) WHERE estado{0}.cantidad>0 ", almacen);
+            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto)LEFT JOIN varios ON (varios.id=estado{0}.estado) LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion) WHERE estado{0}.cantidad>0 ", almacen);
 
             string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
@@ -218,13 +220,15 @@ public class servicios : System.Web.Services.WebService {
                 if (split[i].Length > 0)
                 { // verificamos que no este vacio
                     query += " AND ";
-                    query += String.Format(" (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
+                    if(auto)
+                        query += String.Format(" (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
+                    else query += String.Format(" (codigo LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%' OR ubicacion.nombre LIKE '%{0}%' OR estado{1}.lote LIKE '%{0}%' OR estado{1}.vence LIKE '%{0}%' OR estado{1}.szSerial LIKE '%{0}%' OR varios.nombre LIKE '%{0}%') ", split[i], almacen);
                 }
             }
             if (auto)
                 query += String.Format(" GROUP BY estado{0}.producto", almacen);
-            else query += String.Format(" GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.estado,estado{0}.szSerial", almacen);
-            query += " ORDER BY producto.nombre LIMIT 50;";
+            else query += String.Format(" GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion", almacen);
+            query += " ORDER BY producto.nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
@@ -243,6 +247,7 @@ public class servicios : System.Web.Services.WebService {
                         info.vence = CConector.GetFromMySQLDate(reader["vence"]);
                         info.serial = reader["szSerial"].ToString();
                         info.estado = Convert.ToInt32(reader["estado"]);
+                        info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
                         cantidad -= productousado.GetProductoUsado(info.id, info.lote, info.vence);
                     }
                     if (cantidad > 0.0000001m)
@@ -286,7 +291,7 @@ public class servicios : System.Web.Services.WebService {
 
             if (auto)
                 query += String.Format(" GROUP BY estado{0}.producto", almacen);
-            query += " ORDER BY producto.nombre LIMIT 50;";
+            query += " ORDER BY producto.nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
@@ -339,7 +344,7 @@ public class servicios : System.Web.Services.WebService {
                     query += String.Format(" AND (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
                 }
             }
-            query += " ORDER BY producto.nombre LIMIT 50;";
+            query += " ORDER BY producto.nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
