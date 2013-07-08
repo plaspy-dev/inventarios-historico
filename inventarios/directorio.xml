@@ -66,4 +66,15 @@
       <url>~/almacen/transformaciones.aspx</url>
     </pagina>
   </seccion>
+  <seccion>
+    <titulo>Producción</titulo>
+    <pagina>
+      <titulo>Orden de producción</titulo>
+      <url>~/produccion/orden.aspx</url>
+    </pagina>
+    <pagina>
+      <titulo>Formulación</titulo>
+      <url>~/produccion/formulacion.aspx</url>
+    </pagina>
+  </seccion>
 </paginas>

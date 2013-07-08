@@ -34,69 +34,71 @@ public partial class administrador_almacenes : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query = new Query("almacen");
-        CConector conector = new CConector();
-        string szQuery;
-        string mensaje;
-        bool crearalmacenes = false;
+        using(CConector conector = new CConector()) {
 
-        conector.StartTransaction();
+            string szQuery;
+            string mensaje;
+            bool crearalmacenes = false;
 
-        query["nombre"] = TNombre.Text;
-        query["descripcion"] = TDescripcion.Text;
+            conector.StartTransaction();
 
-        if (HId.Value.Length == 0)
-        {
-            crearalmacenes = true;
-            szQuery = query.GetInsert();
-            mensaje = TNombre.Text + " ingresado";
-        }
-        else
-        {
-            szQuery = query.GetUpdate("id='" + HId.Value + "'");
-            mensaje = TNombre.Text + " editado";
-        }
-        int res = conector.QueryMod(szQuery, true);
-        if (res == -1)
-            return;
-        if (HId.Value.Length == 0)
-            HId.Value = res.ToString();
+            query["nombre"] = TNombre.Text;
+            query["descripcion"] = TDescripcion.Text;
+
+            if (HId.Value.Length == 0)
+            {
+                crearalmacenes = true;
+                szQuery = query.GetInsert();
+                mensaje = TNombre.Text + " ingresado";
+            }
+            else
+            {
+                szQuery = query.GetUpdate("id='" + HId.Value + "'");
+                mensaje = TNombre.Text + " editado";
+            }
+            int res = conector.QueryMod(szQuery, true);
+            if (res == -1)
+                return;
+            if (HId.Value.Length == 0)
+                HId.Value = res.ToString();
 
 
-        if (conector.InsertModificacion(HId.Value) == -1)
-            return;
-
-        string []consultas= SUbicaciones.GetQuerys();
-        for (int i = 0; i < consultas.Length; i++)
-            if (conector.QueryMod(consultas[i].Replace("@almacen", HId.Value)) == -1)
+            if (conector.InsertModificacion(HId.Value) == -1)
                 return;
 
-        if (crearalmacenes)
-        {
-            StreamReader filereader = new StreamReader(Server.MapPath("~/db/almacen.sql"));
-            string fullquery="";
-            while (filereader.Peek() >= 0)
+            string []consultas= SUbicaciones.GetQuerys();
+            for (int i = 0; i < consultas.Length; i++)
+                if (conector.QueryMod(consultas[i].Replace("@almacen", HId.Value)) == -1)
+                    return;
+
+            if (crearalmacenes)
             {
-                string linea = filereader.ReadLine();
-                fullquery += "\n" + linea;
-                if(fullquery.IndexOf(";")!=-1) {
-                    if (conector.QueryMod(Almacen.ReplaceAlmacenTables(fullquery, HId.Value)) == -1)
-                        return;
-                    fullquery = "";
+                StreamReader filereader = new StreamReader(Server.MapPath("~/db/almacen.sql"));
+                string fullquery="";
+                while (filereader.Peek() >= 0)
+                {
+                    string linea = filereader.ReadLine();
+                    fullquery += "\n" + linea;
+                    if(fullquery.IndexOf(";")!=-1) {
+                        if (conector.QueryMod(Almacen.ReplaceAlmacenTables(fullquery, HId.Value)) == -1)
+                            return;
+                        fullquery = "";
+                    }
                 }
+                filereader.Close();
             }
-            filereader.Close();
+
+            conector.Commit();
+
+            MySqlDataReader reader = conector.Query("SELECT id FROM ubicacion WHERE almacen=" + HId.Value + " AND estado IS NULL");
+            if (reader != null)
+            {
+                while (reader.Read()) // limpiamos el cache de las ubicaciones
+                    Almacen.RemoveUbicacion(Convert.ToInt32(reader["id"]));
+            }
+
+            ((ing)Master).SetResultado(mensaje);
         }
-
-        conector.Commit();
-
-        MySqlDataReader reader = conector.Query("SELECT id FROM ubicacion WHERE almacen=" + HId.Value + " AND estado IS NULL");
-        if (reader != null)
-        {
-            while (reader.Read()) // limpiamos el cache de las ubicaciones
-                Almacen.RemoveUbicacion(Convert.ToInt32(reader["id"]));
-        }
-
-        ((ing)Master).SetResultado(mensaje);
     }
 
     protected void BCancelar_Click(object sender, EventArgs e)
@@ -115,23 +117,26 @@ public partial class administrador_almacenes : System.Web.UI.Page
 
     protected void BActualizar_Click(object sender, EventArgs e)
     {
-        CConector conector = new CConector();
+        using (CConector conector = new CConector())
+        {
+            /*conector.QueryMod("TRUNCATE TABLE estado_global");
+            MySqlDataReader reader = conector.Query("SELECT id FROM almacen");
+            if (reader != null)
+            {
 
-        conector.QueryMod("TRUNCATE TABLE estado_global");
-        MySqlDataReader reader= conector.Query("SELECT id FROM almacen");
-        if(reader!=null) {
+                while (reader.Read())
+                {
 
-            while(reader.Read()) {
+                    CConector conector2 = new CConector();
 
-                CConector conector2= new CConector();
-
-                HId.Value= reader["id"].ToString();
+                    HId.Value = reader["id"].ToString();
+                }
             }
-        }
 
-        HId.Value = "0";
-        
-        CConector conector3 = new CConector();
+            HId.Value = "0";
+
+            CConector conector3 = new CConector();*/
+        }
 
         ((ing)Master).SetResultado("Almacenes actualizados");
     }

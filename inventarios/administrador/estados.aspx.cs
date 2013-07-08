@@ -27,36 +27,38 @@ public partial class administrador_estados : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query = new Query("varios");
-        CConector conector = new CConector();
-        string szQuery;
-        string mensaje;
-
-        query["nombre"] = TNombre.Text;
-        query["descripcion"] = TDescripcion.Text;
-        query["parametro1"] = CPermitirSalidas.Checked ? "" : "1";
-
-        if (HId.Value.Length == 0)
+        using (CConector conector = new CConector())
         {
-            query["tipo"] = "2";
-            szQuery = query.GetInsert();
-            mensaje = TNombre.Text + " ingresado";
-        }
-        else
-        {
-            szQuery = query.GetUpdate("id='" + HId.Value + "'");
-            mensaje = TNombre.Text + " editado";
-        }
-        int res = conector.QueryMod(szQuery, true);
-        if (res == -1)
-            return;
-        if (HId.Value.Length == 0)
-            HId.Value = res.ToString();
-        if (conector.InsertModificacion(HId.Value) == -1)
-            return;
+            string szQuery;
+            string mensaje;
 
-        Almacen.RemoveEstado(HId.Value);
-        Session["szMensaje"] = mensaje;
-        Response.Redirect(Request.Url.AbsolutePath);
+            query["nombre"] = TNombre.Text;
+            query["descripcion"] = TDescripcion.Text;
+            query["parametro1"] = CPermitirSalidas.Checked ? "" : "1";
+
+            if (HId.Value.Length == 0)
+            {
+                query["tipo"] = "2";
+                szQuery = query.GetInsert();
+                mensaje = TNombre.Text + " ingresado";
+            }
+            else
+            {
+                szQuery = query.GetUpdate("id='" + HId.Value + "'");
+                mensaje = TNombre.Text + " editado";
+            }
+            int res = conector.QueryMod(szQuery, true);
+            if (res == -1)
+                return;
+            if (HId.Value.Length == 0)
+                HId.Value = res.ToString();
+            if (conector.InsertModificacion(HId.Value) == -1)
+                return;
+
+            Almacen.RemoveEstado(HId.Value);
+            Session["szMensaje"] = mensaje;
+            Response.Redirect(Request.Url.AbsolutePath);
+        }
     }
 
     protected void BCancelar_Click(object sender, EventArgs e)

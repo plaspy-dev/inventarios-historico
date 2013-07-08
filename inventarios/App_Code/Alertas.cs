@@ -15,8 +15,8 @@ public class Alertas
         get {
             if (!string.IsNullOrEmpty(szAlmacen))
             {
-                CConector conectortemp = new CConector();
-                _Numero = conectortemp.QueryString(string.Format(SelectCount, szAlmacen));
+                using(CConector conector = new CConector()) 
+                    _Numero = conector.QueryString(string.Format(SelectCount, szAlmacen));
                 szAlmacen = null;
             }
             return _Numero;
@@ -64,25 +64,27 @@ public class Alertas
             query += "url";
             query += "consulta_contar";
 
-            CConector conectorc = new CConector();
-            MySqlDataReader consultas = conectorc.Query(query.GetSelect(almacen==null ? "global=1" : "global IS NULL"));
-
-            if (consultas != null)
+            using (CConector conector = new CConector())
             {
-                while (consultas.Read())
-                {
-                    CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
+                MySqlDataReader consultas = conector.Query(query.GetSelect(almacen == null ? "global=1" : "global IS NULL"));
 
-                    string consulta = consultas["consulta"].ToString();
-                    string consultacount = consultas["consulta_contar"].ToString();
-                    
-                    alertas.Add(new Alertas(consultas["id"].ToString(),
-                            consultas["nombre"].ToString(),
-                            consultas["url"].ToString(),
-                            consulta,
-                            consultacount,
-                            almacen==null ? "-1" : almacen
-                    ));
+                if (consultas != null)
+                {
+                    while (consultas.Read())
+                    {
+                        CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
+
+                        string consulta = consultas["consulta"].ToString();
+                        string consultacount = consultas["consulta_contar"].ToString();
+
+                        alertas.Add(new Alertas(consultas["id"].ToString(),
+                                consultas["nombre"].ToString(),
+                                consultas["url"].ToString(),
+                                consulta,
+                                consultacount,
+                                almacen == null ? "-1" : almacen
+                        ));
+                    }
                 }
             }
             Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + almacen == null ? "ag" : ("a" + almacen), alertas);
@@ -96,18 +98,21 @@ public class Alertas
         if(alertas==null) {
             Usuario usuario = Usuario.GetUsuario();
             alertas = new List<string>();
-            CConector conector = new CConector();
-            MySqlDataReader reader= conector.Query(string.Format("SELECT alertas.id"
-                            + " FROM alertas"
-                            + " LEFT JOIN alertas_grupo ON (alertas_grupo.grupo={1} AND alertas_grupo.alerta=alertas.id)"
-                            + " LEFT JOIN alertas_usuario ON (alertas_usuario.usuario={0} AND alertas_usuario.alerta=alertas.id)"
-                            + " WHERE (IF({1}=0,1, alertas_grupo.alerta) IS NOT NULL AND (alertas_usuario.estado IS NULL OR alertas_usuario.estado=1))"
-                            + " OR (IF({1}=0,1, alertas_grupo.alerta) IS NULL AND (alertas_usuario.estado IS NOT NULL AND alertas_usuario.estado=1))"
-                            , usuario.GetID()
-                            , usuario.GetGrupo()));
-            if(reader!=null) {
-                while(reader.Read()) 
-                    alertas.Add(reader["id"].ToString());
+            using (CConector conector = new CConector())
+            {
+                MySqlDataReader reader = conector.Query(string.Format("SELECT alertas.id"
+                                + " FROM alertas"
+                                + " LEFT JOIN alertas_grupo ON (alertas_grupo.grupo={1} AND alertas_grupo.alerta=alertas.id)"
+                                + " LEFT JOIN alertas_usuario ON (alertas_usuario.usuario={0} AND alertas_usuario.alerta=alertas.id)"
+                                + " WHERE (IF({1}=0,1, alertas_grupo.alerta) IS NOT NULL AND (alertas_usuario.estado IS NULL OR alertas_usuario.estado=1))"
+                                + " OR (IF({1}=0,1, alertas_grupo.alerta) IS NULL AND (alertas_usuario.estado IS NOT NULL AND alertas_usuario.estado=1))"
+                                , usuario.GetID()
+                                , usuario.GetGrupo()));
+                if (reader != null)
+                {
+                    while (reader.Read())
+                        alertas.Add(reader["id"].ToString());
+                }
             }
             HttpContext.Current.Session["alertas"]= alertas;
         }

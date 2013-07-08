@@ -1,5 +1,6 @@
 using System;
 using System.Configuration;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Web;
@@ -10,7 +11,7 @@ namespace SDG.Componentes;
 
 public class Utilidades
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	public static string GetURLFullPath(Page page, string archivo)
 	{
@@ -169,25 +170,25 @@ public class Utilidades
 			}
 		}
 		text += "</tr>";
-		for (int i = 0; i < grid.Rows.Count; i++)
+		for (int j = 0; j < grid.Rows.Count; j++)
 		{
-			GridViewRow gridViewRow = grid.Rows[i];
+			GridViewRow gridViewRow = grid.Rows[j];
 			text += "<tr>";
-			for (int j = 0; j < gridViewRow.Cells.Count; j++)
+			for (int k = 0; k < gridViewRow.Cells.Count; k++)
 			{
-				if (!grid.Columns[j].Visible)
+				if (!grid.Columns[k].Visible)
 				{
 					continue;
 				}
-				text = ((grid.Columns[j].ItemStyle.HorizontalAlign == HorizontalAlign.Right) ? (text + "<td align=right>") : ((grid.Columns[j].ItemStyle.HorizontalAlign != HorizontalAlign.Center) ? (text + "<td>") : (text + "<td align=center>")));
-				if (gridViewRow.Cells[j].HasControls())
+				text = ((grid.Columns[k].ItemStyle.HorizontalAlign == HorizontalAlign.Right) ? (text + "<td align=right>") : ((grid.Columns[k].ItemStyle.HorizontalAlign != HorizontalAlign.Center) ? (text + "<td>") : (text + "<td align=center>")));
+				if (gridViewRow.Cells[k].HasControls())
 				{
-					ControlCollection controls = gridViewRow.Cells[j].Controls;
-					for (int k = 0; k < controls.Count; k++)
+					ControlCollection controls = gridViewRow.Cells[k].Controls;
+					for (int l = 0; l < controls.Count; l++)
 					{
-						if (controls[k] is TextBox)
+						if (controls[l] is TextBox)
 						{
-							string text2 = ((TextBox)controls[k]).Text;
+							string text2 = ((TextBox)controls[l]).Text;
 							if (text2.Length == 0)
 							{
 								text2 = "&nbsp;";
@@ -195,28 +196,28 @@ public class Utilidades
 							text += text2;
 							break;
 						}
-						if (controls[k] is CheckBox)
+						if (controls[l] is CheckBox)
 						{
-							text = ((!((CheckBox)controls[k]).Checked) ? (text + "_ ") : (text + "X "));
-							if (((CheckBox)controls[k]).Text.Length > 0)
+							text = ((!((CheckBox)controls[l]).Checked) ? (text + "_ ") : (text + "X "));
+							if (((CheckBox)controls[l]).Text.Length > 0)
 							{
-								text += ((CheckBox)controls[k]).Text;
+								text += ((CheckBox)controls[l]).Text;
 							}
 							break;
 						}
-						if (controls[k] is LinkButton)
+						if (controls[l] is LinkButton)
 						{
-							text += ((LinkButton)controls[k]).Text;
+							text += ((LinkButton)controls[l]).Text;
 						}
-						else if (controls[k] is HyperLink)
+						else if (controls[l] is HyperLink)
 						{
-							text += ((HyperLink)controls[k]).Text;
+							text += ((HyperLink)controls[l]).Text;
 						}
 					}
 				}
 				else
 				{
-					text += gridViewRow.Cells[j].Text;
+					text += gridViewRow.Cells[k].Text;
 				}
 				text += "</td>";
 			}
@@ -225,12 +226,12 @@ public class Utilidades
 		if (grid.ShowFooter && grid.FooterRow != null)
 		{
 			text += "<tr>";
-			for (int i = 0; i < grid.Columns.Count; i++)
+			for (int m = 0; m < grid.Columns.Count; m++)
 			{
-				if (grid.Columns[i].Visible)
+				if (grid.Columns[m].Visible)
 				{
-					text = ((grid.Columns[i].FooterStyle.HorizontalAlign == HorizontalAlign.Right) ? (text + "<td align=right>") : ((grid.Columns[i].FooterStyle.HorizontalAlign != HorizontalAlign.Center) ? (text + "<td>") : (text + "<td align=center>")));
-					text = text + "<b>" + grid.FooterRow.Cells[i].Text + "</b></td>";
+					text = ((grid.Columns[m].FooterStyle.HorizontalAlign == HorizontalAlign.Right) ? (text + "<td align=right>") : ((grid.Columns[m].FooterStyle.HorizontalAlign != HorizontalAlign.Center) ? (text + "<td>") : (text + "<td align=center>")));
+					text = text + "<b>" + grid.FooterRow.Cells[m].Text + "</b></td>";
 				}
 			}
 			text += "</tr>";
@@ -371,25 +372,25 @@ public class Utilidades
 			Response.Write("</strong></td>");
 		}
 		Response.Write("</tr>\n");
-		for (int i = 0; i < view.Rows.Count; i++)
+		for (int j = 0; j < view.Rows.Count; j++)
 		{
 			Response.Write("<tr>\n");
-			for (int j = 0; j < view.Columns.Count; j++)
+			for (int k = 0; k < view.Columns.Count; k++)
 			{
 				Response.Write("<td>");
-				if (view.Columns[j].GetType() == typeof(HyperLinkField))
+				if (view.Columns[k].GetType() == typeof(HyperLinkField))
 				{
-					HyperLink hyperLink = (HyperLink)view.Rows[i].Cells[j].Controls[0];
+					HyperLink hyperLink = (HyperLink)view.Rows[j].Cells[k].Controls[0];
 					Response.Write(hyperLink.Text);
 				}
-				else if (view.Columns[j].GetType() == typeof(CheckBoxField))
+				else if (view.Columns[k].GetType() == typeof(CheckBoxField))
 				{
-					CheckBox checkBox = (CheckBox)view.Rows[i].Cells[j].Controls[0];
+					CheckBox checkBox = (CheckBox)view.Rows[j].Cells[k].Controls[0];
 					Response.Write(checkBox.Checked ? "X" : "");
 				}
 				else
 				{
-					Response.Write(view.Rows[i].Cells[j].Text);
+					Response.Write(view.Rows[j].Cells[k].Text);
 				}
 				Response.Write("</td>");
 			}
@@ -527,15 +528,34 @@ public class Utilidades
 		}
 		try
 		{
-			if (HttpContext.Current.Request.Url.Host == "localhost")
+			string[] array = null;
+			string text;
+			if (HttpContext.Current == null)
 			{
-				return true;
+				text = Path.GetFileName(Assembly.GetEntryAssembly().Location);
 			}
-			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			else
 			{
-				return false;
+				if (HttpContext.Current.Request.Url.Host == "localhost")
+				{
+					return true;
+				}
+				if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+				{
+					return false;
+				}
+				text = HttpContext.Current.Request.Url.Host;
 			}
-			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+			array = ConfigurationSettings.AppSettings["DomainKey"].Split(';');
+			for (int i = 0; i < array.Length; i++)
+			{
+				if (Crypt.GetMD5(Crypt.Encriptar3DES(text.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == array[i])
+				{
+					bGetKey = true;
+					return true;
+				}
+			}
+			return false;
 		}
 		catch
 		{

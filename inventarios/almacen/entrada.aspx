@@ -142,7 +142,8 @@
                 if (ui.item.unidad && ui.item.unidad != "")
                     $("#sunidad").text("(" + ui.item.unidad + ")");
                 else $("#sunidad").text("");
-                $("#<%= TCosto.ClientID %>").numeric("value",ui.item.Costo);
+                $("#<%= TCosto.ClientID %>").val(ui.item.Costo);
+                // $("#<%= TCosto.ClientID %>").numeric("value",ui.item.Costo);
                 
                 if(ui.item.DiasV>0) {
                     var fecha = new Date();

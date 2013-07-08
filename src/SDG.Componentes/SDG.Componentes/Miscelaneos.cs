@@ -14,4 +14,8 @@ public class Miscelaneos
 		Id = id;
 		Nombre = nombre;
 	}
+
+	public Miscelaneos()
+	{
+	}
 }

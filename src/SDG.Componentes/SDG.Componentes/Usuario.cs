@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Configuration;
+using System.IO;
 using System.Reflection;
 using System.Web;
 using System.Web.UI.WebControls;
@@ -9,7 +10,7 @@ namespace SDG.Componentes;
 
 public class Usuario
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	protected string m_szNombre;
 
@@ -309,15 +310,34 @@ public class Usuario
 		}
 		try
 		{
-			if (HttpContext.Current.Request.Url.Host == "localhost")
+			string[] array = null;
+			string text;
+			if (HttpContext.Current == null)
 			{
-				return true;
+				text = Path.GetFileName(Assembly.GetEntryAssembly().Location);
 			}
-			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			else
 			{
-				return false;
+				if (HttpContext.Current.Request.Url.Host == "localhost")
+				{
+					return true;
+				}
+				if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+				{
+					return false;
+				}
+				text = HttpContext.Current.Request.Url.Host;
 			}
-			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+			array = ConfigurationSettings.AppSettings["DomainKey"].Split(';');
+			for (int i = 0; i < array.Length; i++)
+			{
+				if (Crypt.GetMD5(Crypt.Encriptar3DES(text.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == array[i])
+				{
+					bGetKey = true;
+					return true;
+				}
+			}
+			return false;
 		}
 		catch
 		{

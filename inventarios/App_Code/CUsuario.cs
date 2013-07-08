@@ -83,32 +83,34 @@ public class CUsuario : Usuario
                 Cache.Remove("iiu" + pUsuario.m_szLogin.ToLower());
 
                 // obtenemos la fecha de ingreso
-                CConector conector = new CConector(pUsuario.szDatabase);
-                conector.QueryMod("UPDATE usuarios SET ingreso=SYSDATE() WHERE id=" + id);
-                reader = conector.Query("SELECT ingreso FROM usuarios WHERE id=" + Query.GetValor(id) + " AND (estado IS NULL OR estado!=-1)");
-                if (reader != null && reader.Read())
+                using (CConector conector = new CConector(pUsuario.szDatabase))
                 {
-                    pUsuario.dtFecha = (DateTime)reader["ingreso"];
-                    Cache.Set("iiu" + pUsuario.m_szLogin.ToLower(), pUsuario.dtFecha);
-                    CConector.SetCookie("contrasena", Crypt.Encriptar3DES(passwd, GetKeyPassword(pUsuario.dtFecha)), DateTime.Now.AddDays(2));
-                }
-                Cache.Set("idbu" + pUsuario.m_szLogin.ToLower(), pUsuario.szDatabase);
-
-                if (grupo > 0)
-                {
-                    reader = conector.Query("SELECT url,permiso FROM permisos WHERE grupo='" + grupo + "'");
-                    if (reader != null)
+                    conector.QueryMod("UPDATE usuarios SET ingreso=SYSDATE() WHERE id=" + id);
+                    reader = conector.Query("SELECT ingreso FROM usuarios WHERE id=" + Query.GetValor(id) + " AND (estado IS NULL OR estado!=-1)");
+                    if (reader != null && reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            pUsuario.SetPermiso(reader["url"].ToString(), Convert.ToInt32(reader["permiso"]));
-                        }
+                        pUsuario.dtFecha = (DateTime)reader["ingreso"];
+                        Cache.Set("iiu" + pUsuario.m_szLogin.ToLower(), pUsuario.dtFecha);
+                        CConector.SetCookie("contrasena", Crypt.Encriptar3DES(passwd, GetKeyPassword(pUsuario.dtFecha)), DateTime.Now.AddDays(2));
                     }
-                    // agregmos los permisos extras
-                    pUsuario.AddPermiso("__no__", "Contraseña", "~/contrasena.aspx", 1);
-                    pUsuario.AddPermiso("__no__", "logo", "~/img/logo.ashx", 1);
-                    pUsuario.AddPermiso("__no__", "formato", "~/formatos/formato.ashx", 1);
-                    pUsuario.AddPermiso("__no__", "formato", "~/webservices/servicios.asmx", 1);
+                    Cache.Set("idbu" + pUsuario.m_szLogin.ToLower(), pUsuario.szDatabase);
+
+                    if (grupo > 0)
+                    {
+                        reader = conector.Query("SELECT url,permiso FROM permisos WHERE grupo='" + grupo + "'");
+                        if (reader != null)
+                        {
+                            while (reader.Read())
+                            {
+                                pUsuario.SetPermiso(reader["url"].ToString(), Convert.ToInt32(reader["permiso"]));
+                            }
+                        }
+                        // agregmos los permisos extras
+                        pUsuario.AddPermiso("__no__", "Contraseña", "~/contrasena.aspx", 1);
+                        pUsuario.AddPermiso("__no__", "logo", "~/img/logo.ashx", 1);
+                        pUsuario.AddPermiso("__no__", "formato", "~/formatos/formato.ashx", 1);
+                        pUsuario.AddPermiso("__no__", "formato", "~/webservices/servicios.asmx", 1);
+                    }
                 }
 
                 return pUsuario;

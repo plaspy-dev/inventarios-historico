@@ -1,6 +1,7 @@
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Web;
 
 namespace SDG.Componentes;
@@ -21,7 +22,7 @@ public class Logs
 	{
 		try
 		{
-			string text = HttpContext.Current.Request.Url.Segments[1].Replace("/", "");
+			string text = ((HttpContext.Current != null) ? HttpContext.Current.Request.Url.Segments[1].Replace("/", "") : Path.GetFileName(Assembly.GetEntryAssembly().Location));
 			EventLog.WriteEntry("Application", text + ": " + logs);
 		}
 		catch
@@ -38,8 +39,8 @@ public class Logs
 				}
 				else
 				{
-					using StreamWriter streamWriter = File.AppendText(archivo);
-					streamWriter.WriteLine(logs);
+					using StreamWriter streamWriter2 = File.AppendText(archivo);
+					streamWriter2.WriteLine(logs);
 				}
 				return true;
 			}

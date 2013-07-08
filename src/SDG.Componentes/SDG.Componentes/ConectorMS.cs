@@ -1,6 +1,8 @@
 using System;
 using System.Configuration;
 using System.Data.SqlClient;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -10,7 +12,7 @@ namespace SDG.Componentes;
 
 public class ConectorMS : IDisposable
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	protected string m_szLastError;
 
@@ -18,7 +20,7 @@ public class ConectorMS : IDisposable
 
 	protected string m_szConexion;
 
-	public bool m_bTransaccion = false;
+	public bool m_bTransaccion;
 
 	protected SqlConnection m_pSQLConector;
 
@@ -76,6 +78,11 @@ public class ConectorMS : IDisposable
 		}
 	}
 
+	public string GetConexionString()
+	{
+		return m_szConexion;
+	}
+
 	public SqlConnection GetConexion()
 	{
 		return m_pSQLConector;
@@ -83,6 +90,11 @@ public class ConectorMS : IDisposable
 
 	public void ShowError(string error)
 	{
+		string text = DateTime.Now.ToString() + " Error[ConectorMS] : ";
+		text = ((HttpContext.Current != null) ? (text + HttpContext.Current.Request.Url.ToString()) : (text + Path.GetFileName(Assembly.GetEntryAssembly().Location)));
+		string text2 = text;
+		text = text2 + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
+		Logs.WriteLog(text);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -363,15 +375,34 @@ public class ConectorMS : IDisposable
 		}
 		try
 		{
-			if (HttpContext.Current.Request.Url.Host == "localhost")
+			string[] array = null;
+			string text;
+			if (HttpContext.Current == null)
 			{
-				return true;
+				text = Path.GetFileName(Assembly.GetEntryAssembly().Location);
 			}
-			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			else
 			{
-				return false;
+				if (HttpContext.Current.Request.Url.Host == "localhost")
+				{
+					return true;
+				}
+				if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+				{
+					return false;
+				}
+				text = HttpContext.Current.Request.Url.Host;
 			}
-			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+			array = ConfigurationSettings.AppSettings["DomainKey"].Split(';');
+			for (int i = 0; i < array.Length; i++)
+			{
+				if (Crypt.GetMD5(Crypt.Encriptar3DES(text.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == array[i])
+				{
+					bGetKey = true;
+					return true;
+				}
+			}
+			return false;
 		}
 		catch
 		{

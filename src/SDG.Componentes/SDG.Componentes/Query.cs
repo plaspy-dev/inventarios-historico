@@ -1,31 +1,43 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
+using System.Reflection;
 using System.Web;
 
 namespace SDG.Componentes;
 
 public class Query
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	protected string m_szTabla;
 
-	protected ArrayList m_saCampos = null;
+	protected Dictionary<string, string> dCampos;
 
-	protected ArrayList m_saValores = null;
-
-	protected ArrayList m_baQuoted = null;
+	protected Dictionary<string, bool> dQuoted;
 
 	public string this[string campo]
 	{
 		get
 		{
-			return m_saValores[GetCampo(campo)].ToString();
+			try
+			{
+				return dCampos[campo];
+			}
+			catch
+			{
+			}
+			return "";
 		}
 		set
 		{
-			m_saValores[GetCampo((campo.Length == 0) ? value : campo)] = ((value == null) ? "" : value);
+			string text = ((value == null) ? "" : value);
+			if (string.IsNullOrEmpty(campo))
+			{
+				campo = text;
+			}
+			dCampos[campo] = text;
 		}
 	}
 
@@ -34,9 +46,8 @@ public class Query
 		if (new Random().Next(10) != 2 || GetKey())
 		{
 			m_szTabla = tabla;
-			m_saCampos = new ArrayList();
-			m_saValores = new ArrayList();
-			m_baQuoted = new ArrayList();
+			dCampos = new Dictionary<string, string>();
+			dQuoted = new Dictionary<string, bool>();
 		}
 	}
 
@@ -59,37 +70,23 @@ public class Query
 		return query;
 	}
 
-	public int GetCampo(string campo)
-	{
-		int num = -1;
-		for (int i = 0; i < m_saCampos.Count; i++)
-		{
-			if (m_saCampos[i].ToString() == campo)
-			{
-				num = i;
-				break;
-			}
-		}
-		if (num == -1)
-		{
-			num = m_saCampos.Add(campo);
-			m_saValores.Add("");
-			m_baQuoted.Add(true);
-		}
-		return num;
-	}
-
 	public void AddCampo(string campo, string valor, bool quotes)
 	{
-		m_saValores[GetCampo(campo)] = ((valor == null) ? "" : valor);
-		m_baQuoted[GetCampo(campo)] = quotes;
+		dCampos[campo] = valor;
+		if (quotes)
+		{
+			dQuoted.Remove(campo);
+		}
+		else
+		{
+			dQuoted[campo] = false;
+		}
 	}
 
 	public void Clean()
 	{
-		m_saCampos.Clear();
-		m_saValores.Clear();
-		m_baQuoted.Clear();
+		dCampos.Clear();
+		dQuoted.Clear();
 	}
 
 	public static string GetValor(string valor)
@@ -110,20 +107,32 @@ public class Query
 
 	public string GetUpdate(string condicion)
 	{
-		if (m_saValores.Count == 0)
+		if (dCampos.Count == 0)
 		{
 			return "";
 		}
 		string text = "UPDATE " + m_szTabla + " SET ";
-		for (int i = 0; i < m_saCampos.Count; i++)
+		bool flag = false;
+		foreach (KeyValuePair<string, string> dCampo in dCampos)
 		{
-			if (i != 0)
+			if (flag)
 			{
 				text += ",";
 			}
-			string text2 = (((bool)m_baQuoted[i]) ? GetValor(m_saValores[i].ToString()) : m_saValores[i].ToString());
-			object obj = text;
-			text = string.Concat(obj, m_saCampos[i], "=", text2);
+			else
+			{
+				flag = true;
+			}
+			bool flag2 = true;
+			try
+			{
+				flag2 = dQuoted[dCampo.Key];
+			}
+			catch
+			{
+			}
+			string text2 = (flag2 ? GetValor(dCampo.Value) : dCampo.Value);
+			text = text + dCampo.Key + "=" + text2;
 		}
 		if (condicion.Length != 0)
 		{
@@ -134,27 +143,45 @@ public class Query
 
 	public string GetInsert()
 	{
-		if (m_saValores.Count == 0)
+		if (dCampos.Count == 0)
 		{
 			return "";
 		}
 		string text = "INSERT INTO " + m_szTabla + " (";
-		for (int i = 0; i < m_saCampos.Count; i++)
+		bool flag = false;
+		foreach (KeyValuePair<string, string> dCampo in dCampos)
 		{
-			if (i != 0)
+			if (flag)
 			{
 				text += ",";
 			}
-			text += m_saCampos[i];
+			else
+			{
+				flag = true;
+			}
+			text += dCampo.Key;
 		}
 		text += ") VALUES (";
-		for (int i = 0; i < m_saValores.Count; i++)
+		flag = false;
+		foreach (KeyValuePair<string, string> dCampo2 in dCampos)
 		{
-			if (i != 0)
+			if (flag)
 			{
 				text += ",";
 			}
-			text += (((bool)m_baQuoted[i]) ? GetValor(m_saValores[i].ToString()) : m_saValores[i].ToString());
+			else
+			{
+				flag = true;
+			}
+			bool flag2 = true;
+			try
+			{
+				flag2 = dQuoted[dCampo2.Key];
+			}
+			catch
+			{
+			}
+			text += (flag2 ? GetValor(dCampo2.Value) : dCampo2.Value);
 		}
 		return text + ");";
 	}
@@ -166,22 +193,26 @@ public class Query
 
 	public string GetSelect(string condicion, string join)
 	{
-		if (m_saValores.Count == 0)
+		if (dCampos.Count == 0)
 		{
 			return "";
 		}
 		string text = "SELECT ";
-		for (int i = 0; i < m_saCampos.Count; i++)
+		bool flag = false;
+		foreach (KeyValuePair<string, string> dCampo in dCampos)
 		{
-			if (i != 0)
+			if (flag)
 			{
 				text += ",";
 			}
-			text += m_saValores[i];
-			if (m_saCampos[i] != m_saValores[i])
+			else
 			{
-				object obj = text;
-				text = string.Concat(obj, " AS '", m_saCampos[i], "'");
+				flag = true;
+			}
+			text += dCampo.Value;
+			if (dCampo.Value != dCampo.Key)
+			{
+				text = text + " AS '" + dCampo.Key + "'";
 			}
 		}
 		text = text + " FROM " + m_szTabla + " ";
@@ -214,15 +245,34 @@ public class Query
 		}
 		try
 		{
-			if (HttpContext.Current.Request.Url.Host == "localhost")
+			string[] array = null;
+			string text;
+			if (HttpContext.Current == null)
 			{
-				return true;
+				text = Path.GetFileName(Assembly.GetEntryAssembly().Location);
 			}
-			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			else
 			{
-				return false;
+				if (HttpContext.Current.Request.Url.Host == "localhost")
+				{
+					return true;
+				}
+				if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+				{
+					return false;
+				}
+				text = HttpContext.Current.Request.Url.Host;
 			}
-			return Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
+			array = ConfigurationSettings.AppSettings["DomainKey"].Split(';');
+			for (int i = 0; i < array.Length; i++)
+			{
+				if (Crypt.GetMD5(Crypt.Encriptar3DES(text.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == array[i])
+				{
+					bGetKey = true;
+					return true;
+				}
+			}
+			return false;
 		}
 		catch
 		{

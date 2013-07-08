@@ -48,13 +48,15 @@ public partial class almacen_estado : System.Web.UI.Page
                 TProductoID.Text = info.id;
                 TProducto.Text = info.NombreCompleto;
 
-                CConector conector = new CConector();
-                string dias= conector.QueryString("SELECT dias_alerta FROM producto WHERE id=" + Query.GetValor(info.id));
-                try
+                using (CConector conector = new CConector())
                 {
-                    TVence.Text = DateTime.Now.AddDays(Convert.ToInt32(dias)).ToShortDateString();
-                } catch { }
-                conector.Dispose();
+                    string dias = conector.QueryString("SELECT dias_alerta FROM producto WHERE id=" + Query.GetValor(info.id));
+                    try
+                    {
+                        TVence.Text = DateTime.Now.AddDays(Convert.ToInt32(dias)).ToShortDateString();
+                    }
+                    catch { }
+                }
                 CDetallado.Checked = true;
             }
 
@@ -268,23 +270,25 @@ public partial class almacen_estado : System.Web.UI.Page
 
         producto.cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
 
-        CConector conector = new CConector();
-        conector.StartTransaction();
+        using (CConector conector = new CConector())
+        {
+            conector.StartTransaction();
 
-        if (!producto.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-            return;
+            if (!producto.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                return;
 
-        producto.ubicacion = TNUbicacionID.Text.Length==0 ? 0 : Convert.ToInt32(TNUbicacionID.Text);
-        producto.GetCostoPromedio(((ing)Master).GetAlmacen());
+            producto.ubicacion = TNUbicacionID.Text.Length == 0 ? 0 : Convert.ToInt32(TNUbicacionID.Text);
+            producto.GetCostoPromedio(((ing)Master).GetAlmacen());
 
-        if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-            return;
+            if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                return;
 
-        conector.Commit();
-        ViewState["producto"] = null;
-        PUbicacion.Visible = false;
-        GResultados.SelectedIndex = -1;
-        GResultados.DataBind();
+            conector.Commit();
+            ViewState["producto"] = null;
+            PUbicacion.Visible = false;
+            GResultados.SelectedIndex = -1;
+            GResultados.DataBind();
+        }
     }
 
     protected void GResultados_SelectedIndexChanged(object sender, EventArgs e)
@@ -403,23 +407,25 @@ public partial class almacen_estado : System.Web.UI.Page
 
         producto.cantidad = Convert.ToDecimal(TEstadoCantidad.Text, CultureInfo.InvariantCulture);
 
-        CConector conector = new CConector();
-        conector.StartTransaction();
+        using (CConector conector = new CConector())
+        {
+            conector.StartTransaction();
 
-        if (!producto.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-            return;
+            if (!producto.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                return;
 
-        producto.estado= Convert.ToInt32(DNuevoEstado.SelectedValue);
-        producto.GetCostoPromedio(((ing)Master).GetAlmacen());
+            producto.estado = Convert.ToInt32(DNuevoEstado.SelectedValue);
+            producto.GetCostoPromedio(((ing)Master).GetAlmacen());
 
-        if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-            return;
+            if (!producto.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                return;
 
-        conector.Commit();
-        PEstado.Visible = false;
-        ViewState["producto"] = null;
-        GResultados.SelectedIndex = -1;
-        GResultados.DataBind();
+            conector.Commit();
+            PEstado.Visible = false;
+            ViewState["producto"] = null;
+            GResultados.SelectedIndex = -1;
+            GResultados.DataBind();
+        }
     }
     protected void BActualizar_Click(object sender, EventArgs e)
     {

@@ -1,5 +1,8 @@
 using System;
 using System.Configuration;
+using System.Globalization;
+using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -11,7 +14,7 @@ namespace SDG.Componentes;
 
 public class Conector : IDisposable
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	protected string m_szLastError;
 
@@ -19,7 +22,7 @@ public class Conector : IDisposable
 
 	protected string m_szConexion;
 
-	protected bool m_bTransaccion = false;
+	protected bool m_bTransaccion;
 
 	protected MySqlConnection m_pSQLConector;
 
@@ -77,6 +80,11 @@ public class Conector : IDisposable
 		}
 	}
 
+	public string GetConexionString()
+	{
+		return m_szConexion;
+	}
+
 	public MySqlConnection GetConexion()
 	{
 		return m_pSQLConector;
@@ -115,6 +123,11 @@ public class Conector : IDisposable
 
 	public void ShowError(string error)
 	{
+		string text = DateTime.Now.ToString() + " Error[Conector] : ";
+		text = ((HttpContext.Current != null) ? (text + HttpContext.Current.Request.Url.ToString()) : (text + Path.GetFileName(Assembly.GetEntryAssembly().Location)));
+		string text2 = text;
+		text = text2 + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
+		Logs.WriteLog(text);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -415,12 +428,10 @@ public class Conector : IDisposable
 
 	public static string GetMySQLDateFormat(DateTime fecha, bool horas)
 	{
-		bool flag = 0 == 0;
-		string text = fecha.Year + "-" + fecha.Month.ToString().PadLeft(2, '0') + "-" + fecha.Day.ToString().PadLeft(2, '0');
+		string text = fecha.ToString("yyyy-MM-dd");
 		if (horas)
 		{
-			string text2 = text;
-			text = text2 + " " + fecha.Hour.ToString().PadLeft(2, '0') + ":" + fecha.Minute.ToString().PadLeft(2, '0') + ":" + fecha.Second.ToString().PadLeft(2, '0');
+			text += fecha.ToString(" HH:mm:ss");
 		}
 		return text;
 	}
@@ -440,6 +451,18 @@ public class Conector : IDisposable
 		{
 		}
 		return "";
+	}
+
+	public static DateTime GetFromMySQLDate(string fecha)
+	{
+		try
+		{
+			return DateTime.ParseExact(fecha, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+		}
+		catch
+		{
+		}
+		return DateTime.MinValue;
 	}
 
 	public static string GetFromMySQLDate(object fecha)
@@ -466,27 +489,33 @@ public class Conector : IDisposable
 	public bool SelectInDropDown(DropDownList lista, object valor, string query)
 	{
 		bool result = true;
-		if (lista.Items.Count < 2)
+		try
 		{
-			lista.DataBind();
-		}
-		lista.SelectedIndex = -1;
-		ListItem listItem = lista.Items.FindByValue(valor.ToString());
-		if (listItem == null)
-		{
-			Conector conector = new Conector(m_szConexion);
-			string text = "";
-			if (query.Length > 0)
+			if (lista.Items.Count < 2)
 			{
-				if (query.IndexOf("{") != -1 && query.IndexOf("}") != -1)
-				{
-					query = string.Format(query, valor);
-				}
-				text = conector.QueryString(query);
+				lista.DataBind();
 			}
-			listItem = new ListItem(text, valor.ToString());
+			lista.SelectedIndex = -1;
+			ListItem listItem = lista.Items.FindByValue(valor.ToString());
+			if (listItem == null)
+			{
+				Conector conector = new Conector(m_szConexion);
+				string text = "";
+				if (query.Length > 0)
+				{
+					if (query.IndexOf("{") != -1 && query.IndexOf("}") != -1)
+					{
+						query = string.Format(query, valor);
+					}
+					text = conector.QueryString(query);
+				}
+				listItem = new ListItem(text, valor.ToString());
+			}
+			listItem.Selected = true;
 		}
-		listItem.Selected = true;
+		catch
+		{
+		}
 		return result;
 	}
 
@@ -523,16 +552,34 @@ public class Conector : IDisposable
 		}
 		try
 		{
-			if (HttpContext.Current.Request.Url.Host == "localhost")
+			string[] array = null;
+			string text;
+			if (HttpContext.Current == null)
 			{
-				return true;
+				text = Path.GetFileName(Assembly.GetEntryAssembly().Location);
 			}
-			if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+			else
 			{
-				return false;
+				if (HttpContext.Current.Request.Url.Host == "localhost")
+				{
+					return true;
+				}
+				if (string.IsNullOrEmpty(ConfigurationSettings.AppSettings["DomainKey"]))
+				{
+					return false;
+				}
+				text = HttpContext.Current.Request.Url.Host;
 			}
-			bGetKey = Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey"] || Crypt.GetMD5(Crypt.Encriptar3DES(HttpContext.Current.Request.Url.Host.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == ConfigurationSettings.AppSettings["DomainKey1"];
-			return bGetKey;
+			array = ConfigurationSettings.AppSettings["DomainKey"].Split(';');
+			for (int i = 0; i < array.Length; i++)
+			{
+				if (Crypt.GetMD5(Crypt.Encriptar3DES(text.PadRight(29, 'x').PadRight(37, '?').Replace("x", ";"), licenseSeed.Replace("2", "1").Replace("2", "6"))) == array[i])
+				{
+					bGetKey = true;
+					return true;
+				}
+			}
+			return false;
 		}
 		catch
 		{

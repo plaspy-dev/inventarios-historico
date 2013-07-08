@@ -115,20 +115,23 @@ public partial class administrador_configuracion : System.Web.UI.Page
 
     protected void BEditar_Click(object sender, EventArgs e)
     {
-        CConector conector= new CConector();
-        if(TEntrada.Text.Length>0) {
-            if (conector.QueryMod(string.Format("ALTER TABLE entrada{0} AUTO_INCREMENT={1}", GAlmacenes.SelectedValue, TEntrada.Text)) == -1)
-                return;
-        }
-        if (TTraslado.Text.Length > 0)
+        using (CConector conector = new CConector())
         {
-            if (conector.QueryMod(string.Format("ALTER TABLE traslado{0} AUTO_INCREMENT={1}", GAlmacenes.SelectedValue, TTraslado.Text)) == -1)
-                return;
-        }
-        if (TSalida.Text.Length > 0)
-        {
-            if (conector.QueryMod(string.Format("ALTER TABLE salida{0} AUTO_INCREMENT={1}", GAlmacenes.SelectedValue, TSalida.Text)) == -1)
-                return;
+            if (TEntrada.Text.Length > 0)
+            {
+                if (conector.QueryMod(string.Format("ALTER TABLE entrada{0} AUTO_INCREMENT={1}", GAlmacenes.SelectedValue, TEntrada.Text)) == -1)
+                    return;
+            }
+            if (TTraslado.Text.Length > 0)
+            {
+                if (conector.QueryMod(string.Format("ALTER TABLE traslado{0} AUTO_INCREMENT={1}", GAlmacenes.SelectedValue, TTraslado.Text)) == -1)
+                    return;
+            }
+            if (TSalida.Text.Length > 0)
+            {
+                if (conector.QueryMod(string.Format("ALTER TABLE salida{0} AUTO_INCREMENT={1}", GAlmacenes.SelectedValue, TSalida.Text)) == -1)
+                    return;
+            }
         }
         GAlmacenes.DataBind();
         BCancelarEdicion_Click(sender, e);

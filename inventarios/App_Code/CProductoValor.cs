@@ -55,67 +55,71 @@ public class CProductoValor
     }
 
     public Decimal GetValor(string cliente, int almacen) {
-        
-        CConector conector = new CConector();
-        if(!bDefaltValor) {
-            bDefaltValor = true;
-            valor = 0;
-            try
-            {
-                valor = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor FROM producto WHERE id={0}", id)));
-            }
-            catch { }
-            Save();
-        }
-        if(valor>0 && !bDefaltValorTemp) {
-            bDefaltValorTemp = true;
-            valor_temp = 0;
-            try
-            {
-                valor_temp = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor_temporal FROM producto WHERE id={0}", id)));
-            }
-            catch { }
-            Save();
-        }
 
-        if (!string.IsNullOrEmpty(cliente))
+        using (CConector conector = new CConector())
         {
+            if (!bDefaltValor)
+            {
+                bDefaltValor = true;
+                valor = 0;
+                try
+                {
+                    valor = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor FROM producto WHERE id={0}", id)));
+                }
+                catch { }
+                Save();
+            }
+            if (valor > 0 && !bDefaltValorTemp)
+            {
+                bDefaltValorTemp = true;
+                valor_temp = 0;
+                try
+                {
+                    valor_temp = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor_temporal FROM producto WHERE id={0}", id)));
+                }
+                catch { }
+                Save();
+            }
+
+            if (!string.IsNullOrEmpty(cliente))
+            {
+                try
+                {
+                    if (pValorCliente[Convert.ToInt32(cliente)] > 0)
+                        return pValorCliente[Convert.ToInt32(cliente)];
+                }
+                catch { }
+
+                try
+                {
+                    Decimal dValor = 0;
+                    dValor = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor FROM valor_cliente WHERE producto={1} AND cliente={0}", cliente, id)));
+                    pValorCliente[Convert.ToInt32(cliente)] = dValor;
+                    Save();
+                    if (dValor > 0)
+                        return dValor;
+                }
+                catch { }
+            }
+
             try
             {
-                if (pValorCliente[Convert.ToInt32(cliente)]>0)
-                    return pValorCliente[Convert.ToInt32(cliente)];
+                if (pValorAlmancen[almacen] > 0)
+                    return pValorAlmancen[almacen];
             }
             catch { }
 
             try
             {
                 Decimal dValor = 0;
-                dValor = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor FROM valor_cliente WHERE producto={1} AND cliente={0}", cliente, id)));
-                pValorCliente[Convert.ToInt32(cliente)] = dValor;
+                dValor = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor FROM valor_almacen WHERE producto={1} AND almacen={0}", almacen, id)));
+                pValorAlmancen[almacen] = dValor;
                 Save();
-                if(dValor>0)
+                if (dValor > 0)
                     return dValor;
             }
             catch { }
         }
-
-        try
-        {
-            if (pValorAlmancen[almacen] > 0)
-                return pValorAlmancen[almacen];
-        }
-        catch { }
-
-        try
-        {
-            Decimal dValor = 0;
-            dValor = Convert.ToDecimal(conector.QueryString(string.Format("SELECT valor FROM valor_almacen WHERE producto={1} AND almacen={0}", almacen, id)));
-            pValorAlmancen[almacen] = dValor;
-            Save();
-            if (dValor > 0)
-                return dValor;
-        }
-        catch { }
 
         return valor > 0 ? valor : valor_temp;
     }
@@ -137,35 +141,39 @@ public class CProductoValor
 
     public Decimal GetCosto(string proveedor)
     {
-        CConector conector = new CConector();
-
-        if(!bDefaltCosto) {
-            bDefaltCosto = true;
-            costo = 0;
-            try
-            {
-                costo = Convert.ToDecimal(conector.QueryString(string.Format("SELECT costo FROM producto WHERE id={0}", id)));
-            } catch {}
-            Save();
-        }
-        
-        if (!string.IsNullOrEmpty(proveedor))
+        using (CConector conector = new CConector())
         {
-            try
-            {
-                return pCostos[Convert.ToInt32(proveedor)];
-            }
-            catch { }
 
-            try
+            if (!bDefaltCosto)
             {
-                Decimal dCosto = 0;
-                dCosto = Convert.ToDecimal(conector.QueryString(string.Format("SELECT costo FROM costo_proveedor WHERE producto={1} AND proveedor={0}", proveedor, id)));
-                pCostos[Convert.ToInt32(proveedor)] = dCosto;
+                bDefaltCosto = true;
+                costo = 0;
+                try
+                {
+                    costo = Convert.ToDecimal(conector.QueryString(string.Format("SELECT costo FROM producto WHERE id={0}", id)));
+                }
+                catch { }
                 Save();
-                return dCosto;
             }
-            catch { }
+
+            if (!string.IsNullOrEmpty(proveedor))
+            {
+                try
+                {
+                    return pCostos[Convert.ToInt32(proveedor)];
+                }
+                catch { }
+
+                try
+                {
+                    Decimal dCosto = 0;
+                    dCosto = Convert.ToDecimal(conector.QueryString(string.Format("SELECT costo FROM costo_proveedor WHERE producto={1} AND proveedor={0}", proveedor, id)));
+                    pCostos[Convert.ToInt32(proveedor)] = dCosto;
+                    Save();
+                    return dCosto;
+                }
+                catch { }
+            }
         }
         
         return costo;

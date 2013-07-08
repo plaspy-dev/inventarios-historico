@@ -58,19 +58,21 @@ public class CConfiguracion
 
         CConfiguracion configuracion = (CConfiguracion)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "c");
         if(configuracion==null) {
-            
-            CConector conector = new CConector();
-            String texto = conector.QueryString("SELECT configuracion FROM configuracion");
 
-            if (string.IsNullOrEmpty(texto))
+            using (CConector conector = new CConector())
             {
-                configuracion = new CConfiguracion();
-            }
-            else
-            {
-                StringReader builder = new StringReader(texto);
-                XmlSerializer s = new XmlSerializer(typeof(CConfiguracion));
-                configuracion = (CConfiguracion)s.Deserialize(builder);
+                String texto = conector.QueryString("SELECT configuracion FROM configuracion");
+
+                if (string.IsNullOrEmpty(texto))
+                {
+                    configuracion = new CConfiguracion();
+                }
+                else
+                {
+                    StringReader builder = new StringReader(texto);
+                    XmlSerializer s = new XmlSerializer(typeof(CConfiguracion));
+                    configuracion = (CConfiguracion)s.Deserialize(builder);
+                }
             }
             Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "c", configuracion);
         }
@@ -78,24 +80,26 @@ public class CConfiguracion
     }
     public bool SaveConfiguracion() {
 
-        CConector conector = new CConector();
-        Query query = new Query("configuracion");
-
-        StringBuilder builder = new StringBuilder();
-        XmlSerializer s = new XmlSerializer(this.GetType());
-        using (StringWriter writer = new StringWriter(builder))
+        using (CConector conector = new CConector())
         {
-            s.Serialize(writer, this);
+            Query query = new Query("configuracion");
+
+            StringBuilder builder = new StringBuilder();
+            XmlSerializer s = new XmlSerializer(this.GetType());
+            using (StringWriter writer = new StringWriter(builder))
+            {
+                s.Serialize(writer, this);
+            }
+            query["configuracion"] = builder.ToString();
+
+            if (conector.QueryMod("DELETE FROM configuracion") == -1)
+                return false;
+
+            if (conector.QueryMod(query.GetInsert()) == -1)
+                return false;
+
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "c", this);
         }
-        query["configuracion"]= builder.ToString();
-
-        if (conector.QueryMod("DELETE FROM configuracion") == -1)
-            return false;
-
-        if (conector.QueryMod(query.GetInsert()) == -1)
-            return false;
-
-        Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "c", this);
         return true;
     }
 }
