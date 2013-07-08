@@ -220,7 +220,8 @@
             if(tiponumero==1) { //entero
                 var cantidad=parseFloat($("#<%= TCantidad.ClientID %>").val());
                 var entero=parseInt(cantidad/proporcion);
-                $("#<%= TCantidad2.ClientID %>").numeric('value',entero);
+                // $("#<%= TCantidad2.ClientID %>").numeric('value',entero);
+                $("#<%= TCantidad2.ClientID %>").val(entero);
                 entero=entero*proporcion;
                 if(unidad!="")
                     $("#smax2").text("(" + unidad + ")");
@@ -230,7 +231,8 @@
                     $("#smax2").text($("#smax2").text() + " sobran " + entero);
                 }
             } else {
-                $("#<%= TCantidad2.ClientID %>").numeric('value',parseFloat($("#<%= TCantidad.ClientID %>").val())/proporcion);
+                $("#<%= TCantidad2.ClientID %>").val(parseFloat($("#<%= TCantidad.ClientID %>").val())/proporcion);
+                // $("#<%= TCantidad2.ClientID %>").numeric('value',parseFloat($("#<%= TCantidad.ClientID %>").val())/proporcion);
             }
         });
         // $("#<%= TCantidad.ClientID %>").change();

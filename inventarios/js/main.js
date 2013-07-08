@@ -85,13 +85,13 @@ function inicio() {
     $(".fecha").datepicker($.datepicker.regional["es"]);
 
     // todos los campos entero
-    $('.entero').numeric({ format: "0", buttons: false, minValue: 0 });
+    $('.entero').autoNumeric('init', { vMin: 0, mDec: 0, aSep: '' });
 
     // todos los reales
-    $('.float').numeric({ format: "0.########", buttons: false, minValue: 0 });
+    $('.float').autoNumeric('init', { vMin: 0, aSep: '', mDec:8,aPad:false });
 
     // dinero
-    $('.dinero').numeric({ format: "#,000.########", buttons: false, minValue: 0 });
+    $('.dinero').autoNumeric('init', { vMin: 0, aSign: '$', aPad: false });
 
     $('img[src*="menubg.jpg"]').hover(function() {
         $(this).attr("src", $(this).attr("src").replace("menubg", "menuover"));

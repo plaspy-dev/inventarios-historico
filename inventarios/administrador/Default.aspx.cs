@@ -118,32 +118,37 @@ public partial class administrador_Default : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query = new Query("varios");
-        CConector conector= new CConector();
-        string szQuery;
-        string mensaje;
+        using (CConector conector = new CConector())
+        {
+            string szQuery;
+            string mensaje;
 
-        query["nombre"] = TNombre.Text;
-        query["descripcion"] = TDescripcion.Text;
+            query["nombre"] = TNombre.Text;
+            query["descripcion"] = TDescripcion.Text;
 
-        if(HId.Value.Length==0) {
-            query["tipo"] = HTipo.Value;
-            szQuery = query.GetInsert();
-            mensaje = TNombre.Text + " ingresado";
-        } else {
-            szQuery = query.GetUpdate("id='" + HId.Value + "'");
-            mensaje = TNombre.Text + " editado";
+            if (HId.Value.Length == 0)
+            {
+                query["tipo"] = HTipo.Value;
+                szQuery = query.GetInsert();
+                mensaje = TNombre.Text + " ingresado";
+            }
+            else
+            {
+                szQuery = query.GetUpdate("id='" + HId.Value + "'");
+                mensaje = TNombre.Text + " editado";
+            }
+            int res = conector.QueryMod(szQuery, true);
+            if (res == -1)
+                return;
+            if (HId.Value.Length == 0)
+                HId.Value = res.ToString();
+            if (conector.InsertModificacion(HId.Value) == -1)
+                return;
+
+            Almacen.RemoveEstado(HId.Value);
+            Session["szMensaje"] = mensaje;
+            Response.Redirect(Request.Url.AbsolutePath + "?tipo=" + HTipo.Value);
         }
-        int res = conector.QueryMod(szQuery, true);
-        if (res == -1)
-            return;
-        if (HId.Value.Length == 0)
-            HId.Value = res.ToString();
-        if (conector.InsertModificacion(HId.Value) == -1)
-            return;
-
-        Almacen.RemoveEstado(HId.Value);
-        Session["szMensaje"] = mensaje;
-        Response.Redirect(Request.Url.AbsolutePath + "?tipo=" + HTipo.Value);
     }
 
     protected void BCancelar_Click(object sender, EventArgs e)

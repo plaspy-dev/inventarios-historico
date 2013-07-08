@@ -50,47 +50,13 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             
             if (!string.IsNullOrEmpty(Request.QueryString["tri"]))
             {
-                CConector conector = new CConector();
-
-                Query query = new Query("transformacion_salida" + ((ing)Master).GetAlmacen());
-
-                query += "id";
-                query += "observaciones";
-                query += "producto";
-                query += "cantidad";
-                query += "lote";
-                query += "vence";
-                query +="szSerial";
-                query += "estado";
-
-                MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["tri"])));
-                if (reader != null && reader.Read())
+                using (CConector conector = new CConector())
                 {
-                    Producto producto = new Producto(reader["producto"].ToString());
 
-                    TNumero.Text = reader["id"].ToString();
-                    ((ing)Master).SetModificacion(TNumero.Text, ((ing)Master).GetAlmacen());
+                    Query query = new Query("transformacion_salida" + ((ing)Master).GetAlmacen());
 
-                    TObservaciones.Text = reader["observaciones"].ToString();
-                    TProductoID.Text = producto.id;
-                    TProducto.Text = producto.NombreCompleto;
-                    TCantidad.Text = Convert.ToDecimal(reader["cantidad"]).ToString(CultureInfo.InvariantCulture);
-                    TLote.Text = reader["lote"].ToString();
-                    TSerial.Text = reader["szSerial"].ToString();
-                    TEstado.Text = Almacen.GetNombreEstado(Convert.ToInt32(reader["estado"]));
-                    
-                    TLote.Visible= producto.nLote > 0;
-                    TVencimiento.Visible = producto.nVence > 0;
-                    TEstado.Visible = producto.nEstado > 0;
-                    TSerial.Visible = producto.nSerial > 0;
-
-                    object vence=null;
-                    try {
-                        vence=reader["vence"];
-                    } catch{}
-                    TVencimiento.Text= CConector.GetFromMySQLDate(vence);
-
-                    query = new Query("transformacion_entrada" + ((ing)Master).GetAlmacen());
+                    query += "id";
+                    query += "observaciones";
                     query += "producto";
                     query += "cantidad";
                     query += "lote";
@@ -98,39 +64,80 @@ public partial class almacen_transformaciones : System.Web.UI.Page
                     query += "szSerial";
                     query += "estado";
 
-                    reader = conector.Query(query.GetSelect("id=" + Query.GetValor(TNumero.Text)));
-                    if(reader!=null && reader.Read()) {
+                    MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["tri"])));
+                    if (reader != null && reader.Read())
+                    {
+                        Producto producto = new Producto(reader["producto"].ToString());
 
-                        producto = new Producto(reader["producto"].ToString());
+                        TNumero.Text = reader["id"].ToString();
+                        ((ing)Master).SetModificacion(TNumero.Text, ((ing)Master).GetAlmacen());
 
-                        TProductoID2.Text = producto.id;
-                        TProducto2.Text = producto.NombreCompleto;
-                        TCantidad2.Text = Convert.ToDecimal(reader["cantidad"]).ToString(CultureInfo.InvariantCulture);
-                        TLote2.Text = reader["lote"].ToString();
-                        CConector.SelectInDropDown(DEstado2,reader["estado"]);
-                        TSerial2.Text = reader["szSerial"].ToString();
+                        TObservaciones.Text = reader["observaciones"].ToString();
+                        TProductoID.Text = producto.id;
+                        TProducto.Text = producto.NombreCompleto;
+                        TCantidad.Text = Convert.ToDecimal(reader["cantidad"]).ToString(CultureInfo.InvariantCulture);
+                        TLote.Text = reader["lote"].ToString();
+                        TSerial.Text = reader["szSerial"].ToString();
+                        TEstado.Text = Almacen.GetNombreEstado(Convert.ToInt32(reader["estado"]));
 
-                        vence=null;
+                        TLote.Visible = producto.nLote > 0;
+                        TVencimiento.Visible = producto.nVence > 0;
+                        TEstado.Visible = producto.nEstado > 0;
+                        TSerial.Visible = producto.nSerial > 0;
+
+                        object vence = null;
                         try
                         {
                             vence = reader["vence"];
-                        } catch { }
-                        TVencimiento2.Text = CConector.GetFromMySQLDate(vence);
+                        }
+                        catch { }
+                        TVencimiento.Text = CConector.GetFromMySQLDate(vence);
 
-                        TLote2.Visible = producto.nLote > 0;
-                        TVencimiento2.Visible = producto.nVence > 0;
-                        DEstado2.Visible = producto.nEstado > 0;
-                        TSerial2.Visible = producto.nSerial > 0;
+                        query = new Query("transformacion_entrada" + ((ing)Master).GetAlmacen());
+                        query += "producto";
+                        query += "cantidad";
+                        query += "lote";
+                        query += "vence";
+                        query += "szSerial";
+                        query += "estado";
+
+                        reader = conector.Query(query.GetSelect("id=" + Query.GetValor(TNumero.Text)));
+                        if (reader != null && reader.Read())
+                        {
+
+                            producto = new Producto(reader["producto"].ToString());
+
+                            TProductoID2.Text = producto.id;
+                            TProducto2.Text = producto.NombreCompleto;
+                            TCantidad2.Text = Convert.ToDecimal(reader["cantidad"]).ToString(CultureInfo.InvariantCulture);
+                            TLote2.Text = reader["lote"].ToString();
+                            CConector.SelectInDropDown(DEstado2, reader["estado"]);
+                            TSerial2.Text = reader["szSerial"].ToString();
+
+                            vence = null;
+                            try
+                            {
+                                vence = reader["vence"];
+                            }
+                            catch { }
+                            TVencimiento2.Text = CConector.GetFromMySQLDate(vence);
+
+                            TLote2.Visible = producto.nLote > 0;
+                            TVencimiento2.Visible = producto.nVence > 0;
+                            DEstado2.Visible = producto.nEstado > 0;
+                            TSerial2.Visible = producto.nSerial > 0;
+                        }
+                        CAutomatico.Visible = CAutomatico2.Visible = false;
+                        /*CAutomatico2.Checked = CAutomatico.Checked = false;
+                        CAutomatico2.CssClass = CAutomatico.CssClass = "hide";*/
+                        BAceptar.Enabled = false;
+                        return;
                     }
-                    CAutomatico.Visible = CAutomatico2.Visible = false;
-                    /*CAutomatico2.Checked = CAutomatico.Checked = false;
-                    CAutomatico2.CssClass = CAutomatico.CssClass = "hide";*/
-                    BAceptar.Enabled = false;
-                    return;
                 }
             }
             BAceptar.Enabled = usuario.CanInsert();
-            TNumero.Text = new CConector().QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM transformacion_salida" + ((ing)Master).GetAlmacen());
+            using(CConector conector = new CConector()) 
+                TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM transformacion_salida" + ((ing)Master).GetAlmacen());
             TNumero.Focus();
         }
     }
@@ -185,106 +192,109 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             return;
 
         string id = "";
-        CConector conector = new CConector();
-        conector.StartTransaction();
+        using (CConector conector = new CConector())
+        {
+            conector.StartTransaction();
 
-        ArrayList productos;
-        ProductoUsado productousado = new ProductoUsado();
+            ArrayList productos;
+            ProductoUsado productousado = new ProductoUsado();
 
-        Decimal proporcion = 1;
-        // buscamos los nuevo
-        if (conector.QueryString("SELECT COUNT(*) FROM transformacion") != "0")
-        { // se definieron patrones de trasformacion
-            proporcion = -1;
-            try
-            {
-                proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto1=" + Query.GetValor(producto[0]) + " AND producto2=" + Query.GetValor(TProductoID2.Text)));
-                proporcion = 1 / proporcion;
-            }
-            catch { }
-            if (proporcion == -1)
-            {
+            Decimal proporcion = 1;
+            // buscamos los nuevo
+            if (conector.QueryString("SELECT COUNT(*) FROM transformacion") != "0")
+            { // se definieron patrones de trasformacion
+                proporcion = -1;
                 try
                 {
-                    proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto2=" + Query.GetValor(producto[0]) + " AND producto1=" + Query.GetValor(TProductoID2.Text)));
+                    proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto1=" + Query.GetValor(producto[0]) + " AND producto2=" + Query.GetValor(TProductoID2.Text)));
+                    proporcion = 1 / proporcion;
                 }
                 catch { }
+                if (proporcion == -1)
+                {
+                    try
+                    {
+                        proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto2=" + Query.GetValor(producto[0]) + " AND producto1=" + Query.GetValor(TProductoID2.Text)));
+                    }
+                    catch { }
+                }
+                if (proporcion == -1)
+                {
+                    LMensaje.Text = "No se encontro ninguna transformación valida";
+                    return;
+                }
             }
-            if (proporcion == -1)
+
+            Decimal cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
+            if (REntero2.Enabled)
+            { // es un entero
+
+                int entero = Convert.ToInt32(Math.Floor(cantidad / proporcion));
+                Decimal cantidadreal = entero * proporcion;
+                if (cantidadreal != cantidad)
+                    cantidad = cantidadreal;
+            }
+            if (producto.Length == 1)
+            { // automatico
+                productos = productousado.GetProductos(producto[0], cantidad, ((ing)Master).GetAlmacen());
+            }
+            else
+            { // manual
+                productos = productousado.GetProductos(producto[0], cantidad, ((ing)Master).GetAlmacen(), producto[1], producto[2], Convert.ToInt32(producto[3]), producto[4], Convert.ToInt32(producto[5]));
+            }
+            if (productos == null)
             {
-                LMensaje.Text = "No se encontro ninguna transformación valida";
+                LMensaje.Text = "No se encontraron las cantidades disponibles.";
                 return;
             }
-        }
 
-        Decimal cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
-        if (REntero2.Enabled) { // es un entero
-
-            int entero= Convert.ToInt32(Math.Floor(cantidad/proporcion));
-            Decimal cantidadreal= entero*proporcion;
-            if(cantidadreal!=cantidad)
-                cantidad= cantidadreal;
-        }
-        if (producto.Length == 1)
-        { // automatico
-            productos = productousado.GetProductos(producto[0], cantidad, ((ing)Master).GetAlmacen());
-        }
-        else
-        { // manual
-            productos = productousado.GetProductos(producto[0], cantidad, ((ing)Master).GetAlmacen(), producto[1], producto[2], Convert.ToInt32(producto[3]), producto[4], Convert.ToInt32(producto[5]));
-        }
-        if (productos == null)
-        {
-            LMensaje.Text = "No se encontraron las cantidades disponibles.";
-            return;
-        }
-
-        for (int i = 0; i < productos.Count; i++)
-        {
-            Producto info = (Producto)productos[i];
-            info.bIngreso = true;
-            info.GetCostoPromedio(((ing)Master).GetAlmacen());
-
-            Query salida = info.GetQuery("transformacion_salida" + ((ing)Master).GetAlmacen());
-
-            salida["observaciones"] = TObservaciones.Text;
-            
-            int res = conector.QueryMod(salida.GetInsert(), true);
-            if (res == -1)
-                return;
-            id = res.ToString();
-            if (!info.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                return;
-
-            info.id= TProductoID2.Text;
-            info.cantidad*= proporcion;
-
-            if (!CAutomatico2.Checked)
+            for (int i = 0; i < productos.Count; i++)
             {
-                info.lote= TLote2.Text;
-                info.vence= TVencimiento2.Text;
-                info.serial= TSerial2.Text;
-                info.estado= Convert.ToInt32(DEstado2.SelectedValue);
+                Producto info = (Producto)productos[i];
+                info.bIngreso = true;
+                info.GetCostoPromedio(((ing)Master).GetAlmacen());
+
+                Query salida = info.GetQuery("transformacion_salida" + ((ing)Master).GetAlmacen());
+
+                salida["observaciones"] = TObservaciones.Text;
+
+                int res = conector.QueryMod(salida.GetInsert(), true);
+                if (res == -1)
+                    return;
+                id = res.ToString();
+                if (!info.DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                    return;
+
+                info.id = TProductoID2.Text;
+                info.cantidad *= proporcion;
+
+                if (!CAutomatico2.Checked)
+                {
+                    info.lote = TLote2.Text;
+                    info.vence = TVencimiento2.Text;
+                    info.serial = TSerial2.Text;
+                    info.estado = Convert.ToInt32(DEstado2.SelectedValue);
+                }
+
+                Query entrada = info.GetQuery("transformacion_entrada" + ((ing)Master).GetAlmacen());
+                entrada["id"] = id;
+
+                if (conector.QueryMod(entrada.GetInsert(), true) == -1)
+                    return;
+
+                if (!info.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                    return;
+
+                if (conector.InsertModificacion(id, ((ing)Master).GetAlmacen()) == -1)
+                    return;
+                HId.Value = id;
             }
 
-            Query entrada = info.GetQuery("transformacion_entrada" + ((ing)Master).GetAlmacen());
-            entrada["id"] = id;
-            
-            if (conector.QueryMod(entrada.GetInsert(), true) == -1)
-                return;
-
-            if (!info.AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                return;
-
-            if (conector.InsertModificacion(id, ((ing)Master).GetAlmacen()) == -1)
-                return;
-            HId.Value = id;
+            conector.Commit();
+            Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
+            ((ing)Master).SetAlerta("Transformación " + HId.Value + " editada.");
+            ((ing)Master).SetResultado("Transformación " + id + " editada.");
         }
-
-        conector.Commit();
-        Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
-        ((ing)Master).SetAlerta("Transformación " + HId.Value + " editada.");
-        ((ing)Master).SetResultado("Transformación " + id + " editada.");
     }
 
     protected void BCancelar_Click(object sender, EventArgs e)

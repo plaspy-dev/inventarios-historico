@@ -132,7 +132,8 @@
                     descripcion+=": ";
                 descripcion+= " " + ui.item.descripcion;
                 $("#tdescripcion").text(descripcion);
-                $("#<%= TValor.ClientID %>").numeric("value",ui.item.Valor);
+                // $("#<%= TValor.ClientID %>").numeric("value",ui.item.Valor);
+                $("#<%= TValor.ClientID %>").val(ui.item.Valor);
                 
                 if(!$("#<%= CAutomatico.ClientID %>").is(':checked')) {
                     $("#<%= TLote.ClientID %>").val(ui.item.lote);

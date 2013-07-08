@@ -274,77 +274,79 @@ public class ProductoUsado
     public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, string lote, string vencimiento, int estado, string serial, int ubicacion, bool salida)
     {
         ArrayList productos = new ArrayList();
-        CConector conector = new CConector();
-
-        string szLote;
-        string szSerial;
-        if (lote.Length == 0)
-            szLote = "''";
-        else szLote = Query.GetValor(lote);
-        if (serial.Length == 0)
-            szSerial = "''";
-        else szSerial = Query.GetValor(serial);
-        string szVencimiento;
-        if (vencimiento.Length == 0)
-            szVencimiento = "'0000-00-00'";
-        else szVencimiento = "STR_TO_DATE(" + Query.GetValor(vencimiento) + ", '%d/%m/%Y')";
-
-        string consulta = string.Format("SELECT SUM(estado{0}.cantidad) FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
-            + " AND estado{0}.lote=" + szLote + " AND estado{0}.vence=" + szVencimiento
-            + " AND estado{0}.estado=" + estado.ToString() + " AND estado{0}.szSerial=" + szSerial
-            + " AND estado{0}.ubicacion=" + ubicacion.ToString()
-            , almacen);
-        if (salida)
-            consulta += " AND varios.parametro1 IS NULL";
-
-        string szDisponible = conector.QueryString(consulta);
-        Decimal dCantidad = Convert.ToDecimal(szDisponible);
-        dCantidad -= GetProductoUsado(producto, lote, vencimiento);
-
-        if (dCantidad < cantidad)
-            return null;
-
-        consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
-            + " AND estado{0}.lote=" + szLote + " AND estado{0}.vence=" + szVencimiento
-            + " AND estado{0}.estado=" + estado.ToString() + " AND estado{0}.szSerial=" + szSerial
-            + " AND estado{0}.ubicacion=" + ubicacion.ToString()
-            , almacen);
-        if (salida)
-            consulta += " AND varios.parametro1 IS NULL";
-
-        MySqlDataReader reader = conector.Query(consulta);
-        if (reader != null)
+        using (CConector conector = new CConector())
         {
-            while (reader.Read())
+
+            string szLote;
+            string szSerial;
+            if (lote.Length == 0)
+                szLote = "''";
+            else szLote = Query.GetValor(lote);
+            if (serial.Length == 0)
+                szSerial = "''";
+            else szSerial = Query.GetValor(serial);
+            string szVencimiento;
+            if (vencimiento.Length == 0)
+                szVencimiento = "'0000-00-00'";
+            else szVencimiento = "STR_TO_DATE(" + Query.GetValor(vencimiento) + ", '%d/%m/%Y')";
+
+            string consulta = string.Format("SELECT SUM(estado{0}.cantidad) FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
+                + " AND estado{0}.lote=" + szLote + " AND estado{0}.vence=" + szVencimiento
+                + " AND estado{0}.estado=" + estado.ToString() + " AND estado{0}.szSerial=" + szSerial
+                + " AND estado{0}.ubicacion=" + ubicacion.ToString()
+                , almacen);
+            if (salida)
+                consulta += " AND varios.parametro1 IS NULL";
+
+            string szDisponible = conector.QueryString(consulta);
+            Decimal dCantidad = Convert.ToDecimal(szDisponible);
+            dCantidad -= GetProductoUsado(producto, lote, vencimiento);
+
+            if (dCantidad < cantidad)
+                return null;
+
+            consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
+                + " AND estado{0}.lote=" + szLote + " AND estado{0}.vence=" + szVencimiento
+                + " AND estado{0}.estado=" + estado.ToString() + " AND estado{0}.szSerial=" + szSerial
+                + " AND estado{0}.ubicacion=" + ubicacion.ToString()
+                , almacen);
+            if (salida)
+                consulta += " AND varios.parametro1 IS NULL";
+
+            MySqlDataReader reader = conector.Query(consulta);
+            if (reader != null)
             {
-                dCantidad = Convert.ToDecimal(reader["cantidad"]);
-                int nEstado= Convert.ToInt32(reader["estado"]);
-                object vence = null;
-                try { vence = reader["vence"]; }
-                catch { }
+                while (reader.Read())
+                {
+                    dCantidad = Convert.ToDecimal(reader["cantidad"]);
+                    int nEstado = Convert.ToInt32(reader["estado"]);
+                    object vence = null;
+                    try { vence = reader["vence"]; }
+                    catch { }
 
-                dCantidad -= GetProductoUsado(producto, lote, CConector.GetFromMySQLDate(vence), ubicacion, estado);
-                if (dCantidad == 0)
-                    continue;
-                if (dCantidad > cantidad)
-                    dCantidad = cantidad;
-                
-                Producto info = new Producto(producto, dCantidad, lote, vencimiento, ubicacion, reader["szSerial"].ToString(), nEstado);
+                    dCantidad -= GetProductoUsado(producto, lote, CConector.GetFromMySQLDate(vence), ubicacion, estado);
+                    if (dCantidad == 0)
+                        continue;
+                    if (dCantidad > cantidad)
+                        dCantidad = cantidad;
 
-                productos.Add(info);
-                cantidad -= dCantidad;
-                if (cantidad == 0)
-                    break;
+                    Producto info = new Producto(producto, dCantidad, lote, vencimiento, ubicacion, reader["szSerial"].ToString(), nEstado);
+
+                    productos.Add(info);
+                    cantidad -= dCantidad;
+                    if (cantidad == 0)
+                        break;
+                }
             }
-        }
 
-        if (cantidad > 0 || productos.Count == 0)
-            return null;
+            if (cantidad > 0 || productos.Count == 0)
+                return null;
 
-        List<Producto> productosalmacenados = GetProductosUsados();
-        for (int i = 0; i < productos.Count; i++)
-        {
-            productosalmacenados.Add((Producto)productos[i]);
+            List<Producto> productosalmacenados = GetProductosUsados();
+            for (int i = 0; i < productos.Count; i++)
+            {
+                productosalmacenados.Add((Producto)productos[i]);
+            }
         }
 
         return productos;
@@ -358,60 +360,62 @@ public class ProductoUsado
     public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, bool salida)
     {
         ArrayList productos = new ArrayList();
-        CConector conector = new CConector();
-
-        string consulta;
-        if(salida) 
-            consulta = string.Format("SELECT SUM(estado{0}.cantidad) FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND varios.parametro1 IS NULL", almacen, Query.GetValor(producto));
-        else
-            consulta= string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto={1}", almacen, Query.GetValor(producto));
-
-        string szDisponible = conector.QueryString(consulta);
-        Decimal dCantidad = Convert.ToDecimal(Convert.ToDecimal(szDisponible));
-        if (cantidad == -1)
-            cantidad = dCantidad;
-        else dCantidad -= GetProductoUsado(producto);
-        if (dCantidad < cantidad)
-            return null;
-
-        if (salida)
-            consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.lote,estado{0}.vence,estado{0}.ubicacion,estado{0}.szSerial,estado{0}.estado FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND estado{0}.cantidad>0 AND varios.parametro1 IS NULL ORDER BY vence", almacen, Query.GetValor(producto));
-        else
-            consulta = string.Format("SELECT cantidad,lote,vence,ubicacion,szSerial,estado FROM estado{0} WHERE producto={1} AND cantidad>0 ORDER BY vence", almacen, Query.GetValor(producto));
-
-        MySqlDataReader reader = conector.Query(consulta);
-        if (reader != null)
+        using (CConector conector = new CConector())
         {
-            while (reader.Read())
+
+            string consulta;
+            if (salida)
+                consulta = string.Format("SELECT SUM(estado{0}.cantidad) FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND varios.parametro1 IS NULL", almacen, Query.GetValor(producto));
+            else
+                consulta = string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto={1}", almacen, Query.GetValor(producto));
+
+            string szDisponible = conector.QueryString(consulta);
+            Decimal dCantidad = Convert.ToDecimal(Convert.ToDecimal(szDisponible));
+            if (cantidad == -1)
+                cantidad = dCantidad;
+            else dCantidad -= GetProductoUsado(producto);
+            if (dCantidad < cantidad)
+                return null;
+
+            if (salida)
+                consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.lote,estado{0}.vence,estado{0}.ubicacion,estado{0}.szSerial,estado{0}.estado FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND estado{0}.cantidad>0 AND varios.parametro1 IS NULL ORDER BY vence", almacen, Query.GetValor(producto));
+            else
+                consulta = string.Format("SELECT cantidad,lote,vence,ubicacion,szSerial,estado FROM estado{0} WHERE producto={1} AND cantidad>0 ORDER BY vence", almacen, Query.GetValor(producto));
+
+            MySqlDataReader reader = conector.Query(consulta);
+            if (reader != null)
             {
-                dCantidad = Convert.ToDecimal(reader["cantidad"]);
-                int ubicacion= Convert.ToInt32(reader["ubicacion"]);
-                int estado = Convert.ToInt32(reader["estado"]);
-                object vence = null;
-                try { vence = reader["vence"]; }
-                catch { }
+                while (reader.Read())
+                {
+                    dCantidad = Convert.ToDecimal(reader["cantidad"]);
+                    int ubicacion = Convert.ToInt32(reader["ubicacion"]);
+                    int estado = Convert.ToInt32(reader["estado"]);
+                    object vence = null;
+                    try { vence = reader["vence"]; }
+                    catch { }
 
-                dCantidad -= GetProductoUsado(producto, reader["lote"].ToString(), CConector.GetFromMySQLDate(vence), ubicacion, estado);
-                if (dCantidad <= 0)
-                    continue;
-                if (dCantidad > cantidad)
-                    dCantidad = cantidad;
+                    dCantidad -= GetProductoUsado(producto, reader["lote"].ToString(), CConector.GetFromMySQLDate(vence), ubicacion, estado);
+                    if (dCantidad <= 0)
+                        continue;
+                    if (dCantidad > cantidad)
+                        dCantidad = cantidad;
 
-                Producto info = new Producto(producto, dCantidad, reader["lote"].ToString(), CConector.GetFromMySQLDate(vence), ubicacion, reader["szSerial"].ToString(), estado); 
-                productos.Add(info);
+                    Producto info = new Producto(producto, dCantidad, reader["lote"].ToString(), CConector.GetFromMySQLDate(vence), ubicacion, reader["szSerial"].ToString(), estado);
+                    productos.Add(info);
 
-                cantidad -= dCantidad;
-                if (cantidad == 0)
-                    break;
+                    cantidad -= dCantidad;
+                    if (cantidad == 0)
+                        break;
+                }
             }
-        }
-        if (cantidad > 0 || productos.Count == 0)
-            return null;
+            if (cantidad > 0 || productos.Count == 0)
+                return null;
 
-        List<Producto> productosalmacenados = GetProductosUsados();
-        for (int i = 0; i < productos.Count; i++)
-        {
-            productosalmacenados.Add((Producto)productos[i]);
+            List<Producto> productosalmacenados = GetProductosUsados();
+            for (int i = 0; i < productos.Count; i++)
+            {
+                productosalmacenados.Add((Producto)productos[i]);
+            }
         }
         return productos;
     }

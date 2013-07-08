@@ -88,102 +88,106 @@ public partial class almacen_salida : System.Web.UI.Page
             if (!string.IsNullOrEmpty(Request.QueryString["si"]))
             {
                 Query query = new Query("salida" + ((ing)Master).GetAlmacen());
-                CConector conector = new CConector();
-
-                query += "id";
-                query += "observaciones";
-                query += "fecha";
-                query += "entrega";
-                query += "documento";
-                query += "tercero";
-                query += "estado";
-
-                MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["si"])));
-                if (reader != null && reader.Read())
+                using (CConector conector = new CConector())
                 {
-                    HId.Value = TNumero.Text = reader["id"].ToString();
-                    ((ing)Master).SetPrintFile("salida.html");
-                    ((ing)Master).SetModificacion(HId.Value, ((ing)Master).GetAlmacen());
-                    TObservaciones.Text = reader["observaciones"].ToString();
-                    TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
-                    TEntrega.Text = CConector.GetFromMySQLDate(reader["entrega"]);
-                    TDocumento.Text = reader["documento"].ToString();
-                    PAnulado.Visible = reader["estado"].ToString() != "";
-
-                    Tercero tercero = new Tercero(reader["tercero"].ToString());
-                    TTerceroID.Text = tercero.Id;
-                    TTercero.Text = tercero.Documento;
-                    TNombre.Text = tercero.Nombre;
-                    TTelefono.Text = tercero.Telefono;
-                    TDireccion.Text = tercero.Direccion;
-                    TEMail.Text = tercero.Email;
-
-                    ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
-                    query = new Query("salida_items" + ((ing)Master).GetAlmacen());
 
                     query += "id";
-                    query += "producto";
-                    query += "cantidad";
-                    query += "lote";
-                    query += "vence";
-                    query += "ubicacion";
-                    query += "szSerial";
+                    query += "observaciones";
+                    query += "fecha";
+                    query += "entrega";
+                    query += "documento";
+                    query += "tercero";
                     query += "estado";
-                    query += "ingreso";
-                    query += "costo";
-                    query += "valor";
 
-                    reader = conector.Query(query.GetSelect("salida=" + HId.Value));
-                    if (reader != null)
+                    MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["si"])));
+                    if (reader != null && reader.Read())
                     {
-                        while (reader.Read())
+                        HId.Value = TNumero.Text = reader["id"].ToString();
+                        ((ing)Master).SetPrintFile("salida.html");
+                        ((ing)Master).SetModificacion(HId.Value, ((ing)Master).GetAlmacen());
+                        TObservaciones.Text = reader["observaciones"].ToString();
+                        TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
+                        TEntrega.Text = CConector.GetFromMySQLDate(reader["entrega"]);
+                        TDocumento.Text = reader["documento"].ToString();
+                        PAnulado.Visible = reader["estado"].ToString() != "";
+
+                        Tercero tercero = new Tercero(reader["tercero"].ToString());
+                        TTerceroID.Text = tercero.Id;
+                        TTercero.Text = tercero.Documento;
+                        TNombre.Text = tercero.Nombre;
+                        TTelefono.Text = tercero.Telefono;
+                        TDireccion.Text = tercero.Direccion;
+                        TEMail.Text = tercero.Email;
+
+                        ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+                        query = new Query("salida_items" + ((ing)Master).GetAlmacen());
+
+                        query += "id";
+                        query += "producto";
+                        query += "cantidad";
+                        query += "lote";
+                        query += "vence";
+                        query += "ubicacion";
+                        query += "szSerial";
+                        query += "estado";
+                        query += "ingreso";
+                        query += "costo";
+                        query += "valor";
+
+                        reader = conector.Query(query.GetSelect("salida=" + HId.Value));
+                        if (reader != null)
                         {
-                            Producto info = new Producto(reader["producto"].ToString());
-
-                            info.IdTabla = reader["id"].ToString();
-                            info.cantidad = Convert.ToDecimal(reader["cantidad"]);
-                            info.lote = reader["lote"].ToString();
-                            info.vence = "";
-                            try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
-                            catch { }
-                            info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
-                            info.serial = reader["szSerial"].ToString();
-                            info.estado = Convert.ToInt32(reader["estado"]);
-                            info.Ingreso = reader["ingreso"].ToString();
-                            info.Costo = Convert.ToDecimal(reader["costo"]);
-                            try
+                            while (reader.Read())
                             {
-                                info.Valor = Convert.ToDecimal(reader["valor"]);
-                            } catch {}
+                                Producto info = new Producto(reader["producto"].ToString());
 
-                            productoUsado.AddProducto(info);
+                                info.IdTabla = reader["id"].ToString();
+                                info.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                                info.lote = reader["lote"].ToString();
+                                info.vence = "";
+                                try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
+                                catch { }
+                                info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
+                                info.serial = reader["szSerial"].ToString();
+                                info.estado = Convert.ToInt32(reader["estado"]);
+                                info.Ingreso = reader["ingreso"].ToString();
+                                info.Costo = Convert.ToDecimal(reader["costo"]);
+                                try
+                                {
+                                    info.Valor = Convert.ToDecimal(reader["valor"]);
+                                }
+                                catch { }
+
+                                productoUsado.AddProducto(info);
+                            }
                         }
+
+                        GProductos.DataSource = productoUsado.GetProductosUsados();
+                        HUsado.Value = productoUsado.SerializeBinary();
+                        GProductos.DataBind();
+
+                        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Precio T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
+                        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
+                        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
+
+                        TProducto.Focus();
+                        GProductos.Columns[0].Visible = usuario.CanDelete();
+                        BAceptar.Enabled = usuario.CanUpdate();
+                        BAnular.Visible = usuario.CanAdmin();
+                        if (PAnulado.Visible)
+                        {
+                            LAnulado.Text = "Anulada";
+                            GProductos.Columns[0].Visible = BAnular.Enabled = BAceptar.Enabled = false;
+                        }
+                        return;
                     }
-
-                    GProductos.DataSource = productoUsado.GetProductosUsados();
-                    HUsado.Value = productoUsado.SerializeBinary();
-                    GProductos.DataBind();
-
-                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Precio T.")].Text = string.Format("{0:C}", productoUsado.GetValorTotal());
-                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
-                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
-
-                    TProducto.Focus();
-                    GProductos.Columns[0].Visible = usuario.CanDelete();
-                    BAceptar.Enabled = usuario.CanUpdate();
-                    BAnular.Visible = usuario.CanAdmin();
-                    if (PAnulado.Visible)
-                    {
-                        LAnulado.Text = "Anulada";
-                        GProductos.Columns[0].Visible = BAnular.Enabled = BAceptar.Enabled = false;
-                    }
-                    return;
                 }
+                BAceptar.Enabled = usuario.CanInsert();
+                using(CConector conector = new CConector()) 
+                    TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM salida" + ((ing)Master).GetAlmacen());
+                TFecha.Text = DateTime.Now.ToShortDateString();
+                TNumero.Focus();
             }
-            BAceptar.Enabled = usuario.CanInsert();
-            TNumero.Text = new CConector().QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM salida" + ((ing)Master).GetAlmacen());
-            TFecha.Text = DateTime.Now.ToShortDateString();
-            TNumero.Focus();
         }
     }
 
@@ -302,153 +306,156 @@ public partial class almacen_salida : System.Web.UI.Page
 
         CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
         Query query = new Query("salida" + ((ing)Master).GetAlmacen());
-        CConector conector = new CConector();
-
-
-        string terceroid = TTerceroID.Text;
-
-        if (TNombre.Text.Length > 0 && TTercero.Text.Length > 0)
+        using (CConector conector = new CConector())
         {
 
-            Query tercero = new Query("tercero");
+            string terceroid = TTerceroID.Text;
 
-            tercero["tipo"] = "2";
-            tercero["nombre"] = TNombre.Text;
-            tercero["identificacion"] = TTercero.Text;
-            tercero["telefono"] = TTelefono.Text;
-            tercero["direccion"] = TDireccion.Text;
-            tercero["email"] = TEMail.Text;
-
-            if (terceroid.Length > 0)
+            if (TNombre.Text.Length > 0 && TTercero.Text.Length > 0)
             {
-                if (conector.QueryMod(tercero.GetUpdate("id=" + Query.GetValor(terceroid))) == -1)
+
+                Query tercero = new Query("tercero");
+
+                tercero["tipo"] = "2";
+                tercero["nombre"] = TNombre.Text;
+                tercero["identificacion"] = TTercero.Text;
+                tercero["telefono"] = TTelefono.Text;
+                tercero["direccion"] = TDireccion.Text;
+                tercero["email"] = TEMail.Text;
+
+                if (terceroid.Length > 0)
+                {
+                    if (conector.QueryMod(tercero.GetUpdate("id=" + Query.GetValor(terceroid))) == -1)
+                        return;
+                }
+                else
+                {
+                    int res = conector.QueryMod(tercero.GetInsert());
+                    if (res == -1)
+                        return;
+                    terceroid = res.ToString();
+                }
+                Tercero.RemoveTercero(terceroid);
+            }
+
+            query["observaciones"] = TObservaciones.Text;
+            query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
+            query["entrega"] = CConector.GetMySQLDateFormat(configuracion.bManejarEntrega ? TEntrega.Text : TFecha.Text);
+            query["documento"] = TDocumento.Text;
+            query["tercero"] = terceroid;
+            if (sender == BAnular)
+                query["estado"] = "-1";
+
+            conector.StartTransaction();
+            bool existe = HId.Value.Length != 0;
+
+            if (HId.Value.Length == 0)
+            {
+                int res = conector.QueryMod(query.GetInsert(), true);
+                if (res == -1)
+                {
+                    LMensaje.Text = conector.GetLastError();
                     return;
+                }
+                HId.Value = res.ToString();
             }
             else
             {
-                int res = conector.QueryMod(tercero.GetInsert());
-                if (res == -1)
+                if (conector.QueryMod(query.GetUpdate("id=" + Query.GetValor(HId.Value))) == -1)
+                {
+                    LMensaje.Text = conector.GetLastError();
                     return;
-                terceroid = res.ToString();
+                }
             }
-            Tercero.RemoveTercero(terceroid);
-        }
 
-        query["observaciones"] = TObservaciones.Text;
-        query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
-        query["entrega"] = CConector.GetMySQLDateFormat(configuracion.bManejarEntrega ? TEntrega.Text : TFecha.Text);
-        query["documento"] = TDocumento.Text;
-        query["tercero"] = terceroid;
-        if (sender == BAnular)
-            query["estado"] = "-1";
-
-        conector.StartTransaction();
-        bool existe = HId.Value.Length != 0;
-
-        if (HId.Value.Length == 0)
-        {
-            int res = conector.QueryMod(query.GetInsert(), true);
-            if (res == -1)
+            if (conector.InsertModificacion(HId.Value, ((ing)Master).GetAlmacen()) == -1)
             {
                 LMensaje.Text = conector.GetLastError();
                 return;
             }
-            HId.Value = res.ToString();
-        }
-        else
-        {
-            if (conector.QueryMod(query.GetUpdate("id=" + Query.GetValor(HId.Value))) == -1)
+
+            ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+
+            // eliminamos todos los productos
+            List<Producto> productos = productoUsado.GetProductoEliminado();
+            for (int i = 0; i < productos.Count; i++)
             {
-                LMensaje.Text = conector.GetLastError();
-                return;
-            }
-        }
-
-        if (conector.InsertModificacion(HId.Value, ((ing)Master).GetAlmacen()) == -1)
-        {
-            LMensaje.Text = conector.GetLastError();
-            return;
-        }
-
-        ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
-
-        // eliminamos todos los productos
-        List<Producto> productos = productoUsado.GetProductoEliminado();
-        for (int i = 0; i < productos.Count; i++)
-        {
-            if (conector.QueryMod(string.Format("DELETE FROM salida_items{0} WHERE id={1}", ((ing)Master).GetAlmacen(), productos[i].IdTabla)) == -1)
-                return;
-            if (productos[i].bIngreso)
-            {
-                if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                if (conector.QueryMod(string.Format("DELETE FROM salida_items{0} WHERE id={1}", ((ing)Master).GetAlmacen(), productos[i].IdTabla)) == -1)
                     return;
+                if (productos[i].bIngreso)
+                {
+                    if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
+                }
             }
-        }
 
-        // agregamos los nuevos
-        productos = productoUsado.GetProductosUsados();
-        for (int i = 0; i < productos.Count; i++)
-        {
-            productos[i].bIngreso = true;
-            if (sender == BAnular)
+            // agregamos los nuevos
+            productos = productoUsado.GetProductosUsados();
+            for (int i = 0; i < productos.Count; i++)
             {
-                bool oldingresoantiguo = false;
-                bool oldingreso = productos[i].bIngreso;
                 productos[i].bIngreso = true;
-                if (productos[i].pProductoAntiguo != null)
+                if (sender == BAnular)
                 {
-                    oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
-                    productos[i].pProductoAntiguo.bIngreso = false;
+                    bool oldingresoantiguo = false;
+                    bool oldingreso = productos[i].bIngreso;
+                    productos[i].bIngreso = true;
+                    if (productos[i].pProductoAntiguo != null)
+                    {
+                        oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
+                        productos[i].pProductoAntiguo.bIngreso = false;
+                    }
+                    if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
+                    productos[i].bIngreso = oldingreso;
+                    if (productos[i].pProductoAntiguo != null)
+                    {
+                        productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
+                    }
+
+                    productoUsado.UpdateProductoIngreso(productos[i].IdGrid, false);
                 }
-                if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                    return;
-                productos[i].bIngreso = oldingreso;
-                if (productos[i].pProductoAntiguo != null)
+
+                if (string.IsNullOrEmpty(productos[i].IdTabla))
+                    productos[i].GetCostoPromedio(((ing)Master).GetAlmacen()).ToString(CultureInfo.InvariantCulture);
+
+                query = productos[i].GetQuery("salida_items" + ((ing)Master).GetAlmacen());
+
+                // recalculamos los precios para los que tienen lista de precios cerradas.
+                if (configuracion.nValorTipo == 1)
+                    productos[i].GetValor(TTerceroID.Text, Convert.ToInt32(((ing)Master).GetAlmacen()));
+
+                query["valor"] = productos[i].Valor.ToString(CultureInfo.InvariantCulture);
+
+                if (string.IsNullOrEmpty(productos[i].IdTabla))
                 {
-                    productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
+                    query["salida"] = HId.Value;
+                    if (conector.QueryMod(query.GetInsert()) == -1)
+                        return;
                 }
-
-                productoUsado.UpdateProductoIngreso(productos[i].IdGrid, false);
+                else if (productos[i].pProductoAntiguo != null)
+                { // fue actualizado
+                    if (conector.QueryMod(query.GetUpdate("id=" + productos[i].IdTabla)) == -1)
+                        return;
+                }
+                else
+                {
+                    continue;
+                }
+                if (productos[i].bIngreso)
+                {
+                    if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
+                    productos[i].UpdateValor(conector);
+                }
             }
 
-            if (string.IsNullOrEmpty(productos[i].IdTabla))
-                productos[i].GetCostoPromedio(((ing)Master).GetAlmacen()).ToString(CultureInfo.InvariantCulture);
+            conector.Commit();
+            Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
+            Session["salida_clean"] = 1;
+            Session["lsalida"] = HId.Value;
 
-            query = productos[i].GetQuery("salida_items" + ((ing)Master).GetAlmacen());
-
-            // recalculamos los precios para los que tienen lista de precios cerradas.
-            if (configuracion.nValorTipo == 1)
-                productos[i].GetValor(TTerceroID.Text, Convert.ToInt32(((ing)Master).GetAlmacen()));
-            
-            query["valor"] = productos[i].Valor.ToString(CultureInfo.InvariantCulture);
-
-            if (string.IsNullOrEmpty(productos[i].IdTabla))
-            {
-                query["salida"] = HId.Value;
-                if (conector.QueryMod(query.GetInsert()) == -1)
-                    return;
-            }
-            else if (productos[i].pProductoAntiguo != null)
-            { // fue actualizado
-                if (conector.QueryMod(query.GetUpdate("id=" + productos[i].IdTabla)) == -1)
-                    return;
-            } else {
-                continue;
-            }
-            if (productos[i].bIngreso)
-            {
-                if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                    return;
-                productos[i].UpdateValor(conector);
-            }
+            ((ing)Master).SetResultado("Remisión " + HId.Value + " editada.");
         }
-
-        conector.Commit();
-        Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
-        Session["salida_clean"] = 1;
-        Session["lsalida"] = HId.Value;
-
-        ((ing)Master).SetResultado("Remisión " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)
     {

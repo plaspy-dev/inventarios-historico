@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-05-29 · Abrir el detalle de existencias de un producto.** Carga el producto indicado en la consulta y activa la vista detallada. También ajusta las consultas de ubicación para vincular el resultado con el almacén que se está revisando.
+**2013-07-08 · Actualizar formularios de inventario y retirar el mapa anterior.** Recupera cambios en la edición de productos y el guardado de entradas mientras se retira el script anterior de mapa. Esta revisión permite identificar los formularios de inventario que permanecen en la copia.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-05-29 · Open stock details for a selected product.** Load the product identified in the request and enable detailed view. Update location lookups so the result stays tied to the warehouse under review.
+**2013-07-08 · Update inventory forms and remove the old map.** Recover changes to product editing and receipt saves while removing the former map script. This revision identifies the inventory forms present in the snapshot.
 
 ### How to explore the source
 

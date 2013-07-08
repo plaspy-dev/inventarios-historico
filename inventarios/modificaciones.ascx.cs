@@ -40,47 +40,49 @@ public partial class modificaciones : System.Web.UI.UserControl
 
     public void SetModificacion(String modificacionId, String modificacionId2)
     {
-        CConector conector = new CConector();
-        Query query = new Query("modificaciones");
+        using (CConector conector = new CConector())
+        {
+            Query query = new Query("modificaciones");
 
-        query["usuario"] = "usuarios.nombre";
-        query["fecha"] = "modificaciones.fecha";
-        string url = HttpContext.Current.Request.Url.AbsolutePath.Replace(HttpContext.Current.Request.ApplicationPath, "~");
-        string condicion="modificaciones.id=" + Query.GetValor(modificacionId);
-        if (!string.IsNullOrEmpty(modificacionId2))
-        {
-            condicion += " AND modificaciones.id2=" + Query.GetValor(modificacionId2);
-        }
-        else
-        {
-            condicion += " AND modificaciones.id2 IS NULL";
-        }
-        condicion+= " AND modificaciones.url=" + Query.GetValor(url);
-        condicion += " ORDER BY modificaciones.fecha";
-
-        MySqlDataReader reader = conector.Query(query.GetSelect(condicion, "LEFT JOIN usuarios ON (usuarios.id=modificaciones.usuario)"));
-        if (reader != null)
-        {
-            PModificaciones.Visible = false;
-            if (reader.Read())
+            query["usuario"] = "usuarios.nombre";
+            query["fecha"] = "modificaciones.fecha";
+            string url = HttpContext.Current.Request.Url.AbsolutePath.Replace(HttpContext.Current.Request.ApplicationPath, "~");
+            string condicion = "modificaciones.id=" + Query.GetValor(modificacionId);
+            if (!string.IsNullOrEmpty(modificacionId2))
             {
-                PModificaciones.Visible = true;
-                GModificaciones.EmptyDataText = "";
-                LCreadoPor.Text = reader["usuario"].ToString();
-                LFechaCreacion.Text = reader["fecha"].ToString();
+                condicion += " AND modificaciones.id2=" + Query.GetValor(modificacionId2);
             }
-            ArrayList lista = new ArrayList();
-            while (reader.Read())
+            else
             {
-                if (LModificadoPor.Text.Length != 0)
+                condicion += " AND modificaciones.id2 IS NULL";
+            }
+            condicion += " AND modificaciones.url=" + Query.GetValor(url);
+            condicion += " ORDER BY modificaciones.fecha";
+
+            MySqlDataReader reader = conector.Query(query.GetSelect(condicion, "LEFT JOIN usuarios ON (usuarios.id=modificaciones.usuario)"));
+            if (reader != null)
+            {
+                PModificaciones.Visible = false;
+                if (reader.Read())
                 {
-                    lista.Add(new Mods(LModificadoPor.Text, LFechaModificacion.Text));
+                    PModificaciones.Visible = true;
+                    GModificaciones.EmptyDataText = "";
+                    LCreadoPor.Text = reader["usuario"].ToString();
+                    LFechaCreacion.Text = reader["fecha"].ToString();
                 }
-                LModificadoPor.Text = reader["usuario"].ToString();
-                LFechaModificacion.Text = reader["fecha"].ToString();
+                ArrayList lista = new ArrayList();
+                while (reader.Read())
+                {
+                    if (LModificadoPor.Text.Length != 0)
+                    {
+                        lista.Add(new Mods(LModificadoPor.Text, LFechaModificacion.Text));
+                    }
+                    LModificadoPor.Text = reader["usuario"].ToString();
+                    LFechaModificacion.Text = reader["fecha"].ToString();
+                }
+                GModificaciones.DataSource = lista;
+                GModificaciones.DataBind();
             }
-            GModificaciones.DataSource = lista;
-            GModificaciones.DataBind();
         }
     }
 

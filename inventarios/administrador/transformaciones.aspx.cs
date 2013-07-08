@@ -27,32 +27,34 @@ public partial class administrador_transformaciones : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query = new Query("transformacion");
-        CConector conector = new CConector();
-        string szQuery;
-        string mensaje;
-
-        query["producto1"] = TProductoID.Text;
-        query["producto2"] = TProductoID2.Text;
-        query["proporcion"] = TProporcion.Text;
-
-        if (HId.Value.Length == 0)
+        using (CConector conector = new CConector())
         {
-            szQuery = query.GetInsert();
-            HId.Value = TProductoID.Text;
-            HId2.Value = TProductoID2.Text;
-        }
-        else
-        {
-            szQuery = query.GetUpdate("producto1=" + Query.GetValor(HId.Value) + " AND producto2=" + Query.GetValor(HId2.Value));
-        }
-        mensaje = TProducto.Text + " - " + TProducto2.Text + " editada";
+            string szQuery;
+            string mensaje;
 
-        int res = conector.QueryMod(szQuery);
-        if (res == -1)
-            return;
-        if (conector.InsertModificacion(HId.Value, HId2.Value) == -1)
-            return;
-        ((ing)Master).SetResultado(mensaje);
+            query["producto1"] = TProductoID.Text;
+            query["producto2"] = TProductoID2.Text;
+            query["proporcion"] = TProporcion.Text;
+
+            if (HId.Value.Length == 0)
+            {
+                szQuery = query.GetInsert();
+                HId.Value = TProductoID.Text;
+                HId2.Value = TProductoID2.Text;
+            }
+            else
+            {
+                szQuery = query.GetUpdate("producto1=" + Query.GetValor(HId.Value) + " AND producto2=" + Query.GetValor(HId2.Value));
+            }
+            mensaje = TProducto.Text + " - " + TProducto2.Text + " editada";
+
+            int res = conector.QueryMod(szQuery);
+            if (res == -1)
+                return;
+            if (conector.InsertModificacion(HId.Value, HId2.Value) == -1)
+                return;
+            ((ing)Master).SetResultado(mensaje);
+        }
     }
 
     protected void BCancelar_Click(object sender, EventArgs e)

@@ -80,116 +80,124 @@ public partial class almacen_entrada : System.Web.UI.Page
             }
 
             CUsuario usuario = (CUsuario)CUsuario.GetUsuario();
-            if(!string.IsNullOrEmpty(Request.QueryString["ei"])) {
+            if (!string.IsNullOrEmpty(Request.QueryString["ei"]))
+            {
+                using (CConector conector = new CConector())
+                {
 
-                Query query = new Query("entrada" + ((ing)Master).GetAlmacen());
-                CConector conector = new CConector();
-
-                query += "id";
-                query+= "observaciones";
-                query+="fecha";
-                query += "desde";
-                query += "traslado";
-                query += "documento";
-                query += "tercero";
-                query += "estado";
-
-                MySqlDataReader reader= conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["ei"])));
-                if(reader!=null && reader.Read()) {
-
-                    HId.Value = TNumero.Text = reader["id"].ToString();
-                    ((ing)Master).SetModificacion(HId.Value, ((ing)Master).GetAlmacen());
-                    ((ing)Master).SetPrintFile("entrada.html");
-                    TObservaciones.Text = reader["observaciones"].ToString();
-                    TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
-                    TDocumento.Text = reader["documento"].ToString();
-                    PAnulado.Visible = reader["estado"].ToString() != "";
-
-                    Tercero tercero = new Tercero(reader["tercero"].ToString());
-                    TTerceroID.Text = tercero.Id;
-                    TTercero.Text = tercero.Documento;
-                    TNombre.Text = tercero.Nombre;
-                    TTelefono.Text = tercero.Telefono;
-                    TDireccion.Text = tercero.Direccion;
-                    TEMail.Text = tercero.Email;
-
-                    if (!string.IsNullOrEmpty(reader["traslado"].ToString())) {
-
-                        ViewState["TrasladoId"] = reader["traslado"].ToString();
-                        ViewState["TrasladoDesde"] = reader["desde"].ToString();
-
-                        HTraslado.Text = "Traslado No. " + reader["traslado"].ToString() + " desde ";
-                        HTraslado.NavigateUrl = "~/almacen/traslado.aspx?ti=" + reader["traslado"].ToString() + "&alm=" +  reader["desde"].ToString();
-                        if (reader["desde"].ToString() == "0")
-                            HTraslado.Text += "(Ajustes)";
-                        else HTraslado.Text += conector.QueryString("SELECT nombre FROM almacen WHERE id=" + reader["desde"].ToString());
-                    }
-
-                    Utilidades.GetGridColumn(GProductos, "Ubicación").Visible = TFecha.Text.Length != 0;
-                    Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible = TFecha.Text.Length == 0;
-
-                    ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
-
-                    query = new Query("entrada_items" + ((ing)Master).GetAlmacen());
+                    Query query = new Query("entrada" + ((ing)Master).GetAlmacen());
 
                     query += "id";
-                    query += "producto";
-                    query += "cantidad";
-                    query += "lote";
-                    query += "vence";
-                    query += "ubicacion";
-                    query += "szSerial";
+                    query += "observaciones";
+                    query += "fecha";
+                    query += "desde";
+                    query += "traslado";
+                    query += "documento";
+                    query += "tercero";
                     query += "estado";
-                    query += "ingreso";
-                    query += "costo";
 
-                    reader= conector.Query(query.GetSelect("entrada=" + HId.Value));
-                    if(reader!=null) {
-                        while(reader.Read()) {
-
-                            Producto info = new Producto(reader["producto"].ToString());
-
-                            info.IdTabla= reader["id"].ToString();
-                            info.cantidad= Convert.ToDecimal(reader["cantidad"]);
-                            info.lote= reader["lote"].ToString();
-                            info.vence= "";
-                            try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
-                            catch { }
-                            info.ubicacion= Convert.ToInt32(reader["ubicacion"]);
-                            info.serial= reader["szSerial"].ToString();
-                            info.estado= Convert.ToInt32(reader["estado"]);
-                            info.Ingreso = reader["ingreso"].ToString();
-                            info.Costo = Convert.ToDecimal(reader["costo"]);
-
-                            productoUsado.AddProducto(info);
-                        }
-                    }
-
-                    GProductos.DataSource = productoUsado.GetProductosUsados();
-                    HUsado.Value = productoUsado.SerializeBinary();
-                    GProductos.DataBind();
-                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Costo T.")].Text = string.Format("{0:C}", productoUsado.GetCostoTotal());
-                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
-                    GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
-
-                    TProducto.Focus();
-                    BAgregar.Enabled = string.IsNullOrEmpty((string)ViewState["TrasladoId"]);
-                    GProductos.Columns[0].Visible = usuario.CanDelete();
-                    BAceptar.Enabled = usuario.CanUpdate();
-                    BAnular.Visible = usuario.CanAdmin();
-                    if (PAnulado.Visible)
+                    MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["ei"])));
+                    if (reader != null && reader.Read())
                     {
-                        LAnulado.Text = "Anulada";
-                        GProductos.Columns[0].Visible=
-                        BAnular.Enabled = BAceptar.Enabled = false;
+
+                        HId.Value = TNumero.Text = reader["id"].ToString();
+                        ((ing)Master).SetModificacion(HId.Value, ((ing)Master).GetAlmacen());
+                        ((ing)Master).SetPrintFile("entrada.html");
+                        TObservaciones.Text = reader["observaciones"].ToString();
+                        TFecha.Text = CConector.GetFromMySQLDate(reader["fecha"]);
+                        TDocumento.Text = reader["documento"].ToString();
+                        PAnulado.Visible = reader["estado"].ToString() != "";
+
+                        Tercero tercero = new Tercero(reader["tercero"].ToString());
+                        TTerceroID.Text = tercero.Id;
+                        TTercero.Text = tercero.Documento;
+                        TNombre.Text = tercero.Nombre;
+                        TTelefono.Text = tercero.Telefono;
+                        TDireccion.Text = tercero.Direccion;
+                        TEMail.Text = tercero.Email;
+
+                        if (!string.IsNullOrEmpty(reader["traslado"].ToString()))
+                        {
+
+                            ViewState["TrasladoId"] = reader["traslado"].ToString();
+                            ViewState["TrasladoDesde"] = reader["desde"].ToString();
+
+                            HTraslado.Text = "Traslado No. " + reader["traslado"].ToString() + " desde ";
+                            HTraslado.NavigateUrl = "~/almacen/traslado.aspx?ti=" + reader["traslado"].ToString() + "&alm=" + reader["desde"].ToString();
+                            if (reader["desde"].ToString() == "0")
+                                HTraslado.Text += "(Ajustes)";
+                            else HTraslado.Text += conector.QueryString("SELECT nombre FROM almacen WHERE id=" + reader["desde"].ToString());
+                        }
+
+                        Utilidades.GetGridColumn(GProductos, "Ubicación").Visible = TFecha.Text.Length != 0;
+                        Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible = TFecha.Text.Length == 0;
+
+                        ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+
+                        query = new Query("entrada_items" + ((ing)Master).GetAlmacen());
+
+                        query += "id";
+                        query += "producto";
+                        query += "cantidad";
+                        query += "lote";
+                        query += "vence";
+                        query += "ubicacion";
+                        query += "szSerial";
+                        query += "estado";
+                        query += "ingreso";
+                        query += "costo";
+
+                        reader = conector.Query(query.GetSelect("entrada=" + HId.Value));
+                        if (reader != null)
+                        {
+                            while (reader.Read())
+                            {
+
+                                Producto info = new Producto(reader["producto"].ToString());
+
+                                info.IdTabla = reader["id"].ToString();
+                                info.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                                info.lote = reader["lote"].ToString();
+                                info.vence = "";
+                                try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
+                                catch { }
+                                info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
+                                info.serial = reader["szSerial"].ToString();
+                                info.estado = Convert.ToInt32(reader["estado"]);
+                                info.Ingreso = reader["ingreso"].ToString();
+                                info.Costo = Convert.ToDecimal(reader["costo"]);
+
+                                productoUsado.AddProducto(info);
+                            }
+                        }
+
+                        GProductos.DataSource = productoUsado.GetProductosUsados();
+                        HUsado.Value = productoUsado.SerializeBinary();
+                        GProductos.DataBind();
+                        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Costo T.")].Text = string.Format("{0:C}", productoUsado.GetCostoTotal());
+                        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = string.Format("{0:F}", productoUsado.GetTotalProductos());
+                        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = "Total";
+
+                        TProducto.Focus();
+                        BAgregar.Enabled = string.IsNullOrEmpty((string)ViewState["TrasladoId"]);
+                        GProductos.Columns[0].Visible = usuario.CanDelete();
+                        BAceptar.Enabled = usuario.CanUpdate();
+                        BAnular.Visible = usuario.CanAdmin();
+                        if (PAnulado.Visible)
+                        {
+                            LAnulado.Text = "Anulada";
+                            GProductos.Columns[0].Visible =
+                            BAnular.Enabled = BAceptar.Enabled = false;
+                        }
+                        return;
                     }
-                    return;
                 }
+                BAceptar.Enabled = usuario.CanInsert();
+                using(CConector conector = new CConector()) 
+                    TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM entrada" + ((ing)Master).GetAlmacen());
+                TFecha.Text = DateTime.Now.ToShortDateString();
+                TNumero.Focus();
             }
-            BAceptar.Enabled = usuario.CanInsert();
-            TNumero.Text = new CConector().QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM entrada" + ((ing)Master).GetAlmacen());
-            TFecha.Text = DateTime.Now.ToShortDateString();
-            TNumero.Focus();
         }
     }
 
@@ -310,196 +318,207 @@ public partial class almacen_entrada : System.Web.UI.Page
         }
 
         Query query = new Query("entrada" + ((ing)Master).GetAlmacen());
-        CConector conector = new CConector();
+        using (CConector conector = new CConector())
+        {
 
-        // agregamos el tercero
-        string terceroid = TTerceroID.Text;
+            // agregamos el tercero
+            string terceroid = TTerceroID.Text;
 
-        if(TNombre.Text.Length>0 && TTercero.Text.Length>0) {
-
-            Query tercero = new Query("tercero");
-
-            tercero["tipo"] = "2";
-            tercero["nombre"] = TNombre.Text;
-            tercero["identificacion"] = TTercero.Text;
-            tercero["telefono"] = TTelefono.Text;
-            tercero["direccion"] = TDireccion.Text;
-            tercero["email"] = TEMail.Text;
-
-            if (terceroid.Length > 0)
+            if (TNombre.Text.Length > 0 && TTercero.Text.Length > 0)
             {
-                if (conector.QueryMod(tercero.GetUpdate("id=" + Query.GetValor(terceroid))) == -1)
+
+                Query tercero = new Query("tercero");
+
+                tercero["tipo"] = "2";
+                tercero["nombre"] = TNombre.Text;
+                tercero["identificacion"] = TTercero.Text;
+                tercero["telefono"] = TTelefono.Text;
+                tercero["direccion"] = TDireccion.Text;
+                tercero["email"] = TEMail.Text;
+
+                if (terceroid.Length > 0)
+                {
+                    if (conector.QueryMod(tercero.GetUpdate("id=" + Query.GetValor(terceroid))) == -1)
+                        return;
+                }
+                else
+                {
+                    int res = conector.QueryMod(tercero.GetInsert());
+                    if (res == -1)
+                        return;
+                    terceroid = res.ToString();
+                }
+                Tercero.RemoveTercero(terceroid);
+            }
+
+            query["observaciones"] = TObservaciones.Text;
+            query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
+            query["documento"] = TDocumento.Text;
+            query["tercero"] = terceroid;
+            if (sender == BAnular)
+                query["estado"] = "-1";
+
+            conector.StartTransaction();
+
+            bool existe = HId.Value.Length > 0;
+
+            if (HId.Value.Length == 0)
+            {
+                int res = conector.QueryMod(query.GetInsert(), true);
+                if (res == -1)
+                {
+                    LMensaje.Text = conector.GetLastError();
                     return;
+                }
+                HId.Value = res.ToString();
             }
             else
             {
-                int res = conector.QueryMod(tercero.GetInsert());
-                if (res == -1)
+                if (conector.QueryMod(query.GetUpdate("id=" + Query.GetValor(HId.Value))) == -1)
+                {
+                    LMensaje.Text = conector.GetLastError();
                     return;
-                terceroid = res.ToString();
-            }
-            Tercero.RemoveTercero(terceroid);
-        }
-
-        query["observaciones"] = TObservaciones.Text;
-        query["fecha"] = CConector.GetMySQLDateFormat(TFecha.Text);
-        query["documento"] = TDocumento.Text;
-        query["tercero"] = terceroid;
-        if (sender == BAnular)
-            query["estado"] = "-1";
-
-        conector.StartTransaction();
-
-        bool existe = HId.Value.Length>0;
-
-        if (HId.Value.Length == 0)
-        {
-            int res = conector.QueryMod(query.GetInsert(), true);
-            if (res == -1)
-            {
-                LMensaje.Text = conector.GetLastError();
-                return;
-            }
-            HId.Value = res.ToString();
-        }
-        else
-        {
-            if (conector.QueryMod(query.GetUpdate("id=" + Query.GetValor(HId.Value))) == -1)
-            {
-                LMensaje.Text = conector.GetLastError();
-                return;
-            }
-        }
-
-        if (conector.InsertModificacion(HId.Value, ((ing)Master).GetAlmacen()) == -1)
-        {
-            LMensaje.Text = conector.GetLastError();
-            return;
-        }
-
-        string almacendesde = string.IsNullOrEmpty((string)ViewState["TrasladoDesde"]) ? "" : ViewState["TrasladoDesde"].ToString();
-        string trasladoId = string.IsNullOrEmpty((string)ViewState["TrasladoId"]) ? "" : ViewState["TrasladoId"].ToString();
-
-        if (almacendesde.Length>0 && trasladoId.Length>0)
-        {
-            if(conector.QueryMod(string.Format("UPDATE traslado{0} SET llegada={1} WHERE id={2}"
-                , almacendesde, Query.GetValor(CConector.GetMySQLDateFormat(TFecha.Text)), trasladoId))==-1)
-                return;
-            if (sender == BAnular)
-            { // anulamos el traslado
-                if (conector.QueryMod(string.Format("UPDATE traslado{0} SET estado=-1 WHERE id={1}", almacendesde, trasladoId)) == -1)
-                    return;
-                if (conector.QueryMod(string.Format("UPDATE traslado_items{0} SET ingreso=NULL WHERE traslado={1}", almacendesde, trasladoId)) == -1)
-                    return;
-            }
-        }
-
-
-        // actualizamos las ubicaciones de todos
-        ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
-        if (TFecha.Text.Length > 0 && Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible)
-        {
-            for (int i = 0; i < GProductos.Rows.Count; i++)
-            {
-                TextBox ubicacion = (TextBox)GProductos.Rows[i].FindControl("TUbicacionID");
-                if (ubicacion.Text.Length!=0 && ubicacion.Text!="-1")
-                { // se modifico la ubicacion.
-                    productoUsado.UpdateProductoUbicacion(Convert.ToInt32(GProductos.DataKeys[i].Values[0]), ubicacion.Text.Length==0 ? 0 : Convert.ToInt32(ubicacion.Text));
                 }
             }
-        }
 
-        // eliminamos todos los productos
-        List<Producto> productos= productoUsado.GetProductoEliminado();
-        for(int i=0; i<productos.Count; i++) {
-            if(conector.QueryMod(string.Format("DELETE FROM entrada_items{0} WHERE id={1}", ((ing)Master).GetAlmacen(), productos[i].IdTabla))==-1)
-                return;
-            if (productos[i].bIngreso)
+            if (conector.InsertModificacion(HId.Value, ((ing)Master).GetAlmacen()) == -1)
             {
-                if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                    return;
+                LMensaje.Text = conector.GetLastError();
+                return;
             }
+
+            string almacendesde = string.IsNullOrEmpty((string)ViewState["TrasladoDesde"]) ? "" : ViewState["TrasladoDesde"].ToString();
+            string trasladoId = string.IsNullOrEmpty((string)ViewState["TrasladoId"]) ? "" : ViewState["TrasladoId"].ToString();
+
             if (almacendesde.Length > 0 && trasladoId.Length > 0)
             {
-                if (conector.QueryMod(string.Format("DELETE FROM traslado_items{0} WHERE traslado={1} AND entrada_items={2}", almacendesde, trasladoId, productos[i].IdTabla)) == -1)
+                if (conector.QueryMod(string.Format("UPDATE traslado{0} SET llegada={1} WHERE id={2}"
+                    , almacendesde, Query.GetValor(CConector.GetMySQLDateFormat(TFecha.Text)), trasladoId)) == -1)
                     return;
-                bool ingresoold = productos[i].bIngreso;
-                productos[i].bIngreso = true;
-                if (!productos[i].DeleteProductoFromEstado(conector, almacendesde))
-                    return;
-                productos[i].bIngreso = ingresoold;
+                if (sender == BAnular)
+                { // anulamos el traslado
+                    if (conector.QueryMod(string.Format("UPDATE traslado{0} SET estado=-1 WHERE id={1}", almacendesde, trasladoId)) == -1)
+                        return;
+                    if (conector.QueryMod(string.Format("UPDATE traslado_items{0} SET ingreso=NULL WHERE traslado={1}", almacendesde, trasladoId)) == -1)
+                        return;
+                }
             }
-        }
-        // agregamos los nuevos
-        productos= productoUsado.GetProductosUsados();
-        for (int i = 0; i < productos.Count; i++)
-        {
-            // anulamos la salida del traslado
-            if (sender == BAnular && almacendesde.Length > 0)
+
+
+            // actualizamos las ubicaciones de todos
+            ProductoUsado productoUsado = ProductoUsado.DesSerialize(HUsado.Value);
+            if (TFecha.Text.Length > 0 && Utilidades.GetGridColumn(GProductos, "Ubicación ").Visible)
             {
-                bool oldingresoantiguo = false;
-                bool oldingreso = productos[i].bIngreso;
-                productos[i].bIngreso = true;
-                if(productos[i].pProductoAntiguo!=null) {
-                    oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
-                    productos[i].pProductoAntiguo.bIngreso = false;
-                }
-                if (!productos[i].AddProductoFromEstado(conector, almacendesde))
-                    return;
-
-                productos[i].bIngreso = oldingreso;
-                if (productos[i].pProductoAntiguo != null)
+                for (int i = 0; i < GProductos.Rows.Count; i++)
                 {
-                    productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
+                    TextBox ubicacion = (TextBox)GProductos.Rows[i].FindControl("TUbicacionID");
+                    if (ubicacion.Text.Length != 0 && ubicacion.Text != "-1")
+                    { // se modifico la ubicacion.
+                        productoUsado.UpdateProductoUbicacion(Convert.ToInt32(GProductos.DataKeys[i].Values[0]), ubicacion.Text.Length == 0 ? 0 : Convert.ToInt32(ubicacion.Text));
+                    }
                 }
             }
-            if (sender == BAnular) { // anulamos la entrada aqui
 
-                bool oldingresoantiguo = false;
-                if (productos[i].pProductoAntiguo != null)
-                {
-                    oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
-                    productos[i].pProductoAntiguo.bIngreso = false;
-                }
-                if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
-                    return;
-                if (productos[i].pProductoAntiguo != null)
-                {
-                    productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
-                }
-            }
-            productoUsado.UpdateProductoIngreso(productos[i].IdGrid, sender != BAnular && TFecha.Text.Length > 0);
-
-            query= productos[i].GetQuery("entrada_items" + ((ing)Master).GetAlmacen());
-
-            if(string.IsNullOrEmpty(productos[i].IdTabla)) {
-
-                query["entrada"] = HId.Value;
-                if (conector.QueryMod(query.GetInsert()) == -1)
-                    return;
-            } else if(productos[i].pProductoAntiguo!=null) { // fue actualizado
-                if (conector.QueryMod(query.GetUpdate("id=" + productos[i].IdTabla)) == -1)
-                    return;
-            } else {
-                continue;
-            }
-            if (productos[i].bIngreso)
+            // eliminamos todos los productos
+            List<Producto> productos = productoUsado.GetProductoEliminado();
+            for (int i = 0; i < productos.Count; i++)
             {
-                if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                if (conector.QueryMod(string.Format("DELETE FROM entrada_items{0} WHERE id={1}", ((ing)Master).GetAlmacen(), productos[i].IdTabla)) == -1)
                     return;
-                if (!productos[i].UpdateCosto(conector, TTerceroID.Text))
-                    return;
+                if (productos[i].bIngreso)
+                {
+                    if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
+                }
+                if (almacendesde.Length > 0 && trasladoId.Length > 0)
+                {
+                    if (conector.QueryMod(string.Format("DELETE FROM traslado_items{0} WHERE traslado={1} AND entrada_items={2}", almacendesde, trasladoId, productos[i].IdTabla)) == -1)
+                        return;
+                    bool ingresoold = productos[i].bIngreso;
+                    productos[i].bIngreso = true;
+                    if (!productos[i].DeleteProductoFromEstado(conector, almacendesde))
+                        return;
+                    productos[i].bIngreso = ingresoold;
+                }
             }
+            // agregamos los nuevos
+            productos = productoUsado.GetProductosUsados();
+            for (int i = 0; i < productos.Count; i++)
+            {
+                // anulamos la salida del traslado
+                if (sender == BAnular && almacendesde.Length > 0)
+                {
+                    bool oldingresoantiguo = false;
+                    bool oldingreso = productos[i].bIngreso;
+                    productos[i].bIngreso = true;
+                    if (productos[i].pProductoAntiguo != null)
+                    {
+                        oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
+                        productos[i].pProductoAntiguo.bIngreso = false;
+                    }
+                    if (!productos[i].AddProductoFromEstado(conector, almacendesde))
+                        return;
+
+                    productos[i].bIngreso = oldingreso;
+                    if (productos[i].pProductoAntiguo != null)
+                    {
+                        productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
+                    }
+                }
+                if (sender == BAnular)
+                { // anulamos la entrada aqui
+
+                    bool oldingresoantiguo = false;
+                    if (productos[i].pProductoAntiguo != null)
+                    {
+                        oldingresoantiguo = productos[i].pProductoAntiguo.bIngreso;
+                        productos[i].pProductoAntiguo.bIngreso = false;
+                    }
+                    if (!productos[i].DeleteProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
+                    if (productos[i].pProductoAntiguo != null)
+                    {
+                        productos[i].pProductoAntiguo.bIngreso = oldingresoantiguo;
+                    }
+                }
+                productoUsado.UpdateProductoIngreso(productos[i].IdGrid, sender != BAnular && TFecha.Text.Length > 0);
+
+                query = productos[i].GetQuery("entrada_items" + ((ing)Master).GetAlmacen());
+
+                if (string.IsNullOrEmpty(productos[i].IdTabla))
+                {
+
+                    query["entrada"] = HId.Value;
+                    if (conector.QueryMod(query.GetInsert()) == -1)
+                        return;
+                }
+                else if (productos[i].pProductoAntiguo != null)
+                { // fue actualizado
+                    if (conector.QueryMod(query.GetUpdate("id=" + productos[i].IdTabla)) == -1)
+                        return;
+                }
+                else
+                {
+                    continue;
+                }
+                if (productos[i].bIngreso)
+                {
+                    if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
+                        return;
+                    if (!productos[i].UpdateCosto(conector, TTerceroID.Text))
+                        return;
+                }
+            }
+
+            conector.Commit();
+            Session["entrada_clean"] = 1;
+
+            Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
+
+            Session["lentrada"] = HId.Value;
+
+            ((ing)Master).SetResultado("Entrada " + HId.Value + " editada.");
         }
-
-        conector.Commit();
-        Session["entrada_clean"] = 1;
-
-        Alertas.RemoveAlertas(((ing)Master).GetAlmacen());
-
-        Session["lentrada"] = HId.Value;
-
-        ((ing)Master).SetResultado("Entrada " + HId.Value + " editada.");
     }
     protected void BCancelar_Click(object sender, EventArgs e)
     {

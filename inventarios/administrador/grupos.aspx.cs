@@ -74,97 +74,103 @@ public partial class administrador_grupos : System.Web.UI.Page
         if (!IsValid)
             return;
         Query query= new Query("grupo");
-        CConector conector = new CConector();
-        string szQuery;
-        string mensaje;
-        string grupo = "";
-
-        conector.StartTransaction();
-
-        query["nombre"] = TNombre.Text;
-        query["descripcion"] = TDescripcion.Text;
-
-        if(LGrupos.SelectedIndex==-1) {
-
-            szQuery = query.GetInsert();
-            mensaje = TNombre.Text + " ingresado";
-            int resultado = conector.QueryMod(szQuery, true);
-            if (resultado == -1)
-                return;
-            grupo = resultado.ToString();
-        } else {
-            szQuery = query.GetUpdate("id='" + LGrupos.SelectedValue + "'");
-            mensaje = TNombre.Text + " editado";
-            if (conector.QueryMod(szQuery) == -1)
-                return;
-            grupo = LGrupos.SelectedValue;
-        }
-        if (conector.InsertModificacion(grupo) == -1)
-            return;
-        if (conector.QueryMod("DELETE FROM permisos WHERE grupo='" + grupo + "'") == -1)
-            return;
-
-        for (int j = 0; j < R.Items.Count; j++)
+        using (CConector conector = new CConector())
         {
-            GridView grid = (GridView)R.Items[j].FindControl("P");
-            Query permisos = new Query("permisos");
+            string szQuery;
+            string mensaje;
+            string grupo = "";
 
-            for (int i = 0; i < grid.Rows.Count; i++)
+            conector.StartTransaction();
+
+            query["nombre"] = TNombre.Text;
+            query["descripcion"] = TDescripcion.Text;
+
+            if (LGrupos.SelectedIndex == -1)
             {
-                permisos["grupo"] = grupo;
-                permisos["url"] = grid.DataKeys[i].Value.ToString();
-                int per = 0;
 
-                CheckBox check;
-                check = (CheckBox)grid.Rows[i].FindControl("a");
-                if (check.Checked)
-                    per += 32;
-                check = (CheckBox)grid.Rows[i].FindControl("e");
-                if (check.Checked)
-                    per += 16;
-                check = (CheckBox)grid.Rows[i].FindControl("d");
-                if (check.Checked)
-                    per += 8;
-                check = (CheckBox)grid.Rows[i].FindControl("i");
-                if (check.Checked)
-                    per += 4;
-                check = (CheckBox)grid.Rows[i].FindControl("m");
-                if (check.Checked)
-                    per += 2;
-                check = (CheckBox)grid.Rows[i].FindControl("l");
-                if (check.Checked)
-                    per += 1;
-                if (per == 0) // lo omitimos
-                    continue;
-                if (per > 0 && (per & 1) != 1)
-                    per += 1;
-                permisos["permiso"] = per.ToString();
-
-                if (conector.QueryMod(permisos.GetInsert()) == -1)
+                szQuery = query.GetInsert();
+                mensaje = TNombre.Text + " ingresado";
+                int resultado = conector.QueryMod(szQuery, true);
+                if (resultado == -1)
                     return;
+                grupo = resultado.ToString();
             }
-        }
-
-        if (conector.QueryMod("DELETE FROM alertas_grupo WHERE grupo=" + grupo) == -1)
-            return;
-        
-        query = new Query("alertas_grupo");
-        query["grupo"] = grupo;
-
-        for (int i = 0; i < GAlertas.Rows.Count; i++)
-        {
-            CheckBox check = (CheckBox)GAlertas.Rows[i].FindControl("CAlerta");
-            if(check.Checked) {
-                query["alerta"] = GAlertas.DataKeys[i].Value.ToString();
-                if (conector.QueryMod(query.GetInsert()) == -1)
+            else
+            {
+                szQuery = query.GetUpdate("id='" + LGrupos.SelectedValue + "'");
+                mensaje = TNombre.Text + " editado";
+                if (conector.QueryMod(szQuery) == -1)
                     return;
+                grupo = LGrupos.SelectedValue;
             }
+            if (conector.InsertModificacion(grupo) == -1)
+                return;
+            if (conector.QueryMod("DELETE FROM permisos WHERE grupo='" + grupo + "'") == -1)
+                return;
+
+            for (int j = 0; j < R.Items.Count; j++)
+            {
+                GridView grid = (GridView)R.Items[j].FindControl("P");
+                Query permisos = new Query("permisos");
+
+                for (int i = 0; i < grid.Rows.Count; i++)
+                {
+                    permisos["grupo"] = grupo;
+                    permisos["url"] = grid.DataKeys[i].Value.ToString();
+                    int per = 0;
+
+                    CheckBox check;
+                    check = (CheckBox)grid.Rows[i].FindControl("a");
+                    if (check.Checked)
+                        per += 32;
+                    check = (CheckBox)grid.Rows[i].FindControl("e");
+                    if (check.Checked)
+                        per += 16;
+                    check = (CheckBox)grid.Rows[i].FindControl("d");
+                    if (check.Checked)
+                        per += 8;
+                    check = (CheckBox)grid.Rows[i].FindControl("i");
+                    if (check.Checked)
+                        per += 4;
+                    check = (CheckBox)grid.Rows[i].FindControl("m");
+                    if (check.Checked)
+                        per += 2;
+                    check = (CheckBox)grid.Rows[i].FindControl("l");
+                    if (check.Checked)
+                        per += 1;
+                    if (per == 0) // lo omitimos
+                        continue;
+                    if (per > 0 && (per & 1) != 1)
+                        per += 1;
+                    permisos["permiso"] = per.ToString();
+
+                    if (conector.QueryMod(permisos.GetInsert()) == -1)
+                        return;
+                }
+            }
+
+            if (conector.QueryMod("DELETE FROM alertas_grupo WHERE grupo=" + grupo) == -1)
+                return;
+
+            query = new Query("alertas_grupo");
+            query["grupo"] = grupo;
+
+            for (int i = 0; i < GAlertas.Rows.Count; i++)
+            {
+                CheckBox check = (CheckBox)GAlertas.Rows[i].FindControl("CAlerta");
+                if (check.Checked)
+                {
+                    query["alerta"] = GAlertas.DataKeys[i].Value.ToString();
+                    if (conector.QueryMod(query.GetInsert()) == -1)
+                        return;
+                }
+            }
+
+            conector.Commit();
+            Session["alertas"] = null;
+
+            ((ing)Master).SetResultado(mensaje);
         }
-
-        conector.Commit();
-        Session["alertas"] = null;
-
-        ((ing)Master).SetResultado(mensaje);
     }
     protected void BCancelar_Click(object sender, EventArgs e)
     {
@@ -172,20 +178,22 @@ public partial class administrador_grupos : System.Web.UI.Page
     }
     protected void BEliminar_Click(object sender, EventArgs e)
     {
-        CConector conector = new CConector();
-        conector.StartTransaction();
-        if (conector.QueryMod("DELETE FROM alertas_grupo WHERE grupo=" + LGrupos.SelectedValue) == -1)
-            return;
-        if (conector.QueryMod("DELETE FROM permisos WHERE grupo='" + LGrupos.SelectedValue + "'") == -1)
-            return;
-        if (conector.QueryMod("DELETE FROM grupo WHERE id='" + LGrupos.SelectedValue + "'") == -1)
+        using (CConector conector = new CConector())
         {
-            ((ing)Master).SetAlerta("Todavia existen usuarios en este grupo.");
-            return;
+            conector.StartTransaction();
+            if (conector.QueryMod("DELETE FROM alertas_grupo WHERE grupo=" + LGrupos.SelectedValue) == -1)
+                return;
+            if (conector.QueryMod("DELETE FROM permisos WHERE grupo='" + LGrupos.SelectedValue + "'") == -1)
+                return;
+            if (conector.QueryMod("DELETE FROM grupo WHERE id='" + LGrupos.SelectedValue + "'") == -1)
+            {
+                ((ing)Master).SetAlerta("Todavia existen usuarios en este grupo.");
+                return;
+            }
+            conector.InsertModificacion(LGrupos.SelectedValue);
+            conector.Commit();
+            ((ing)Master).SetResultado("Grupo " + TNombre.Text + " Eliminado.");
         }
-        conector.InsertModificacion(LGrupos.SelectedValue);
-        conector.Commit();
-        ((ing)Master).SetResultado("Grupo " + TNombre.Text + " Eliminado.");
     }
 
     protected void LGrupos_SelectedIndexChanged(object sender, EventArgs e)
@@ -235,29 +243,31 @@ public partial class administrador_grupos : System.Web.UI.Page
             BEliminar.Enabled = usuario.CanDelete();
             BEliminar.Visible = true;
 
-            CConector conector= new CConector();
-
-            TNombre.Text = LGrupos.SelectedItem.Text;
-            TDescripcion.Text = conector.QueryString("SELECT descripcion FROM grupo WHERE id='" + LGrupos.SelectedValue + "'");
-
-            Query query = new Query("permisos");
-            query += "url";
-            query += "permiso";
-
-            MySqlDataReader reader= conector.Query(query.GetSelect("grupo='" + LGrupos.SelectedValue + "'"));
-            if (reader != null)
+            using (CConector conector = new CConector())
             {
-                while (reader.Read())
+
+                TNombre.Text = LGrupos.SelectedItem.Text;
+                TDescripcion.Text = conector.QueryString("SELECT descripcion FROM grupo WHERE id='" + LGrupos.SelectedValue + "'");
+
+                Query query = new Query("permisos");
+                query += "url";
+                query += "permiso";
+
+                MySqlDataReader reader = conector.Query(query.GetSelect("grupo='" + LGrupos.SelectedValue + "'"));
+                if (reader != null)
                 {
-                    string url= reader["url"].ToString();
-                    int nPermisos = Convert.ToInt32(reader["permiso"]);
-                    for (int i = 0; i < parents.Count; i++)
+                    while (reader.Read())
                     {
-                        Parents pagina = (Parents)parents[i];
-                        Permisos info = pagina.FindURL(url);
-                        if (info!=null)
+                        string url = reader["url"].ToString();
+                        int nPermisos = Convert.ToInt32(reader["permiso"]);
+                        for (int i = 0; i < parents.Count; i++)
                         {
-                            info.SetPermisos(nPermisos);
+                            Parents pagina = (Parents)parents[i];
+                            Permisos info = pagina.FindURL(url);
+                            if (info != null)
+                            {
+                                info.SetPermisos(nPermisos);
+                            }
                         }
                     }
                 }

@@ -8,10 +8,10 @@
     <title>Gestión de inventarios · edición histórica</title>
     <link rel="Stylesheet" type="text/css" href="css/jquery-ui-1.8.20.custom.css" />
     <link rel="Stylesheet" type="text/css" href="css/alertas/jquery-ui-1.9.2.custom.min.css" />
-    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-1.8.3.js"></script>
-    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-1.9.2.custom.min.js"></script>
+    <script type="text/javascript" src="https://service.example.invalid/ajax/libs/jquery/1.10.1/jquery.min.js"></script> 
+    <script type="text/javascript" src="https://service.example.invalid/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.ui.datepicker-es.js"></script>
-    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-numeric-min.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.autonumeric.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/main.js"></script>
     <script type="text/javascript">
         $(function() {
