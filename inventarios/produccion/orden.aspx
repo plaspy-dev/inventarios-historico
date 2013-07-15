@@ -1,8 +1,34 @@
 ﻿<%@ Page Title="Orden de producción" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="orden.aspx.cs" Inherits="produccion_orden" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
+<style type="text/css">
+    .aanalisis 
+    {
+        color: #FFF;
+    }
+</style>
 <script type="text/javascript">
     $(function() {
+        if (hasStorage) {
+          if(<%= (bool)ViewState["clean"] ? "true" : "false" %>) {
+                localStorage.orden=null;
+            } else {
+                $("#<%= HProductos.ClientID %>").val(localStorage.orden);
+                if($("#<%= HProductos.ClientID %>").val().length) {
+                    if(confirm("¿Se ha encontrado una orden sin terminar desea continuarla?")) {
+                        $("#<%= BActualizar.ClientID %>").click();
+                    } else {
+                        localStorage.orden=null;
+                        $("#<%= HProductos.ClientID %>").val("");
+                    }
+                }
+            }
+        }
+    });
+    
+    addFunctionToStart(function() {
+        if (hasStorage) 
+          localStorage.orden = $("#<%= HProductos.ClientID %>").val();
         $("#<%= TCliente.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -111,8 +137,16 @@
             if ($(this).val().length == 0) {
                 $("#<%= TRecetaID.ClientID %>").val("");
                 $("#<%= TProductoID.ClientID %>").val("");
+            } else {
+                if($("#<%= TCantidad.ClientID %>").val().length!=0 && $("#<%= TProductoID.ClientID %>").val().length!=0)
+                    $("#<%= BFormular.ClientID %>").click();
             }
         });
+        $("#<%= TCantidad.ClientID %>").change(function() {
+            if($("#<%= TCantidad.ClientID %>").val().length!=0 && $("#<%= TProductoID.ClientID %>").val().length!=0)
+                $("#<%= BFormular.ClientID %>").click();
+        });
+        
         $("#<%= TNumero.ClientID %>").change(function() {
             $.goURL("oi=" + $(this).val());
         });
@@ -130,6 +164,8 @@
         });
     </script>
 </asp:Panel>
+<asp:UpdatePanel runat="server" UpdateMode="Conditional">
+<ContentTemplate>
 <asp:Panel runat="server" DefaultButton="BAceptar">
 <table class="tablecollapse">
     <tr>
@@ -159,13 +195,13 @@
         <asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
     </tr>
     <tr>
-        <td>Lote</td>
+        <td>Cantidad programada<asp:RequiredFieldValidator ControlToValidate="TCantidad" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator7" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+        <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator1" runat="server" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator></td>
+        <td>
+            <asp:Button runat="server" ID="BFormular" Text="Traer formula" CausesValidation="false" OnClick="BFormular_Click" CssClass="hide" />
+            <asp:TextBox runat="server" ID="TCantidad" CssClass="float"></asp:TextBox></td>
+        <td>Lote<asp:RequiredFieldValidator ControlToValidate="TLote" ErrorMessage="Por favor ingrese un lote." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
         <td><asp:TextBox runat="server" ID="TLote"></asp:TextBox></td>
-        <td>Cantidad programada</td>
-        <td><asp:TextBox runat="server" ID="TCantidad" CssClass="float"></asp:TextBox></td>
-    </tr>
-    <tr>
-        <td colspan="4" align="right"><asp:Button runat="server" ID="BFormular" Text="Traer formula" CausesValidation="false" OnClick="BFormular_Click" /></td>
     </tr>
     <tr>
         <td colspan="4" class="GridHeader">Requerimientos</td>
@@ -180,13 +216,15 @@
             <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="agregar" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidadIngrediente" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
             </td>
         <td><asp:TextBox runat="server" ID="TCantidadIngrediente" CssClass="float"></asp:TextBox></td>
-        <td><asp:HiddenField runat="server" ID="HProductos" /><asp:Button runat="server" ID="BMas" Text="Agregar" ValidationGroup="agregar" OnClick="BMas_Click" /></td>
+        <td><asp:HiddenField runat="server" ID="HProductos" /><asp:Button runat="server" ID="BMas" Text="Agregar" ValidationGroup="agregar" OnClick="BMas_Click" />
+        <asp:Button ID="BActualizar" runat="server" Text="Actualizar" CssClass="hide" CausesValidation="false" onclick="BActualizar_Click" />
+        </td>
         <td class="tdr"></td>
     </tr>
     <tr>
-        <td colspan="4" class="tdl tdr tdb">
+        <td colspan="4" class="tdl tdr tdb" align="center">
             <asp:GridView ID="GProductos" runat="server" AutoGenerateColumns="False" 
-                    DataKeyNames="IdGrid,id,ubicacion,estado" 
+                    DataKeyNames="IdGrid,id" 
                     EmptyDataText="No hay productos" onrowdeleting="GProductos_RowDeleting" ShowFooter="true" >
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -203,6 +241,48 @@
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                     </Columns>
                 </asp:GridView>
+                <br />
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4" class="GridHeader" runat="server" id="tAnalisis" visible="false"><asp:HyperLink ID="HAnalisis" CssClass="aanalisis" runat="server" Text="Análisis físico químico" NavigateUrl="~/produccion/laboratorio.aspx"></asp:HyperLink></td>
+    </tr>
+    <tr>
+        <td colspan="4" class="tdl tdr tdb" align="center" runat="server" id="tGAnalisis" visible="false">
+            <asp:GridView ID="GAnalisis" runat="server" AutoGenerateColumns="False" DataSourceID="SAnalisis" 
+                DataKeyNames="id" EmptyDataText="No se encontraron análisis" >
+                <RowStyle CssClass="GridRow"></RowStyle>
+                <FooterStyle CssClass="GridFooter"></FooterStyle>
+                <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                <Columns>
+                    <asp:BoundField DataField="fecha" HeaderText="Fecha" SortExpression="fecha" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:d}" />
+                    <asp:BoundField DataField="peso_lavado" HeaderText="Peso lavado" SortExpression="peso_lavado" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="peso_escurrido" HeaderText="Peso escurrido" SortExpression="peso_escurrido" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="brix" HeaderText="Brix" SortExpression="brix" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="acidez" HeaderText="Acidez" SortExpression="acidez" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="viscosidad" HeaderText="Viscosidad" SortExpression="viscosidad" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="consistencia" HeaderText="Consistencia" SortExpression="consistencia" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="ph" HeaderText="PH" SortExpression="ph" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="densidad" HeaderText="Densidad" SortExpression="densidad" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="chart_color" HeaderText="Chart-Color" SortExpression="chart_color" ItemStyle-HorizontalAlign="Right" />
+                    <asp:BoundField DataField="observaciones" HeaderText="Observaciones" SortExpression="observaciones" />
+                </Columns>
+            </asp:GridView>
+            <asp:SqlDataSource ID="SAnalisis" runat="server" 
+                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                SelectCommand="SELECT 
+                    id,fecha,peso_lavado,peso_escurrido,brix,acidez,viscosidad,consistencia,ph,densidad,chart_color,observaciones 
+                    FROM analisis_fisico_quimico   
+                    WHERE orden=@orden
+                    ORDER BY fecha DESC">
+                <SelectParameters>
+                    <asp:Parameter Name="orden" />
+                </SelectParameters>
+            </asp:SqlDataSource>
         </td>
     </tr>
     <tr>
@@ -222,4 +302,6 @@
     </tr>
 </table>
 </asp:Panel>
+</ContentTemplate>
+</asp:UpdatePanel>
 </asp:Content>

@@ -56,57 +56,11 @@ public partial class administrador_Default : System.Web.UI.Page
             Add("Grupos", 1, parent);
             // Add("Estados", 2, parent);
 
-            /*TreeNode parent = Add("Hoja de ingreso");
 
-            Add("Según", 1, parent);
-            Add("Antecedentes", 2, parent);
-            Add("Revisión sistemas", 3, parent);
-            Add("Examen físico", 4, parent);
-            Add("Varios", 5, parent);
-            Add("Tipo diagnóstico", 20, parent);
-            // Add("Varios Inferior (Hoja de ingreso)", 6, parent); // eliminado.
 
-            parent = Add("Indice de Barthel");
-            Add("Grupos", 7, parent);
-            // Add("Indice de Barthel", 8, parent);
-
-            parent = Add("Hoja de gastos");
-            Add("Suministros", 9, parent);
-
-            parent = Add("Hoja de enfermería");
-            Add("Dieta", 10, parent);
-            Add("Control de líquidos", 11, parent);
-            Add("Vía", 12, parent);
-
-            parent = Add("Pacientes");
-            Add("Categoría de afiliación", 13, parent);
-            // Add("Copagos", 14, parent);
-
-            parent = Add("Encuesta de satisfacción al usuario");
-            Add("Grupo preguntas", 15, parent);
-            // Add("Preguntas", 16, parent);
-
-            parent = Add("Evento adverso o incidente en la IPS");
-            Add("Tipo evento", 17, parent);
-            Add("Consecuencia del evento", 18, parent);
-
-            parent = Add("Formulación");
-            Add("Tipo formulación", 19, parent);
-
-            // 20
-            parent = Add("Autorizaciones");
-            Add("Horas", 21, parent);
-
-            parent = Add("Formulación");
-            Add("Área", 22, parent);
-
-            parent = Add("Valoración apoyo terapeutico");
-            Add("Sistema de bajo flujo", 23, parent);
-            Add("Sistema de alto flujo", 24, parent);
-            Add("Fuerza muscular", 25, parent);*/
-            
-            // disponible 26
-
+            // demo_inventory
+            /*parent = Add("Análisis físico químico");
+            Add("Parámetro", 1001, parent);*/
 
             if (HTipo.Value.Length == 0)
                 Response.Redirect(Request.Url.AbsolutePath + "?tipo=1");

@@ -104,6 +104,7 @@ public partial class ing : System.Web.UI.MasterPage
             }
         }
         usuario.CreateMenu(TMenu, Session["parametros"] == null ? "" : Session["parametros"].ToString());
+        Session["parametros"] = null;
     }
     public void SetPrintFile(string archivo)
     {

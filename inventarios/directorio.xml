@@ -73,6 +73,10 @@
       <url>~/produccion/orden.aspx</url>
     </pagina>
     <pagina>
+      <titulo>Análisis físico químico</titulo>
+      <url>~/produccion/laboratorio.aspx</url>
+    </pagina>
+    <pagina>
       <titulo>Formulación</titulo>
       <url>~/produccion/formulacion.aspx</url>
     </pagina>
