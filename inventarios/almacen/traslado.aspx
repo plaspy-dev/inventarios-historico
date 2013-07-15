@@ -25,7 +25,7 @@
                 if(confirm("¿Se ha encontrado un traslado sin terminar desea continuarla?")) {
                     $("#<%= BActualizar.ClientID %>").click();
                 } else {
-                    localStorage.salida=null;
+                    localStorage.traslado=null;
                     $("#<%= HProductos.ClientID %>").val("");
                 }
               }

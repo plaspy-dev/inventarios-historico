@@ -21,8 +21,7 @@ public partial class produccion_orden : System.Web.UI.Page
             {
                 ViewState["clean"] = true;
                 Session["orden_clean"] = null;
-            }
-            else ViewState["clean"] = false;
+            } else ViewState["clean"] = false;
 
             if (Session["lorden"] != null)
             {
@@ -52,7 +51,15 @@ public partial class produccion_orden : System.Web.UI.Page
                     MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["oi"])));
                     if (reader != null && reader.Read())
                     {
-                        ViewState["id"] = TNumero.Text = reader["id"].ToString();
+                        Session["parametros"] = Request.Url.Query;
+                        ViewState["id"] = 
+                            SAnalisis.SelectParameters["orden"].DefaultValue = 
+                            TNumero.Text = reader["id"].ToString();
+
+                        tGAnalisis.Visible =
+                        tAnalisis.Visible = true;
+
+                        HAnalisis.NavigateUrl += "?oi=" + TNumero.Text;
 
                         BAceptar.Enabled = usuario.CanUpdate();
                         ((ing)Master).SetModificacion(TNumero.Text);
@@ -122,13 +129,15 @@ public partial class produccion_orden : System.Web.UI.Page
             TIngredienteID.Text = info.id;
             TIngrediente.Text = info.NombreCompleto;
             TCantidadIngrediente.Text = info.cantidad.ToString(CultureInfo.InvariantCulture);
-            lista.Remove(info);
+            info.IdGrid = -1;
+            // lista.Remove(info);
 
             for (int i = 0; i < lista.Count; i++)
-                lista[i].IdGrid = i;
+                if(lista[i].IdGrid!=-1)
+                    lista[i].IdGrid = i;
 
             HProductos.Value = Serializar.SerializeBinary(lista);
-            GProductos.DataSource = lista;
+            GProductos.DataSource = lista.Where(x=> x.IdGrid!=-1).ToList();
             GProductos.DataBind();
             GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = lista.Sum(x => x.cantidad).ToString("0.00");
         }
@@ -148,7 +157,7 @@ public partial class produccion_orden : System.Web.UI.Page
         lista.Add(info);
 
         HProductos.Value = Serializar.SerializeBinary(lista);
-        GProductos.DataSource = lista;
+        GProductos.DataSource = lista.Where(x => x.IdGrid != -1).ToList();
         GProductos.DataBind();
         GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = lista.Sum(x => x.cantidad).ToString("0.00");
 
@@ -217,12 +226,20 @@ public partial class produccion_orden : System.Web.UI.Page
             {
                 if (string.IsNullOrEmpty(lista[i].IdTabla))
                 {
-                    query["producto"] = lista[i].id;
-                    query["cantidad"] = lista[i].cantidad.ToString(CultureInfo.InvariantCulture);
-
-                    if (conector.QueryMod(query.GetInsert()) == -1)
+                    if (lista[i].IdGrid != -1)
                     {
+                        query["producto"] = lista[i].id;
+                        query["cantidad"] = lista[i].cantidad.ToString(CultureInfo.InvariantCulture);
 
+                        if (conector.QueryMod(query.GetInsert()) == -1)
+                        {
+                            LMensaje.Text = conector.GetLastError();
+                            return;
+                        }
+                    }
+                } else if (lista[i].IdGrid == -1) {
+                    if (conector.QueryMod("DELETE FROM orden_produccion_ingredientes WHERE id=" + lista[i].IdTabla) == -1)
+                    {
                         LMensaje.Text = conector.GetLastError();
                         return;
                     }
@@ -230,12 +247,15 @@ public partial class produccion_orden : System.Web.UI.Page
             }
 
             conector.Commit();
+            Session["orden_clean"] = 1;
+            Session["parametros"] = "oi=" + id;
             ((ing)Master).SetResultado("Orden de producción " + id + " Editado");
         }
     }
 
     protected void BCancelar_Click(object sender, EventArgs e)
     {
+        Session["orden_clean"] = 1;
         Response.Redirect("~/produccion/orden.aspx");
     }
 
@@ -243,17 +263,20 @@ public partial class produccion_orden : System.Web.UI.Page
     {
         GProductos.Columns[0].Visible =false;
     }
+
     protected void BFormular_Click(object sender, EventArgs e)
     {
         LMensaje.Text = "";
         if (TRecetaID.Text.Length == 0)
         {
             LMensaje.Text = "Por favor seleccione un producto";
+            TProducto.Focus();
             return;
         }
         if (TCantidad.Text.Length == 0)
         {
             LMensaje.Text = "Por favor ingrese una cantidad";
+            TCantidad.Focus();
             return;
         }
 
@@ -268,9 +291,10 @@ public partial class produccion_orden : System.Web.UI.Page
             List<Producto> lista = Serializar.DesSerializeBinary<List<Producto>>(HProductos.Value);
             
             // borramos los que no estan fijos
-            lista.RemoveAll(x => x.IdTabla.Length == 0);
+            lista.RemoveAll(x => string.IsNullOrEmpty(x.IdTabla));
             for (int i = 0; i < lista.Count; i++)
-                lista[i].IdGrid = i;
+                if (lista[i].IdGrid != -1)
+                    lista[i].IdGrid = i;
 
             MySqlDataReader reader = conector.Query(query.GetSelect("formulacion=" + Query.GetValor(TRecetaID.Text)));
             if (reader != null)
@@ -285,10 +309,26 @@ public partial class produccion_orden : System.Web.UI.Page
             }
 
             HProductos.Value = Serializar.SerializeBinary(lista);
-            GProductos.DataSource = lista;
+            GProductos.DataSource = lista.Where(x => x.IdGrid != -1).ToList();
             GProductos.DataBind();
 
             GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = lista.Sum(x => x.cantidad).ToString("0.00");
+        }
+        TLote.Focus();
+    }
+
+    protected void BActualizar_Click(object sender, EventArgs e)
+    {
+        List<Producto> lista = Serializar.DesSerializeBinary<List<Producto>>(HProductos.Value);
+        HProductos.Value = "";
+
+        for (int i = 0; i < lista.Count; i++)
+        {
+            TIngredienteID.Text = lista[i].id;
+            TCantidadIngrediente.Text = lista[i].cantidad.ToString(CultureInfo.InvariantCulture);
+            TIngrediente.Text = lista[i].NombreCompleto;
+            Validate("agregar");
+            BMas_Click(sender, e);
         }
     }
 }

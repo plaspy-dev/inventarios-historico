@@ -18,8 +18,8 @@
               if($("#<%= HProductos.ClientID %>").val().length) {
                 if(confirm("¿Se ha encontrado una entrada sin terminar desea continuarla?")) {
                     $("#<%= BActualizar.ClientID %>").click();
-                } else {localStorage
-                    .salida=null;
+                } else {
+                    localStorage.entrada=null;
                     $("#<%= HProductos.ClientID %>").val("");
                 }
               }

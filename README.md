@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-07-08 · Actualizar formularios de inventario y retirar el mapa anterior.** Recupera cambios en la edición de productos y el guardado de entradas mientras se retira el script anterior de mapa. Esta revisión permite identificar los formularios de inventario que permanecen en la copia.
+**2013-07-15 · Añadir la ficha de laboratorio y ampliar órdenes.** Incorpora el formulario y controlador de laboratorio y amplía los campos de orden. El código reúne la información que se consulta al pasar del registro del producto a una orden.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-07-08 · Update inventory forms and remove the old map.** Recover changes to product editing and receipt saves while removing the former map script. This revision identifies the inventory forms present in the snapshot.
+**2013-07-15 · Add laboratory records and expand orders.** Add the laboratory form and handler and expand order fields. The source brings together information consulted when moving from a product record to an order.
 
 ### How to explore the source
 
