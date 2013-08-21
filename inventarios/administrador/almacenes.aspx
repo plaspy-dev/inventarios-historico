@@ -11,8 +11,8 @@
         <td>
 <table width="100%" border="0"  class="tablecollapse">
           <tr>
-            <td>Nombre</td>
-            <td>
+            <td width=1>Nombre</td>
+            <td width=1>
                 <asp:TextBox ID="TNombre" runat="server"></asp:TextBox>
               </td>
             <td>
@@ -35,8 +35,8 @@
           </tr>
           <tr>
               <td colspan="3" class="tdl tdr">
-              <asp:GridView ID="GUbicaciones" runat="server" AutoGenerateColumns="False" 
-                DataKeyNames="id" DataSourceID="SUbicaciones" 
+              <asp:GridView ID="GUbicaciones" runat="server" AutoGenerateColumns="False" Width="100%"
+                DataKeyNames="id" DataSourceID="SUbicaciones" ShowHeader="false"
                 onselectedindexchanged="GUbicaciones_SelectedIndexChanged" AllowPaging="true" >
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -45,9 +45,9 @@
                 <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
                 <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                 <Columns>
-                    <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
-                    <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" />
+                    <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" ItemStyle-Width="1" />
+                    <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" ItemStyle-Width="1" />
+                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" ItemStyle-Width="100%" />
                 </Columns>
                 </asp:GridView>
                 <sdg:CustomDataSource ID="SUbicaciones" runat="server" 
@@ -85,7 +85,7 @@
       </tr>
       <tr>
         <td>
-            <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" 
+            <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" Width="100%"
                 DataKeyNames="id" DataSourceID="SResultados" AllowSorting="true"
                 onselectedindexchanged="GResultado_SelectedIndexChanged" >
                 <RowStyle CssClass="GridRow"></RowStyle>
@@ -97,8 +97,8 @@
                 <Columns>
                     <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
                     <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" />
-                    <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" />
+                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" ItemStyle-Wrap="false" />
+                    <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" ItemStyle-Width="100%" />
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SResultados" runat="server" 

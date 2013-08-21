@@ -16,8 +16,10 @@ function addDialog(szPanel, szDialog, showclosebutton) {
             closeOnEscape: showclosebutton,
             open: function(event, ui) { if (!showclosebutton) $(".ui-dialog-titlebar-close").hide(); setTimeout("$('" + szDialog + " :input:first').focus();", 100); }
         });
-        if (szPanel != null)
+        if (szPanel != null) {
+            $(szDialog).parent().prev().appendTo(jQuery(szPanel));
             $(szDialog).parent().appendTo(jQuery(szPanel));
+        }
         $(szDialog + " :submit").button();
         $(szDialog + " :button").button();
         return true;
@@ -82,7 +84,10 @@ function inicio() {
     // todos los campos fecha
     $(".fecha").mask("99/99/9999");*/
     // $(".fecha").datepicker({ onSelect: function() { } });
-    $(".fecha").datepicker($.datepicker.regional["es"]);
+    $.datepicker.setDefaults($.datepicker.regional["es"]);
+    $(".fecha").datepicker();
+    $(".fechahora").datetimepicker();
+    $(".hora").timepicker();
 
     // todos los campos entero
     $('.entero').autoNumeric('init', { vMin: 0, mDec: 0, aSep: '' });

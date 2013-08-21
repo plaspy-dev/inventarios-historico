@@ -10,6 +10,7 @@
     <link rel="Stylesheet" type="text/css" href="css/alertas/jquery-ui-1.9.2.custom.min.css" />
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script> 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery-ui-timepicker-addon.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.ui.datepicker-es.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.autonumeric.js"></script>
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/main.js"></script>
@@ -178,7 +179,7 @@
                             </div>
                         </div>
                         </td>
-                        <td valign="top"><asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+                        <td valign="top" width="100%"><asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
                 </asp:ContentPlaceHolder></td>
                     </tr>
                 </table>

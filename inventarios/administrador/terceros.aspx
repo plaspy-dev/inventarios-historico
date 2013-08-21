@@ -44,8 +44,8 @@
         <td>
         <table width="100%" border="0"  class="tablecollapse">
           <tr>
-            <td>Identificación</td>
-            <td>
+            <td width=1>Identificación</td>
+            <td width=1>
                 <asp:TextBox ID="TIdentificacion" runat="server"></asp:TextBox>
               </td>
               <td>
@@ -102,17 +102,17 @@
           </tr>
           <tr>
             <td></td>
-            <td align="right">
+            <td></td>
+            <td>
                 <asp:Button ID="BAceptar" runat="server" Text="Aceptar" onclick="BAceptar_Click" />
                 <asp:Button ID="BCancelar" runat="server" CausesValidation="False" Text="Cancelar" onclick="BCancelar_Click" />
               </td>
-            <td></td>
           </tr>
         </table></td>
       </tr>
       <tr>
         <td>
-            <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" 
+            <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" Width="100%"
                 DataKeyNames="id" DataSourceID="SResultados" AllowPaging="true" AllowSorting="true"
                 onselectedindexchanged="GResultado_SelectedIndexChanged" >
                 <RowStyle CssClass="GridRow"></RowStyle>
@@ -125,12 +125,12 @@
                     <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
                     <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
                     <asp:BoundField DataField="identificacion" HeaderText="Identificación" SortExpression="identificacion" />
-                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" />
+                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" ItemStyle-Width="100%" />
                     <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" />
                     <asp:BoundField DataField="direccion" HeaderText="Dirección" SortExpression="direccion" />
-                    <asp:BoundField DataField="telefono" HeaderText="Teléfono" SortExpression="telefono" />
+                    <asp:BoundField DataField="telefono" HeaderText="Teléfono" SortExpression="telefono" ItemStyle-Wrap="false" />
                     <asp:BoundField DataField="email" HeaderText="E-Mail" SortExpression="email" />
-                    <asp:BoundField DataField="tipo" HeaderText="Tipo" SortExpression="tipo" />
+                    <asp:BoundField DataField="tipo" HeaderText="Tipo" SortExpression="tipo" ItemStyle-Wrap="false" />
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SResultados" runat="server" 

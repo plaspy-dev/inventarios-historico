@@ -57,22 +57,29 @@ public class Almacen
         return nombre;
     }
 
-    static public void RemoveEstado(string estado)
+    static public void RemoveVarios(string estado)
     {
         Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + estado);
+    }
+
+    static public string GetNombreVarios(string id) {
+
+        if (string.IsNullOrEmpty(id))
+            return "";
+        string nombre = (string)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + id);
+        if (nombre == null)
+        {
+            using (CConector conector = new CConector())
+                nombre = conector.QueryString("SELECT nombre FROM varios WHERE id=" + Query.GetValor(id));
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + id, nombre);
+        }
+        return nombre;
     }
 
     static public string GetNombreEstado(int estado)
     {
         if (estado == 0)
             return "(Ninguno)";
-        string nombre = (string)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + estado.ToString());
-        if (nombre == null)
-        {
-            using (CConector conector = new CConector()) 
-                nombre = conector.QueryString("SELECT nombre FROM varios WHERE id=" + Query.GetValor(estado.ToString()));
-            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "e" + estado.ToString(), nombre);
-        }
-        return nombre;
+        return GetNombreVarios(estado.ToString());
     }
 }

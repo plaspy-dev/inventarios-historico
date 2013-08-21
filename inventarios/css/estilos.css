@@ -62,19 +62,19 @@ body {
 	border-top: 1px solid #AAA;
 }
 
-.tdb
+.tda,.tdb
 {
     border-bottom: 1px solid #3f7506; 
 }
-.tdt
+.tda,.tdt
 {
     border-top: 1px solid #3f7506; 
 }
-.tdl
+.tda,.tdl
 {
     border-left: 1px solid #3f7506; 
 }
-.tdr
+.tda,.tdr
 {
     border-right: 1px solid #3f7506; 
 }
@@ -103,11 +103,20 @@ table .tablecollapse {
 {
     display: none;
 }
-.fecha 
+.hora 
+{
+    width: 50px;
+    text-align: right;
+}
+.fecha,.fechahora
 {
     width: 100px;
     text-align: right;
     background: white url('../img/cal.gif') left center no-repeat;
+}
+.fechahora 
+{
+    width: 125px;
 }
 .float,.dinero
 {
@@ -142,6 +151,11 @@ table .tablecollapse {
     border: 1px solid #3f7506; background: #156b13 url(images/ui-bg_highlight-soft_33_156b13_1x100.png) 50% 50% repeat-x; color: #ffffff; font-weight: bold;
     font-weight: bold;
     color: White !important;
+}
+.GridHeader th 
+{
+    width: 1px;
+    text-align: left;
 }
 .GridRow
 {

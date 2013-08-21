@@ -2,15 +2,23 @@ body {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 12px;
 }
-#dp table td {
+.tgrid td, .tgrid th {
 	border: 1px #AAA solid;
 }
-#dp table {
+.tgrid {
 	border-collapse: collapse;
 	border: 0px;
 	border-radius: 5px;
 }
+.tgrid tr:nth-child(odd) { background-color:#eee; }
+.tgrid tr:nth-child(even) { background-color:#fff; }
 .titulo,.numero {
 	font-size: 20px;
 	font-weight: bold;
+}
+.pagina {
+	page-break-after: always;
+}
+.pagina:last-child {
+    page-break-after: auto;
 }

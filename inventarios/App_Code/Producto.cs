@@ -28,7 +28,6 @@ public class Producto
     protected int _nNumero= -1;
     protected int _nEstado = -1;
     protected string _Empresa;
-    public string FormatoLote = "";
 
     public String id { set; get; }
     public String lote { set; get; }
@@ -40,6 +39,7 @@ public class Producto
     public Decimal Costo { set; get;}
     public Decimal Valor { set; get; }
     public int DiasV { set; get; }
+    public string FormatoLote { set; get; }
 
     [XmlIgnore]
     public bool bIngreso = false;
@@ -74,14 +74,11 @@ public class Producto
     public string LoteTemporal {
         get {
             DateTime actual = DateTime.Now;
-            string pad = "00";
-            string dia= actual.Day.ToString();
-            string mes = actual.Month.ToString();
 
             string lote = FormatoLote
                 .Replace("%codigo%", codigo)
-                .Replace("%dia%", pad.Substring(0, pad.Length - dia.Length) + dia)
-                .Replace("%mes%", pad.Substring(0, pad.Length - mes.Length) + mes)
+                .Replace("%dia%", actual.Day.ToString("00"))
+                .Replace("%mes%", actual.Month.ToString("00"))
                 .Replace("%ano%",  actual.Year.ToString().Substring(2))
                 .Replace("%anoc%", actual.Year.ToString());
             return lote;

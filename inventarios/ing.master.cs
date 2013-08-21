@@ -52,53 +52,58 @@ public partial class ing : System.Web.UI.MasterPage
 
                 if (Request.QueryString["p"] == "1")
                 {
-                    // llamamos a la pagina cliente
-                    if (_ImprimirClicked != null)
+                    PrintEventArgs evento = new PrintEventArgs();
+                    using (StreamReader reader = Formato.GetStreamFormato(ViewState["printfile"].ToString()))
                     {
-                        _ImprimirClicked(this, null);
-                    }
-
-                    string Contenido = "";
-                    using(StreamReader reader = Formato.GetStreamFormato(ViewState["printfile"].ToString())) {
-                        Contenido = reader.ReadToEnd();
+                        evento.Contenido = reader.ReadToEnd();
                         reader.Close();
                     }
 
-                    Contenido= Contenido.Replace("../img/logo.ashx", ResolveUrl(Formato.GetLogo()));
+                    // llamamos a la pagina cliente
+                    if (_ImprimirClicked != null)
+                    {
+                        _ImprimirClicked(this, evento);
+                    }
 
-                    Contenido = Utilidades.ReplaceContenido(Page.Controls, Contenido);
+
+
+                    evento.Contenido = evento.Contenido.Replace("../img/logo.ashx", ResolveUrl(Formato.GetLogo()));
+
+                    evento.Contenido = Utilidades.ReplaceContenido(Page.Controls, evento.Contenido);
                     // agregamos el script para imprimir
 #if DEBUG
-                    Contenido= Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {}</script></body>");
+                    evento.Contenido= evento.Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {}</script></body>");
                     // contenido= contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.name=='popup')return;var venImp = window.open('../imp.htm', 'popup');venImp.document.write(document.documentElement.innerHTML);venImp.document.close();if(venImp.print) {venImp.print();}window.history.back();}</script></body>");
 #else
-                    Contenido = Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.print) {window.print();}window.close();}</script></body>");
+                    evento.Contenido = evento.Contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.print) {window.print();}window.close();}</script></body>");
                     // contenido = contenido.Replace("</body>", "<script type='text/javascript'>window.onload = function () {if(window.name=='popup')return;var venImp = window.open('../imp.htm', 'popup');venImp.document.write(document.documentElement.innerHTML);venImp.document.close();if(venImp.print) {venImp.print();venImp.close();}window.history.back();}</script></body>");
 #endif
                     Response.Clear();
-                    Response.Write(Contenido);
+                    Response.Write(evento.Contenido);
                     Response.End();
                 }
                 else if (Request.QueryString["e"] == "1")
                 {
-                    if (_ImprimirClicked != null)
+                    PrintEventArgs evento = new PrintEventArgs();
+                    using (StreamReader reader = Formato.GetStreamFormato(ViewState["printfile"].ToString()))
                     {
-                        _ImprimirClicked(this, null);
-                    }
-                    string Contenido = "";
-                    using(StreamReader reader = Formato.GetStreamFormato(ViewState["printfile"].ToString())) {
-                        Contenido = reader.ReadToEnd();
+                        evento.Contenido = reader.ReadToEnd();
                         reader.Close();
                     }
 
-                    Contenido = Contenido.Replace("../img/logo.ashx", ResolveUrl(Formato.GetLogo()));
-                    Contenido = Utilidades.ReplaceContenido(Page.Controls, Contenido);
+                    if (_ImprimirClicked != null)
+                    {
+                        _ImprimirClicked(this, evento);
+                    }
+
+                    evento.Contenido = evento.Contenido.Replace("../img/logo.ashx", ResolveUrl(Formato.GetLogo()));
+                    evento.Contenido = Utilidades.ReplaceContenido(Page.Controls, evento.Contenido);
 
                     Response.Clear();
                     Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(Page.Title) + ".xls");
                     Response.ContentType = "application/vnd.ms-excel";
                     Response.ContentEncoding = Encoding.GetEncoding("utf-8");
-                    Response.Write(Contenido);
+                    Response.Write(evento.Contenido);
                     Response.End();
                 }
             }

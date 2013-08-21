@@ -150,6 +150,52 @@ public class Utilidades
 		return RenderGrid(grid, "border=1 width=100% cellspacing=0");
 	}
 
+	public static string GetGridRowCellHTML(GridView grid, GridViewRow row, int columna)
+	{
+		string text = "class=c" + columna;
+		string text2 = "";
+		text2 = ((grid.Columns[columna].ItemStyle.HorizontalAlign == HorizontalAlign.Right) ? (text2 + "<td align=right " + text + ">") : ((grid.Columns[columna].ItemStyle.HorizontalAlign != HorizontalAlign.Center) ? (text2 + "<td " + text + ">") : (text2 + "<td align=center " + text + ">")));
+		if (row.Cells[columna].HasControls())
+		{
+			ControlCollection controls = row.Cells[columna].Controls;
+			for (int i = 0; i < controls.Count; i++)
+			{
+				if (controls[i] is TextBox)
+				{
+					string text3 = ((TextBox)controls[i]).Text;
+					if (text3.Length == 0)
+					{
+						text3 = "&nbsp;";
+					}
+					text2 += text3;
+					break;
+				}
+				if (controls[i] is CheckBox)
+				{
+					text2 = ((!((CheckBox)controls[i]).Checked) ? (text2 + "_ ") : (text2 + "X "));
+					if (((CheckBox)controls[i]).Text.Length > 0)
+					{
+						text2 += ((CheckBox)controls[i]).Text;
+					}
+					break;
+				}
+				if (controls[i] is LinkButton)
+				{
+					text2 += ((LinkButton)controls[i]).Text;
+				}
+				else if (controls[i] is HyperLink)
+				{
+					text2 += ((HyperLink)controls[i]).Text;
+				}
+			}
+		}
+		else
+		{
+			text2 += row.Cells[columna].Text;
+		}
+		return text2 + "</td>";
+	}
+
 	public static string RenderGrid(GridView grid, string parametrostabla)
 	{
 		if (new Random().Next(10) == 1 && !GetKey())
@@ -160,13 +206,14 @@ public class Utilidades
 		{
 			return grid.EmptyDataText;
 		}
-		string text = "<table " + parametrostabla + ">";
+		string text = "<table " + parametrostabla + " id='" + grid.ID + "' class='tgrid'>";
 		text += "<tr>";
 		for (int i = 0; i < grid.Columns.Count; i++)
 		{
 			if (grid.Columns[i].Visible)
 			{
-				text = text + "<td bgcolor='#EEEEEE'><b>" + grid.Columns[i].HeaderText + "</b></td>";
+				object obj = text;
+				text = string.Concat(obj, "<th class=h", i, " bgcolor='#EEEEEE'><b>", grid.Columns[i].HeaderText, "</b></th>");
 			}
 		}
 		text += "</tr>";
@@ -176,62 +223,36 @@ public class Utilidades
 			text += "<tr>";
 			for (int k = 0; k < gridViewRow.Cells.Count; k++)
 			{
-				if (!grid.Columns[k].Visible)
+				if (grid.Columns[k].Visible)
 				{
-					continue;
+					text += GetGridRowCellHTML(grid, gridViewRow, k);
 				}
-				text = ((grid.Columns[k].ItemStyle.HorizontalAlign == HorizontalAlign.Right) ? (text + "<td align=right>") : ((grid.Columns[k].ItemStyle.HorizontalAlign != HorizontalAlign.Center) ? (text + "<td>") : (text + "<td align=center>")));
-				if (gridViewRow.Cells[k].HasControls())
-				{
-					ControlCollection controls = gridViewRow.Cells[k].Controls;
-					for (int l = 0; l < controls.Count; l++)
-					{
-						if (controls[l] is TextBox)
-						{
-							string text2 = ((TextBox)controls[l]).Text;
-							if (text2.Length == 0)
-							{
-								text2 = "&nbsp;";
-							}
-							text += text2;
-							break;
-						}
-						if (controls[l] is CheckBox)
-						{
-							text = ((!((CheckBox)controls[l]).Checked) ? (text + "_ ") : (text + "X "));
-							if (((CheckBox)controls[l]).Text.Length > 0)
-							{
-								text += ((CheckBox)controls[l]).Text;
-							}
-							break;
-						}
-						if (controls[l] is LinkButton)
-						{
-							text += ((LinkButton)controls[l]).Text;
-						}
-						else if (controls[l] is HyperLink)
-						{
-							text += ((HyperLink)controls[l]).Text;
-						}
-					}
-				}
-				else
-				{
-					text += gridViewRow.Cells[k].Text;
-				}
-				text += "</td>";
 			}
 			text += "</tr>";
 		}
 		if (grid.ShowFooter && grid.FooterRow != null)
 		{
 			text += "<tr>";
-			for (int m = 0; m < grid.Columns.Count; m++)
+			for (int l = 0; l < grid.Columns.Count; l++)
 			{
-				if (grid.Columns[m].Visible)
+				if (grid.Columns[l].Visible)
 				{
-					text = ((grid.Columns[m].FooterStyle.HorizontalAlign == HorizontalAlign.Right) ? (text + "<td align=right>") : ((grid.Columns[m].FooterStyle.HorizontalAlign != HorizontalAlign.Center) ? (text + "<td>") : (text + "<td align=center>")));
-					text = text + "<b>" + grid.FooterRow.Cells[m].Text + "</b></td>";
+					if (grid.Columns[l].FooterStyle.HorizontalAlign == HorizontalAlign.Right)
+					{
+						object obj2 = text;
+						text = string.Concat(obj2, "<td align=right class=f", l, ">");
+					}
+					else if (grid.Columns[l].FooterStyle.HorizontalAlign == HorizontalAlign.Center)
+					{
+						object obj3 = text;
+						text = string.Concat(obj3, "<td align=center class=f", l, ">");
+					}
+					else
+					{
+						object obj4 = text;
+						text = string.Concat(obj4, "<td class=f", l, ">");
+					}
+					text = text + "<b>" + grid.FooterRow.Cells[l].Text + "</b></td>";
 				}
 			}
 			text += "</tr>";
@@ -247,10 +268,6 @@ public class Utilidades
 		}
 		for (int i = 0; i < controles.Count; i++)
 		{
-			if (!controles[i].Visible)
-			{
-				continue;
-			}
 			string iD = controles[i].ID;
 			string text = "";
 			if (controles[i].Controls.Count > 0 && controles[i].GetType() != typeof(GridView) && controles[i].GetType() != typeof(CheckBoxList))
@@ -367,9 +384,12 @@ public class Utilidades
 		Response.Write("<tr>\n");
 		for (int i = 0; i < view.Columns.Count; i++)
 		{
-			Response.Write("<td><strong>");
-			Response.Write(view.Columns[i].HeaderText);
-			Response.Write("</strong></td>");
+			if (view.Columns[i].Visible)
+			{
+				Response.Write("<td><strong>");
+				Response.Write(view.Columns[i].HeaderText);
+				Response.Write("</strong></td>");
+			}
 		}
 		Response.Write("</tr>\n");
 		for (int j = 0; j < view.Rows.Count; j++)
@@ -377,22 +397,10 @@ public class Utilidades
 			Response.Write("<tr>\n");
 			for (int k = 0; k < view.Columns.Count; k++)
 			{
-				Response.Write("<td>");
-				if (view.Columns[k].GetType() == typeof(HyperLinkField))
+				if (view.Columns[k].Visible)
 				{
-					HyperLink hyperLink = (HyperLink)view.Rows[j].Cells[k].Controls[0];
-					Response.Write(hyperLink.Text);
+					Response.Write(GetGridRowCellHTML(view, view.Rows[j], k));
 				}
-				else if (view.Columns[k].GetType() == typeof(CheckBoxField))
-				{
-					CheckBox checkBox = (CheckBox)view.Rows[j].Cells[k].Controls[0];
-					Response.Write(checkBox.Checked ? "X" : "");
-				}
-				else
-				{
-					Response.Write(view.Rows[j].Cells[k].Text);
-				}
-				Response.Write("</td>");
 			}
 			Response.Write("</tr>\n");
 		}

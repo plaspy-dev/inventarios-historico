@@ -104,7 +104,7 @@
                             <div id="alertas">
                                 <h3><a href="#">Alertas</a></h3>
                                 <div class="hide">
-                                    <asp:GridView ID="GAlertas" runat="server" DataSourceID="SAlertas" 
+                                    <asp:GridView ID="GAlertas" runat="server" DataSourceID="SAlertas" Width="100%"
                                         DataKeyNames="id" AutoGenerateColumns="false" ShowHeader="false"
                                         AllowSorting="True">
                                         <RowStyle CssClass="GridRow"></RowStyle>
@@ -148,7 +148,7 @@
                                 <ItemTemplate>
                                     <h3><a href="#"><%# Eval("parent") %></a></h3>
                                     <div class="hide">
-                                    <asp:GridView ID="P" runat="server" AutoGenerateColumns="false" DataKeyNames="pagina">
+                                    <asp:GridView ID="P" runat="server" AutoGenerateColumns="false" DataKeyNames="pagina" Width="100%">
                                         <RowStyle CssClass="GridRow"></RowStyle>
                                         <FooterStyle CssClass="GridFooter"></FooterStyle>
                                         <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -161,7 +161,7 @@
                                                     <asp:CheckBox ID="t" runat="server" Checked='<%# Bind("todos") %>' />
                                                 </ItemTemplate>
                                             </asp:TemplateField>
-                                            <asp:TemplateField HeaderText="Página">
+                                            <asp:TemplateField HeaderText="Página" ItemStyle-Width="100%">
                                                 <ItemTemplate>
                                                     <%# Eval("titulo") %>
                                                 </ItemTemplate>

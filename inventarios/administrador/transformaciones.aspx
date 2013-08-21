@@ -130,7 +130,7 @@
       <tr>
         <td>
             <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" 
-                DataKeyNames="producto1,producto2" DataSourceID="SResultados" 
+                DataKeyNames="producto1,producto2" DataSourceID="SResultados" Width="100%" 
                 onselectedindexchanged="GResultado_SelectedIndexChanged" >
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -141,8 +141,8 @@
                 <Columns>
                     <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
                     <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                    <asp:BoundField DataField="producto1nombre" HeaderText="Producto 1" SortExpression="producto1nombre" />
-                    <asp:BoundField DataField="producto2nombre" HeaderText="Producto 2" SortExpression="producto2nombre" />
+                    <asp:BoundField DataField="producto1nombre" HeaderText="Producto 1" SortExpression="producto1nombre" ItemStyle-Width="50%" />
+                    <asp:BoundField DataField="producto2nombre" HeaderText="Producto 2" SortExpression="producto2nombre" ItemStyle-Width="50%" />
                     <asp:BoundField DataField="proporcion" HeaderText="Proporción" SortExpression="proporcion" ItemStyle-HorizontalAlign="Right" />
                 </Columns>
             </asp:GridView>

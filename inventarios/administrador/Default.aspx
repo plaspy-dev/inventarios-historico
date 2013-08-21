@@ -6,7 +6,7 @@
     <asp:Panel ID="Panel1" runat="server" DefaultButton="BAceptar">
     <table width="100%" border="0">
   <tr>
-    <td valign="top">
+    <td valign="top" width=1>
         <asp:TreeView ID="TTipo" runat="server"  ImageSet="Arrows" >
             <ParentNodeStyle Font-Bold="False" />
             <HoverNodeStyle Font-Underline="True" ForeColor="#5555DD" />
@@ -26,7 +26,7 @@
         <td>
 <table width="100%" border="0">
           <tr>
-            <td>Nombre</td>
+            <td width=1>Nombre</td>
             <td>
                 <asp:TextBox ID="TNombre" runat="server"></asp:TextBox>
               </td>
@@ -47,7 +47,7 @@
           </tr>
           <tr>
             <td>&nbsp;</td>
-            <td align="right">
+            <td align="left">
                 <asp:Button ID="BAceptar" runat="server" Text="Aceptar" 
                     onclick="BAceptar_Click" />
                 <asp:Button ID="BCancelar" runat="server" CausesValidation="False" 
@@ -61,7 +61,7 @@
       </tr>
       <tr>
         <td>
-            <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" 
+            <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" Width="100%"
                 DataKeyNames="id" DataSourceID="SResultados" 
                 onselectedindexchanged="GResultado_SelectedIndexChanged" >
                 <RowStyle CssClass="GridRow"></RowStyle>
@@ -73,8 +73,8 @@
                 <Columns>
                     <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
                     <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" />
-                    <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" />
+                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" ItemStyle-Wrap="false" />
+                    <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" ItemStyle-Width="100%" />
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SResultados" runat="server" 

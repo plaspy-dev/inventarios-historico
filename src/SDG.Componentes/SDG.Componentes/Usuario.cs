@@ -255,12 +255,7 @@ public class Usuario
 		return null;
 	}
 
-	public static Usuario GetInstance()
-	{
-		return GetUsuario();
-	}
-
-	public static Usuario GetUsuario()
+	public static Usuario GetInstance(bool redirect)
 	{
 		HttpContext.Current.Response.AddHeader("pragma", "no-cache");
 		HttpContext.Current.Response.CacheControl = "Private";
@@ -269,15 +264,28 @@ public class Usuario
 		usuario = ((usuario != null) ? usuario.IsValidUsuario() : Validate());
 		if (usuario == null)
 		{
-			string text = HttpUtility.UrlEncode(HttpContext.Current.Request.Url.AbsolutePath + HttpContext.Current.Request.Url.Query);
-			HttpContext.Current.Response.Redirect("~/Default.aspx?from=" + text);
-			HttpContext.Current.Response.End();
+			if (redirect)
+			{
+				string text = HttpUtility.UrlEncode(HttpContext.Current.Request.Url.AbsolutePath + HttpContext.Current.Request.Url.Query);
+				HttpContext.Current.Response.Redirect("~/Default.aspx?from=" + text);
+				HttpContext.Current.Response.End();
+			}
 		}
-		if (!usuario.CanAccess())
+		else if (!usuario.CanAccess())
 		{
 			usuario.Redirect();
 		}
 		return usuario;
+	}
+
+	public static Usuario GetInstance()
+	{
+		return GetInstance(redirect: true);
+	}
+
+	public static Usuario GetUsuario()
+	{
+		return GetInstance(redirect: true);
 	}
 
 	protected int GetCampo(string campo)

@@ -2,6 +2,7 @@
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 <link rel="Stylesheet" type="text/css" href="../css/jquery.multiselect.css" />
+<style type="text/css">.GridHeader th {width: auto;}</style>
 <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.multiselect.min.js"></script>
 <script type="text/javascript">
     addFunctionToStart(function() {

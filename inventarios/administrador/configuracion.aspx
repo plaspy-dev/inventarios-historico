@@ -203,7 +203,7 @@
     <div id="dConsecutivos">
         <asp:UpdatePanel runat="server" ID="UConsecutivos" UpdateMode="Conditional">
             <ContentTemplate>
-                <asp:GridView ID="GAlmacenes" runat="server" AutoGenerateColumns="False" 
+                <asp:GridView ID="GAlmacenes" runat="server" AutoGenerateColumns="False"
                     DataKeyNames="id" DataSourceID="SAlmaceness" AllowSorting="true" onselectedindexchanged="GAlmacenes_SelectedIndexChanged">
                     <RowStyle CssClass="GridRow"></RowStyle>
                     <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -213,7 +213,7 @@
                     <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                     <Columns>
                         <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
-                        <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" />
+                        <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" ItemStyle-Wrap="false" />
                         <asp:BoundField DataField="entrada" HeaderText="Entrada" SortExpression="entrada" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="traslado" HeaderText="Traslado" SortExpression="traslado" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="salida" HeaderText="Salida" SortExpression="salida" ItemStyle-HorizontalAlign="Right" />

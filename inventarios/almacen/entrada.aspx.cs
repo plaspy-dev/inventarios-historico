@@ -192,12 +192,12 @@ public partial class almacen_entrada : System.Web.UI.Page
                         return;
                     }
                 }
-                BAceptar.Enabled = usuario.CanInsert();
-                using(CConector conector = new CConector()) 
-                    TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM entrada" + ((ing)Master).GetAlmacen());
-                TFecha.Text = DateTime.Now.ToShortDateString();
-                TNumero.Focus();
             }
+            BAceptar.Enabled = usuario.CanInsert();
+            using(CConector conector = new CConector()) 
+                TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM entrada" + ((ing)Master).GetAlmacen());
+            TFecha.Text = DateTime.Now.ToShortDateString();
+            TNumero.Focus();
         }
     }
 
