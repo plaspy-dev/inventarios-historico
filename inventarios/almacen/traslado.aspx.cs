@@ -156,13 +156,13 @@ public partial class almacen_traslado : System.Web.UI.Page
                         return;
                     }
                 }
-                TLlegada.ReadOnly = !usuario.CanAdmin();
-                BAceptar.Enabled = usuario.CanInsert();
-                using(CConector conector = new CConector()) 
-                    TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM traslado" + ((ing)Master).GetAlmacen());
-                TFecha.Text = DateTime.Now.ToShortDateString();
-                TNumero.Focus();
             }
+            TLlegada.ReadOnly = !usuario.CanAdmin();
+            BAceptar.Enabled = usuario.CanInsert();
+            using(CConector conector = new CConector()) 
+                TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM traslado" + ((ing)Master).GetAlmacen());
+            TFecha.Text = DateTime.Now.ToShortDateString();
+            TNumero.Focus();
         }
     }
 

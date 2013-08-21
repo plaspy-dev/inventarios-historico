@@ -11,8 +11,8 @@
         <td>
 <table width="100%" border="0">
           <tr>
-            <td>Nombre</td>
-            <td>
+            <td width=1>Nombre</td>
+            <td width=1>
                 <asp:TextBox ID="TNombre" runat="server"></asp:TextBox>
               </td>
             <td>
@@ -54,7 +54,7 @@
       <tr>
         <td>
             <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" 
-                DataKeyNames="id" DataSourceID="SResultados" 
+                DataKeyNames="id" DataSourceID="SResultados" Width="100%"
                 onselectedindexchanged="GResultado_SelectedIndexChanged" >
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
@@ -65,7 +65,7 @@
                 <Columns>
                     <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
                     <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" />
+                    <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" ItemStyle-Width="100%" />
                     <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" />
                     <asp:BoundField DataField="parametro1" HeaderText="Permitir salidas" SortExpression="parametro1" />
                 </Columns>

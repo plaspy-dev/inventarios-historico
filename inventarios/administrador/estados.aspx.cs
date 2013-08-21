@@ -55,7 +55,7 @@ public partial class administrador_estados : System.Web.UI.Page
             if (conector.InsertModificacion(HId.Value) == -1)
                 return;
 
-            Almacen.RemoveEstado(HId.Value);
+            Almacen.RemoveVarios(HId.Value);
             Session["szMensaje"] = mensaje;
             Response.Redirect(Request.Url.AbsolutePath);
         }

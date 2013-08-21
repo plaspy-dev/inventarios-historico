@@ -200,13 +200,13 @@
             <td colspan="5" align="right"><asp:HyperLink runat="server" ID="HTraslado"></asp:HyperLink></td>
         </tr>
         <tr>
-            <td>Número</td>
-            <td><asp:TextBox runat="server" ID="TNumero" CssClass="likenumero"></asp:TextBox></td>
-            <td>Fecha
+            <td width=1>Número</td>
+            <td width=1><asp:TextBox runat="server" ID="TNumero" CssClass="likenumero"></asp:TextBox></td>
+            <td width=1>Fecha
             <asp:RequiredFieldValidator ControlToValidate="TFecha" ErrorMessage="Por favor ingrese una fecha." ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
             <asp:RangeValidator ControlToValidate="TFecha" runat="server" ErrorMessage="Por favor ingrese una fecha valida." MinimumValue="01/01/1930" MaximumValue="01/01/2100" ID="RangeValidator3" Display="Dynamic" Type="Date">*</asp:RangeValidator>
             </td>
-            <td><asp:TextBox runat="server" ID="TFecha" CssClass="fecha"></asp:TextBox>
+            <td width=1><asp:TextBox runat="server" ID="TFecha" CssClass="fecha"></asp:TextBox>
             </td>
             <td>&nbsp;</td>
         </tr>
@@ -221,7 +221,7 @@
             <td class="tdl">Nombre
                 <asp:RequiredFieldValidator ControlToValidate="TTerceroID" ErrorMessage="Por favor ingrese un proveedor." ID="RTerceroID" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
                 <asp:RequiredFieldValidator ControlToValidate="TNombre" ErrorMessage="Por favor ingrese un nombre." ID="RNombre" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
-            </td>we
+            </td>
             <td colspan="3"><asp:TextBox runat="server" ID="TNombre"  Width="98%"></asp:TextBox><asp:TextBox runat="server" ID="TTerceroID" CssClass="hide"></asp:TextBox></td>
             <td class="tdr"></td>
         </tr>
@@ -253,7 +253,8 @@
         </tr>
         <tr>
             <td class="tdl">Producto<asp:RequiredFieldValidator ControlToValidate="TProductoID" ValidationGroup="producto" ErrorMessage="Por favor ingrese un producto." ID="RequiredFieldValidator4" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
-            <td colspan="4" class="tdr"><asp:TextBox ID="TProducto" Width="98%" runat="server"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
+            <td colspan="3"><asp:TextBox ID="TProducto" Width="98%" runat="server"></asp:TextBox><asp:TextBox runat="server" ID="TProductoID" CssClass="hide"></asp:TextBox></td>
+            <td class="tdr"></td>
         </tr>
         <tr class="GridAltRow">
             <td class="tdl"></td>
@@ -338,15 +339,15 @@
                     <Columns>
                         <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
                         <asp:BoundField DataField="codigo" HeaderText="Código" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
-                        <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" />
+                        <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" ItemStyle-Wrap="false" />
                         <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:F2}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="Costo" HeaderText="Costo U." SortExpression="Costo" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="CostoTotal" HeaderText="Costo T." SortExpression="CostoTotal" DataFormatString="{0:C}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
-                        <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
+                        <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" ItemStyle-Wrap="false" />
                         <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
                         <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
-                        <asp:BoundField DataField="NombreUbicacion" HeaderText="Ubicación" SortExpression="NombreUbicacion" />
+                        <asp:BoundField DataField="NombreUbicacion" HeaderText="Ubicación" SortExpression="NombreUbicacion" ItemStyle-HorizontalAlign="Left" />
                         <asp:TemplateField HeaderText="Ubicación ">
                             <ItemTemplate>
                                 <asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion" Text='<%# Eval("NombreUbicacion") %>'></asp:TextBox>
@@ -366,7 +367,7 @@
         </tr>     
         <tr>
             <td>Observaciones</td>
-            <td colspan="4"><asp:TextBox runat="server" ID="TObservaciones" TextMode="MultiLine" Width="99%"></asp:TextBox></td>
+            <td colspan="3"><asp:TextBox runat="server" ID="TObservaciones" TextMode="MultiLine" Width="99%"></asp:TextBox></td>
         </tr>
         <tr>
             <td colspan="5"><asp:ValidationSummary runat="server" ID="ValidationSumary1" /><asp:ValidationSummary ValidationGroup="producto" runat="server" ID="ValidationSummary2" />
@@ -375,7 +376,7 @@
         </tr>
         <tr>
             <td><asp:Button runat="server" ID="BAnular" Text="Anular" Visible="false" onclick="BAceptar_Click"/></td>
-            <td colspan="4" align="right">
+            <td colspan="3" align="right">
                 <asp:Button runat="server" ID="BAceptar" Text="Aceptar" onclick="BAceptar_Click" />
                 <asp:Button runat="server" ID="BCancelar" Text="Cancelar" CausesValidation="false" onclick="BCancelar_Click" />
             </td>

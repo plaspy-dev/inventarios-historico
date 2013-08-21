@@ -22,7 +22,7 @@ public class produccion : System.Web.Services.WebService {
         List<Producto> lista = new List<Producto>();
         using (CConector conector = new CConector())
         {
-            string query = "SELECT producto.id,formulacion.id AS formulacion FROM formulacion LEFT JOIN producto ON (formulacion.producto=producto.id) WHERE producto.estado IS NULL";
+            string query = "SELECT producto.id,formulacion.producto AS formulacion FROM formulacion LEFT JOIN producto ON (formulacion.producto=producto.id) WHERE producto.estado IS NULL";
             string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
             for (int i = 0; i < split.Length; i++)

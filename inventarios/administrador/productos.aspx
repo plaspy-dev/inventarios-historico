@@ -277,7 +277,7 @@
                   </tr>
                   <tr>
                     <td colspan="3">
-                        <asp:GridView ID="GAlmacenes" runat="server" AllowSorting="true" 
+                        <asp:GridView ID="GAlmacenes" runat="server" AllowSorting="true"
                             AutoGenerateColumns="False" DataKeyNames="id" DataSourceID="SAlmaceness">
                             <RowStyle CssClass="GridRow" />
                             <FooterStyle CssClass="GridFooter" />
@@ -286,8 +286,7 @@
                             <HeaderStyle CssClass="GridHeader" ForeColor="White" />
                             <AlternatingRowStyle CssClass="GridAltRow" />
                             <Columns>
-                                <asp:BoundField DataField="nombre" HeaderText="Almacén" 
-                                    SortExpression="nombre" />
+                                <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" ItemStyle-Wrap="false" />
                                 <asp:TemplateField HeaderText="Mínimo" SortExpression="minimo">
                                     <ItemTemplate>
                                         <asp:TextBox ID="TMinimo" runat="server" CssClass="float" 
@@ -338,7 +337,7 @@
                             <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
                             <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                             <Columns>
-                                <asp:BoundField HeaderText="Proveedor" DataField="nombre" SortExpression="nombre" />
+                                <asp:BoundField HeaderText="Proveedor" DataField="nombre" SortExpression="nombre" ItemStyle-Wrap="false" />
                                 <asp:BoundField DataField="fecha" HeaderText="Fecha" SortExpression="fecha" ItemStyle-HorizontalAlign="Right" />
                                 <asp:BoundField DataField="costo" HeaderText="Costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
                             </Columns>
@@ -387,7 +386,7 @@
                             <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
                             <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                             <Columns>
-                                <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" />
+                                <asp:BoundField DataField="nombre" HeaderText="Almacén" SortExpression="nombre" ItemStyle-Wrap="false" />
                                 <asp:TemplateField HeaderText="Precio" SortExpression="valor">
                                     <ItemTemplate>
                                         <asp:TextBox runat="server" ID="TValor" CssClass="dinero" Text='<%# Eval("valor").ToString()=="" ? "" : Convert.ToDouble(Eval("valor")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox>
@@ -423,7 +422,7 @@
                             <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                             <Columns>
                                 <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                                <asp:BoundField HeaderText="Cliente" DataField="NombreCliente" SortExpression="NombreCliente" />
+                                <asp:BoundField HeaderText="Cliente" DataField="NombreCliente" SortExpression="NombreCliente" ItemStyle-Wrap="false" />
                                 <asp:BoundField DataField="valor" HeaderText="Valor" SortExpression="valor" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
                             </Columns>
                         </asp:GridView>

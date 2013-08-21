@@ -192,7 +192,7 @@
     </table>
     </fieldset>
     <asp:GridView ID="GUsuarios" runat="server" DataSourceID="SUsuarios" 
-        DataKeyNames="id" AutoGenerateColumns="false" 
+        DataKeyNames="id" AutoGenerateColumns="false" Width="100%"
         onselectedindexchanged="GUsuarios_SelectedIndexChanged" 
         AllowSorting="True" onrowdeleted="GUsuarios_RowDeleted" >
         <RowStyle CssClass="GridRow"></RowStyle>
@@ -204,10 +204,10 @@
         <Columns>
                     <asp:CommandField ButtonType="Image" ShowSelectButton="True" SelectImageUrl="~/img/edit.gif" />
                     <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                    <asp:BoundField DataField="nombre" HeaderText="Nombres" SortExpression="nombre" />
-                    <asp:BoundField DataField="usuario" HeaderText="Usuario" SortExpression="usuario" />
-                    <asp:BoundField DataField="grupo" HeaderText="Grupo" SortExpression="grupo" />
-                    <asp:BoundField DataField="ingreso" HeaderText="Último ingreso" SortExpression="ingreso" />
+                    <asp:BoundField DataField="nombre" HeaderText="Nombres" SortExpression="nombre" ItemStyle-Width="100%" />
+                    <asp:BoundField DataField="usuario" HeaderText="Usuario" SortExpression="usuario" ItemStyle-Wrap="false" />
+                    <asp:BoundField DataField="grupo" HeaderText="Grupo" SortExpression="grupo" ItemStyle-Wrap="false" />
+                    <asp:BoundField DataField="ingreso" HeaderText="Último ingreso" SortExpression="ingreso" ItemStyle-Wrap="false" />
         </Columns>
         <SelectedRowStyle CssClass="selecteditem" />
     </asp:GridView>

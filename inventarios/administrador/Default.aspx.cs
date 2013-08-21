@@ -59,8 +59,11 @@ public partial class administrador_Default : System.Web.UI.Page
 
 
             // pulpafruit
-            /*parent = Add("Análisis físico químico");
-            Add("Parámetro", 1001, parent);*/
+            parent = Add("Orden de producción");
+            Add("Marmitas", 1001, parent);
+            Add("Estado", 1002, parent);
+            Add("Análisis físico químico", 1003, parent);
+            Add("Microbiológicas", 1004, parent);
 
             if (HTipo.Value.Length == 0)
                 Response.Redirect(Request.Url.AbsolutePath + "?tipo=1");
@@ -99,7 +102,7 @@ public partial class administrador_Default : System.Web.UI.Page
             if (conector.InsertModificacion(HId.Value) == -1)
                 return;
 
-            Almacen.RemoveEstado(HId.Value);
+            Almacen.RemoveVarios(HId.Value);
             Session["szMensaje"] = mensaje;
             Response.Redirect(Request.Url.AbsolutePath + "?tipo=" + HTipo.Value);
         }

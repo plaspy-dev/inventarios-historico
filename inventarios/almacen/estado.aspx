@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="Estado" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="estado.aspx.cs" Inherits="almacen_estado" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
+    <style type="text/css">.GridHeader th {width: auto;}</style>
     <link rel="Stylesheet" type="text/css" href="../css/jquery.multiselect.css" />
     <script type="text/javascript" src="<%=ResolveUrl("~/")%>js/jquery.multiselect.min.js"></script>
     <script type="text/javascript">
@@ -183,11 +184,9 @@
             <td>Producto</td>
             <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
             <td>Grupo</td>
-            <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label></td>
-            <td><asp:Label runat="server" ID="LAlmacenes" Text="Almacenes"></asp:Label></td>
-            <td><asp:CheckBox runat="server" ID="CAlmacen" Text="Ver almacén" CssClass="hide" /></td>
-            <td></td>
-            <td></td>
+            <td rowspan="4">
+                <asp:Button ID="BBuscar" runat="server" Text="Actualizar" onclick="BBuscar_Click" />
+            </td>
         </tr>
         <tr>
             <td>
@@ -212,6 +211,20 @@
                     SelectCommand="SELECT id, nombre FROM varios WHERE tipo=1 AND estado IS NULL ORDER BY nombre">
                 </asp:SqlDataSource>
                 </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><asp:CheckBox runat="server" ID="CAlmacen" Text="Ver almacén" CssClass="hide" /></td>
+            <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label></td>
+            <td><asp:Label runat="server" ID="LAlmacenes" Text="Almacenes"></asp:Label></td>
+        </tr>
+        <tr>
+            <td nowrap=nowrap>
+                <asp:CheckBox ID="CDetallado" runat="server" Text="Detallado" />
+            </td>
+            <td>
+                <asp:CheckBox ID="CTodos" runat="server" Text="Productos sin existencias" />
+            </td>
                 <td>
                 <asp:DropDownList ID="DEstado" runat="server" AppendDataBoundItems="true" 
                         DataSourceID="SEstado" DataTextField="nombre" DataValueField="id">
@@ -225,22 +238,13 @@
                 </asp:SqlDataSource>
                 </td>
             <td>
-                <asp:ListBox ID="DAlmacenes" runat="server" SelectionMode="Multiple" CssClass="hide">
+            <asp:ListBox ID="DAlmacenes" runat="server" SelectionMode="Multiple" CssClass="hide">
                 </asp:ListBox>
                 </td>
-            <td nowrap=nowrap>
-                <asp:CheckBox ID="CDetallado" runat="server" Text="Detallado" />
-            </td>
-            <td nowrap=nowrap>
-                <asp:CheckBox ID="CTodos" runat="server" Text="Productos sin existencias" />
-            </td>
-            <td>
-                <asp:Button ID="BBuscar" runat="server" Text="Actualizar" onclick="BBuscar_Click" />
-            </td>
         </tr>
         </table>
     <br />
-    <asp:GridView ID="GResultados" runat="server" DataSourceID="SResultados" 
+    <asp:GridView ID="GResultados" runat="server" DataSourceID="SResultados"
         AutoGenerateColumns="False" EmptyDataText="No se encontraron productos" 
         AllowPaging="True" PageSize="50" AllowSorting="True" 
         DataKeyNames="producto,lote,vence,ubicacion,estado" 
@@ -254,13 +258,13 @@
         <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
         <Columns>
             <asp:HyperLinkField HeaderText="Código" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="codigo" SortExpression="codigo" ItemStyle-HorizontalAlign="Right" />
-            <asp:HyperLinkField HeaderText="Producto" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="nombre" SortExpression="nombre" />
-            <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="empresa" SortExpression="empresa" />
+            <asp:HyperLinkField HeaderText="Producto" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="nombre" SortExpression="nombre" ItemStyle-Wrap="false" ItemStyle-Width="100%" />
+            <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="empresa" SortExpression="empresa" ItemStyle-Wrap="false" />
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
             <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" />
             <asp:BoundField HeaderText="Costo" DataField="costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
-            <asp:BoundField HeaderText="Un." DataField="unidad" SortExpression="unidad" />
+            <asp:BoundField HeaderText="Un." DataField="unidad" SortExpression="unidad" ItemStyle-Wrap="false" />
             <asp:TemplateField HeaderText="Ubicación" SortExpression="ubicacion">
                 <ItemTemplate>
                     <asp:LinkButton runat="server" ID="LUbicacion" CommandName="Select" Text='<%# Eval("ubicacion") %>'></asp:LinkButton>
