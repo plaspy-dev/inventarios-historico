@@ -340,18 +340,6 @@ public class Conector : IDisposable
 		return result;
 	}
 
-	public static string GetDate(object fecha)
-	{
-		if (fecha == null || fecha.ToString().Length == 0)
-		{
-			return "";
-		}
-		DateTime dateTime = (DateTime)fecha;
-		string text = ((dateTime.Month < 10) ? ("0" + dateTime.Month) : dateTime.Month.ToString());
-		string text2 = ((dateTime.Day < 10) ? ("0" + dateTime.Day) : dateTime.Day.ToString());
-		return dateTime.Year + "-" + text + "-" + text2;
-	}
-
 	public static string GetHora(object fecha)
 	{
 		if (fecha == null || fecha.ToString().Length == 0)
@@ -465,20 +453,26 @@ public class Conector : IDisposable
 		return DateTime.MinValue;
 	}
 
-	public static string GetFromMySQLDate(object fecha)
+	public static string GetFromMySQLDate(object fecha, bool horas)
 	{
 		try
 		{
-			if (typeof(MySqlDateTime) == fecha.GetType())
+			DateTime dateTime = ((typeof(MySqlDateTime) != fecha.GetType()) ? ((DateTime)fecha) : ((MySqlDateTime)fecha).GetDateTime());
+			if (horas)
 			{
-				fecha = ((MySqlDateTime)fecha).GetDateTime();
+				return dateTime.ToShortDateString() + " " + dateTime.Hour.ToString("00") + ":" + dateTime.Minute.ToString("00");
 			}
-			return ((DateTime)fecha).ToShortDateString();
+			return dateTime.ToShortDateString();
 		}
 		catch
 		{
 		}
 		return "";
+	}
+
+	public static string GetFromMySQLDate(object fecha)
+	{
+		return GetFromMySQLDate(fecha, horas: false);
 	}
 
 	public static bool SelectInDropDown(DropDownList lista, object valor)

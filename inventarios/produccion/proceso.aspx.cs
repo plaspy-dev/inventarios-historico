@@ -30,10 +30,18 @@ public partial class produccion_proceso : System.Web.UI.Page
                     query += "producto";
                     query += "marmita";
                     query += "cantidad";
+                    query += "estado";
 
                     MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["oi"])));
                     if (reader != null && reader.Read())
                     {
+                        PAnulado.Visible = reader["estado"].ToString() != "";
+                        if (PAnulado.Visible)
+                        {
+                            LAnulado.Text = "Anulada";
+                            BAceptar.Enabled = false;
+                        }
+
                         Session["parametros"] = Request.Url.Query;
                         PBordes.Visible = false;
                         PAnalisis.Visible = true;

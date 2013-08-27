@@ -85,6 +85,7 @@ public partial class administrador_productos : System.Web.UI.Page
                     query += "valor_temporal";
                     query += "valor";
                     query += "maxmin_tipo";
+                    query += "estado";
 
                     MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
                     if (reader != null && reader.Read())
@@ -103,6 +104,7 @@ public partial class administrador_productos : System.Web.UI.Page
                         DEstado.SelectedValue = reader["nEstado"].ToString();
                         TDAlertaV.Text = reader["dias_alerta"].ToString();
                         CMinMaxEstado.Checked = reader["maxmin_tipo"].ToString() == "1";
+                        COculto.Checked = reader["estado"].ToString() == "1";
                         try
                         {
                             TMaximo.Text = Convert.ToDouble(reader["maximo"]).ToString(CultureInfo.InvariantCulture);
@@ -215,6 +217,7 @@ public partial class administrador_productos : System.Web.UI.Page
                 decimal.Parse(TUltimoPrecio.Text, NumberStyles.Currency, CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture);
             query["diasvencimiento"] = TDiasVencimiento.Text;
             query["formatolote"] = TFormatoLote.Text;
+            query["estado"] = COculto.Checked ? "1" : "";
 
             if (HId.Value.Length == 0)
             {
@@ -317,7 +320,7 @@ public partial class administrador_productos : System.Web.UI.Page
 
     protected void GResultado_SelectedIndexChanged(object sender, EventArgs e)
     {
-        Response.Redirect(Request.Url.AbsolutePath + "?pid=" + GResultado.SelectedDataKey.Value.ToString());
+        Response.Redirect(Request.Url.AbsolutePath + "?pid=" + GResultado.SelectedDataKey.Values["id"].ToString());
     }
     protected void BBuscar_Click(object sender, EventArgs e)
     {
@@ -372,7 +375,7 @@ public partial class administrador_productos : System.Web.UI.Page
             return;
         }
         List<PrecioCliente> listado = (from p in preciocliente
-                                       where p.cliente.ToString() == GPreciosC.DataKeys[e.RowIndex].Value.ToString()
+                                       where p.cliente.ToString() == GPreciosC.DataKeys[e.RowIndex].Values["id"].ToString()
                                        select p).ToList();
         if (listado.Count != 0) {
             PrecioCliente info = listado[0];
@@ -723,6 +726,15 @@ public partial class administrador_productos : System.Web.UI.Page
             GResultado.DataBind();
 
             LMensaje.Text = string.Format("Importacion realizada con exito.<br/>{0} productos, {1} Nuevos y {2} actualizados", nuevos + actualizados, nuevos, actualizados);
+        }
+    }
+    protected void GResultado_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        if (e.Row.RowIndex != -1) {
+            e.Row.Font.Strikeout = GResultado.DataKeys[e.Row.RowIndex].Values["estado"].ToString() == "1";
+            if (GResultado.DataKeys[e.Row.RowIndex].Values["id"].ToString() == Request.QueryString["pid"])
+                e.Row.CssClass = "GridSelRow";
+                // GResultado.SelectedIndex =e.Row.RowIndex;
         }
     }
 }

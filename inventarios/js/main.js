@@ -6,7 +6,9 @@ var g_OpenDialog = null;
 function addDialog(szPanel, szDialog, showclosebutton) {
 
     if ($(szDialog + " :submit").length || $(szDialog + " :button").length) {
-
+        
+        if (typeof showclosebutton === "undefined")
+            showclosebutton = false;
         $(szDialog).show().removeClass("hide");
         g_OpenDialog = szDialog; // guardamos el dialogo abierto para validacion.
         $(szDialog).dialog({
@@ -17,8 +19,9 @@ function addDialog(szPanel, szDialog, showclosebutton) {
             open: function(event, ui) { if (!showclosebutton) $(".ui-dialog-titlebar-close").hide(); setTimeout("$('" + szDialog + " :input:first').focus();", 100); }
         });
         if (szPanel != null) {
+            // $(".ui-widget-overlay").appendTo($(szPanel));
             $(szDialog).parent().prev().appendTo(jQuery(szPanel));
-            $(szDialog).parent().appendTo(jQuery(szPanel));
+            $(szDialog).parent().appendTo($(szPanel));
         }
         $(szDialog + " :submit").button();
         $(szDialog + " :button").button();
@@ -63,6 +66,8 @@ function obs() {
         if (typeof this.ejecutar === 'function')
             retorno = this.ejecutar();
         else retorno = eval(this.ejecutar);
+    } else {
+        return true;
     }
     if ((typeof retorno === 'undefined' || retorno) && (typeof Page_IsValid === 'undefined' || Page_IsValid || typeof this.ejecutar === 'undefined')) {
         hiddenButton = this;

@@ -19,6 +19,10 @@
     {
         font-size: 20px;font-weight: bold; white-space: nowrap;
     }
+    #<%= GAnalisis.ClientID %> .GridHeader,#<%= GMicro.ClientID %> .GridHeader 
+    {
+        font-size: 10px;
+    }
 </style>
 <script type="text/javascript">
     $(function() {
@@ -66,6 +70,16 @@
     addFunctionToStart(function() {
         if (hasStorage) 
           localStorage.orden = $("#<%= HProductos.ClientID %>").val();
+          
+        $("#<%= BAnular.ClientID %>").click(function() { 
+            addDialog("#<%= PAnular.ClientID %>", "#dAnular", true);
+            return false; 
+        });
+        $("#<%= BAnularReal.ClientID %>").click(function() { if(typeof Page_IsValid === 'undefined' || Page_IsValid || typeof this.ejecutar === 'undefined') return confirm('¿Esta seguro de anular este documento?. Esta acción no se puede deshacer.'); return false; });
+        $("#<%= BCancelarAnular.ClientID %>").click(function() {
+            $("#dAnular").dialog("close");
+            return false;
+        });
         $("#<%= TLote.ClientID %>").autocomplete({
             source: function(request, response) {
                 $.ajax({
@@ -208,12 +222,12 @@
                 $("#<%= TProductoID.ClientID %>").val("");
                 $("#<%= LEmpresa.ClientID %>").html("");
             } else {
-                if($("#<%= TCantidad.ClientID %>").val().length!=0 && $("#<%= TProductoID.ClientID %>").val().length!=0)
+                if($("#<%= TCantidad.ClientID %>").val().replace(" Kg.","").length!=0 && $("#<%= TProductoID.ClientID %>").val().length!=0)
                     $("#<%= BFormular.ClientID %>").click();
             }
         });
         $("#<%= TCantidad.ClientID %>").change(function() {
-            if($("#<%= TCantidad.ClientID %>").val().length!=0 && $("#<%= TProductoID.ClientID %>").val().length!=0)
+            if($("#<%= TCantidad.ClientID %>").val().replace(" Kg.","").length!=0 && $("#<%= TProductoID.ClientID %>").val().length!=0)
                 $("#<%= BFormular.ClientID %>").click();
         });
         
@@ -226,9 +240,11 @@
             var total = $("#<%= TCantidadUnidad1.ClientID %>").val() * $("#<%= TCantidadPresentacion1.ClientID %>").val().replace(" Kg.","");
             total += $("#<%= TCantidadUnidad2.ClientID %>").val() * $("#<%= TCantidadPresentacion2.ClientID %>").val().replace(" Kg.", "");
             $("#<%= LObtenida.ClientID %>").text(total);
-            total= $("#<%= TCantidad.ClientID %>").val().replace(" Kg.", "")*1-total;
-            total-=$("#<%= TReproceso.ClientID %>").val().replace(" Kg.", "")*1;
-            $("#<%= LMerma.ClientID %>").text(total + " Kg.");
+            if(total>0) {
+                total= $("#<%= TCantidad.ClientID %>").val().replace(" Kg.", "")*1-total;
+                total-=$("#<%= TReproceso.ClientID %>").val().replace(" Kg.", "")*1;
+                $("#<%= LMerma.ClientID %>").text(total + " Kg.");
+            } else $("#<%= LMerma.ClientID %>").text("--");
         }).change();
         
         $("#<%= TFechaProduccion.ClientID %>,#<%= TFechaInicio.ClientID %>").change(generarLote);
@@ -248,6 +264,7 @@
 </asp:Panel>
 <asp:UpdatePanel runat="server" UpdateMode="Conditional">
 <ContentTemplate>
+<asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado"><asp:Label runat="server" ID="LAnulado" Text=""></asp:Label></asp:Panel>
 <asp:Panel runat="server" DefaultButton="BAceptar">
 <table class="tablecollapse">
     <tr>
@@ -282,12 +299,19 @@
     </tr>
     <tr>
         <td nowrap="nowrap">Cantidad programada<asp:RequiredFieldValidator ControlToValidate="TCantidad" ErrorMessage="Por favor ingrese una cantidad." ID="RequiredFieldValidator7" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
-        <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RegularExpressionValidator1" runat="server" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator></td>
+        <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9] Kg.+" ID="RegularExpressionValidator1" runat="server" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidad" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator></td>
         <td>
             <asp:Button runat="server" ID="BFormular" Text="Traer formula" CausesValidation="false" OnClick="BFormular_Click" CssClass="hide" />
-            <asp:TextBox runat="server" ID="TCantidad" CssClass="float"></asp:TextBox></td>
+            <asp:TextBox runat="server" ID="TCantidad" CssClass="presentacion"></asp:TextBox></td>
         <td>Lote<asp:RequiredFieldValidator ControlToValidate="TLote" ErrorMessage="Por favor ingrese un lote." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
         <td><asp:TextBox runat="server" ID="TLote" CssClass="lote"></asp:TextBox></td>
+    </tr>
+    <tr>
+        <td><asp:Label runat="server" Text="Marmita" ID="LMarmita"></asp:Label></td>
+        <td><asp:DropDownList ID="DMarmitaI" runat="server" DataSourceID="SMarmita" AppendDataBoundItems="true"
+                DataTextField="nombre" DataValueField="id">
+                <asp:ListItem Text="(Ninguna)" Value=""></asp:ListItem>
+            </asp:DropDownList></td>
     </tr>
     <tr>
         <td colspan="4">&nbsp;</td>
@@ -305,10 +329,14 @@
             <asp:RegularExpressionValidator ValidationExpression="[0-9]*[.]?[0-9]+" ID="RDecimal" runat="server" ValidationGroup="agregar" ErrorMessage="Por favor ingrese un numero decimal." ControlToValidate="TCantidadIngrediente" Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
             </td>
         <td><asp:TextBox runat="server" ID="TCantidadIngrediente" CssClass="float"></asp:TextBox></td>
-        <td><asp:HiddenField runat="server" ID="HProductos" /><asp:Button runat="server" ID="BMas" Text="Agregar" ValidationGroup="agregar" OnClick="BMas_Click" />
+        <td>Lote<asp:RequiredFieldValidator ControlToValidate="TLoteIngrediente" ValidationGroup="agregar" ErrorMessage="Por favor ingrese un lote." ID="RLoteIngrediente" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+        <asp:HiddenField runat="server" ID="HProductos" />
+        </td>
+        <td class="tdr">
+        <asp:TextBox runat="server" ID="TLoteIngrediente" CssClass="lote"></asp:TextBox>
+        <asp:Button runat="server" ID="BMas" Text="Agregar" ValidationGroup="agregar" OnClick="BMas_Click" />
         <asp:Button ID="BActualizar" runat="server" Text="Actualizar" CssClass="hide" CausesValidation="false" onclick="BActualizar_Click" />
         </td>
-        <td class="tdr"></td>
     </tr>
     <tr>
         <td colspan="4" class="tdl tdr tdb" align="center">
@@ -323,11 +351,16 @@
                     <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                     <Columns>
                         <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
-                        <asp:BoundField DataField="codigoExtra" HeaderText="Código" SortExpression="codigoExtra" ItemStyle-HorizontalAlign="Right" />
+                        <asp:BoundField DataField="codigoExtra" HeaderText="Código" SortExpression="codigoExtra" ItemStyle-HorizontalAlign="Right" ItemStyle-Wrap="false" />
                         <asp:BoundField DataField="nombre" HeaderText="Producto" SortExpression="nombre" ItemStyle-HorizontalAlign="Left" ItemStyle-Width="100%" FooterStyle-HorizontalAlign="Left" />
                         <asp:BoundField DataField="cantidad" HeaderText="Cantidad" SortExpression="cantidad" DataFormatString="{0:0.########}" ItemStyle-HorizontalAlign="Right" FooterStyle-HorizontalAlign="Right" />
                         <asp:BoundField DataField="unidad" HeaderText="Un." SortExpression="unidad" ItemStyle-HorizontalAlign="Left" />
-                        <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" />
+                        <asp:BoundField DataField="lote" HeaderText="Lote" SortExpression="lote" ItemStyle-HorizontalAlign="Left" />
+                        <asp:TemplateField HeaderText="Lote " SortExpression="lote">
+                            <ItemTemplate>
+                                <asp:TextBox runat="server" ID="TLote" Text='<%# Eval("lote") %>' CssClass="lote"></asp:TextBox>
+                            </ItemTemplate>
+                        </asp:TemplateField>
                     </Columns>
                 </asp:GridView>
         </td>
@@ -348,7 +381,7 @@
             <asp:SqlDataSource ID="SMarmita" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT id, nombre FROM varios WHERE tipo=1001 AND szReservado IS NULL ORDER BY nombre">
+                SelectCommand="SELECT id, nombre FROM varios WHERE tipo=1001 AND estado IS NULL ORDER BY nombre">
             </asp:SqlDataSource></td>
         <td>Contenedor</td>
         <td class="tdr"><asp:TextBox runat="server" ID="TContenedor" CssClass="contenedor"></asp:TextBox></td>
@@ -423,8 +456,8 @@
     </tr>
     <tr>
         <td colspan="4" class="tdl tdr tdb" align="center">
-            <asp:GridView ID="GAnalisis" runat="server" AutoGenerateColumns="False" DataSourceID="SAnalisis" Width="100%" 
-                DataKeyNames="id" EmptyDataText="No se encontraron análisis" >
+            <asp:GridView ID="GAnalisis" runat="server" AutoGenerateColumns="False" Width="100%" 
+                DataKeyNames="IdGrid" EmptyDataText="No se encontraron análisis" OnRowDataBound="GAnalisis_RowDataBound">
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
                 <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -432,38 +465,33 @@
                 <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
                 <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                 <Columns>
-                    <asp:BoundField DataField="fecha" HeaderText="Fecha" SortExpression="fecha" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:d}" />
-                    <asp:BoundField DataField="peso_lavado" HeaderText="Peso lavado" SortExpression="peso_lavado" ItemStyle-HorizontalAlign="Right" />
-                    <asp:BoundField DataField="peso_escurrido" HeaderText="Peso escurrido" SortExpression="peso_escurrido" ItemStyle-HorizontalAlign="Right" />
-                    <asp:BoundField DataField="Brix" HeaderText="Brix" SortExpression="Brix" ItemStyle-HorizontalAlign="Right" NullDisplayText="(NA)" />
-                    <asp:BoundField DataField="Acidez" HeaderText="Acidez" SortExpression="Acidez" ItemStyle-HorizontalAlign="Right" NullDisplayText="(NA)" />
-                    <asp:BoundField DataField="Viscosidad" HeaderText="Viscosidad" SortExpression="Viscosidad" ItemStyle-HorizontalAlign="Right" NullDisplayText="(NA)" />
-                    <asp:BoundField DataField="Consistencia" HeaderText="Consistencia" SortExpression="Consistencia" ItemStyle-HorizontalAlign="Right" NullDisplayText="(NA)" />
-                    <asp:BoundField DataField="pH" HeaderText="pH" SortExpression="pH" ItemStyle-HorizontalAlign="Right" NullDisplayText="(NA)" />
-                    <asp:BoundField DataField="Densidad" HeaderText="Densidad" SortExpression="Densidad" ItemStyle-HorizontalAlign="Right" NullDisplayText="(NA)" />
-                    <asp:BoundField DataField="ChartColor" HeaderText="Chart-Color" SortExpression="ChartColor" ItemStyle-HorizontalAlign="Right" NullDisplayText="(NA)" />
+                    <asp:BoundField DataField="fecha" HeaderText="Fecha" SortExpression="fecha" ItemStyle-HorizontalAlign="Right"  DataFormatString="{0:dd/MM/yyyy HH:mm}" ItemStyle-Wrap="false" />
+                    <asp:BoundField DataField="observaciones" HeaderText="Observaciones" SortExpression="observaciones" ItemStyle-HorizontalAlign="left" ItemStyle-Width="100%" />
+                </Columns>
+            </asp:GridView>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4">&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="4" class="GridHeader"><asp:HyperLink ID="HMicro" CssClass="aanalisis" runat="server" Text="Análisis microbiológico" NavigateUrl="~/produccion/laboratorio.aspx"></asp:HyperLink></td>
+    </tr>
+    <tr>
+        <td colspan="4" class="tdl tdr tdb" align="center">
+            <asp:GridView ID="GMicro" runat="server" AutoGenerateColumns="False" Width="100%" 
+                DataKeyNames="IdGrid" EmptyDataText="No se encontraron análisis" OnRowDataBound="GMicro_RowDataBound" >
+                <RowStyle CssClass="GridRow"></RowStyle>
+                <FooterStyle CssClass="GridFooter"></FooterStyle>
+                <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                <Columns>
+                    <asp:BoundField DataField="fecha" HeaderText="Fecha" SortExpression="fecha" ItemStyle-HorizontalAlign="Right"  DataFormatString="{0:dd/MM/yyyy HH:mm}" ItemStyle-Wrap="false" />
                     <asp:BoundField DataField="observaciones" HeaderText="Observaciones" SortExpression="observaciones" ItemStyle-HorizontalAlign="left" />
                 </Columns>
             </asp:GridView>
-            <asp:SqlDataSource ID="SAnalisis" runat="server" 
-                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
-                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT 
-                    analisis_fisico_quimico.id,analisis_fisico_quimico.fecha,analisis_fisico_quimico.peso_lavado,analisis_fisico_quimico.peso_escurrido,analisis_fisico_quimico.observaciones 
-                    ,(SELECT valor FROM analisis_fisico_quimico_parametros LEFT JOIN varios ON (varios.id=analisis_fisico_quimico_parametros.parametro) WHERE analisis_fisico_quimico.id=analisis_fisico_quimico_parametros.analisis AND varios.nombre='Brix')  AS Brix
-                    ,(SELECT valor FROM analisis_fisico_quimico_parametros LEFT JOIN varios ON (varios.id=analisis_fisico_quimico_parametros.parametro) WHERE analisis_fisico_quimico.id=analisis_fisico_quimico_parametros.analisis AND varios.nombre='Acidez')  AS Acidez
-                    ,(SELECT valor FROM analisis_fisico_quimico_parametros LEFT JOIN varios ON (varios.id=analisis_fisico_quimico_parametros.parametro) WHERE analisis_fisico_quimico.id=analisis_fisico_quimico_parametros.analisis AND varios.nombre='Viscosidad')  AS Viscosidad
-                    ,(SELECT valor FROM analisis_fisico_quimico_parametros LEFT JOIN varios ON (varios.id=analisis_fisico_quimico_parametros.parametro) WHERE analisis_fisico_quimico.id=analisis_fisico_quimico_parametros.analisis AND varios.nombre='Consistencia')  AS Consistencia
-                    ,(SELECT valor FROM analisis_fisico_quimico_parametros LEFT JOIN varios ON (varios.id=analisis_fisico_quimico_parametros.parametro) WHERE analisis_fisico_quimico.id=analisis_fisico_quimico_parametros.analisis AND varios.nombre='pH')  AS pH
-                    ,(SELECT valor FROM analisis_fisico_quimico_parametros LEFT JOIN varios ON (varios.id=analisis_fisico_quimico_parametros.parametro) WHERE analisis_fisico_quimico.id=analisis_fisico_quimico_parametros.analisis AND varios.nombre='Densidad') AS Densidad
-                    ,(SELECT valor FROM analisis_fisico_quimico_parametros LEFT JOIN varios ON (varios.id=analisis_fisico_quimico_parametros.parametro) WHERE analisis_fisico_quimico.id=analisis_fisico_quimico_parametros.analisis AND varios.nombre='Chart-Color') AS ChartColor
-                    FROM analisis_fisico_quimico
-                    WHERE analisis_fisico_quimico.orden=@orden
-                    ORDER BY analisis_fisico_quimico.fecha DESC">
-                <SelectParameters>
-                    <asp:Parameter Name="orden" />
-                </SelectParameters>
-            </asp:SqlDataSource>
         </td>
     </tr>
     <tr>
@@ -475,17 +503,38 @@
         <td colspan="3"><asp:TextBox runat="server" ID="TObservaciones" Width="98%"></asp:TextBox></td>
     </tr>
     <tr>
+        <td><asp:Label runat="server" ID="LMotivoAnulacion" Visible="false" Text="Motivo anulación"></asp:Label></td>
+        <td colspan="3"><asp:Label runat="server" ID="LAnulacion"></asp:Label></td>
+    </tr>
+    <tr>
         <td colspan="4">&nbsp;<asp:Label runat="server" ID="LMensaje" ForeColor="Red"></asp:Label><asp:ValidationSummary runat="server" /></td>
     </tr>
     <tr>
-        <td colspan="4" align="right">
-            <asp:Button runat="server" ID="BAceptar" Text="Aceptar" 
-                onclick="BAceptar_Click" />
-            <asp:Button runat="server" ID="BCancelar" Text="Cancelar" 
-                CausesValidation="false" onclick="BCancelar_Click" />
+        <td><asp:Button runat="server" ID="BAnular" Text="Anular" Visible="false" CausesValidation="false" /></td>
+        <td colspan="3" align="right">
+            <asp:Button runat="server" ID="BAceptar" Text="Aceptar" onclick="BAceptar_Click" />
+            <asp:Button runat="server" ID="BCancelar" Text="Cancelar" CausesValidation="false" onclick="BCancelar_Click" />
         </td>
     </tr>
 </table>
+<asp:Panel runat="server" ID="PAnular" Visible="false">
+<div title="Motivo anulación" id="dAnular" class="hide">
+    <table>
+        <tr>
+            <td><asp:TextBox runat="server" ID="TMotivoAnulacion" TextMode="MultiLine" Width="300px" Height="50px"></asp:TextBox></td>
+        </tr>
+        <tr>
+            <td><asp:RequiredFieldValidator ValidationGroup="anulacion" ControlToValidate="TMotivoAnulacion" ErrorMessage="Por favor ingrese un motivo." ID="RequiredFieldValidator9" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator></td>
+        </tr>
+        <tr>
+            <td align="right">
+                <asp:Button runat="server" ValidationGroup="anulacion" ID="BAnularReal" Text="Anular" onclick="BAnular_Click"/>
+                <asp:Button runat="server" ID="BCancelarAnular" CausesValidation="false" Text="Cancelar" />
+            </td>
+        </tr>
+    </table>
+</div>
+</asp:Panel>
 </asp:Panel>
 </ContentTemplate>
 </asp:UpdatePanel>
