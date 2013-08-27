@@ -1,7 +1,6 @@
 ﻿<%@ Page Title="Productos" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="productos.aspx.cs" Inherits="administrador_productos" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
-
     <script type="text/javascript">
         addFunctionToStart(function() {
 
@@ -254,6 +253,10 @@
             <td  class="tdb"><asp:TextBox runat="server" ID="TFormatoLote"></asp:TextBox> <span id="sformatolote"></span></td>
             <td class="tdr tdb"></td>
           </tr>
+          <tr>
+            <td></td>
+            <td><asp:CheckBox runat="server" ID="COculto" Text="Produto oculto" /></td>
+          </tr>
         </table>
             </div>
             <div id="dMaxMin" class="hide">
@@ -499,8 +502,9 @@
       <tr>
         <td>
             <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" EmptyDataText="No se encontraron productos"
-                DataKeyNames="id" DataSourceID="SResultados" AllowSorting="true"
-                onselectedindexchanged="GResultado_SelectedIndexChanged" AllowPaging="true" PageSize="50" >
+                DataKeyNames="id,estado" DataSourceID="SResultados" AllowSorting="true"
+                onselectedindexchanged="GResultado_SelectedIndexChanged" 
+                AllowPaging="true" PageSize="50" onrowdatabound="GResultado_RowDataBound" >
                 <RowStyle CssClass="GridRow"></RowStyle>
                 <FooterStyle CssClass="GridFooter"></FooterStyle>
                 <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
@@ -549,12 +553,14 @@
                         ,producto.minimo
                         ,producto.maximo
                         ,CASE producto.maxmin_tipo WHEN 1 THEN 'Si' ELSE 'No' END AS maxmin_tipo
+                        ,producto.estado
                         FROM producto 
                         LEFT JOIN varios ON (producto.grupo=varios.id)
-                        WHERE producto.estado IS NULL
+                        WHERE (producto.estado IS NULL OR producto.estado=1)
                         AND (@filtrado=0 
                         OR (
-                            (@vence=-1 OR producto.vence=@vence)
+                            ((producto.estado=@oculto=1) OR (@oculto=0 AND producto.estado IS NULL))
+                            AND (@vence=-1 OR producto.vence=@vence)
                             AND (@lote=-1 OR producto.lote=@lote)
                             AND (@cantidades=-1 OR producto.entero=@cantidades)
                             AND (@serial=-1 OR producto.serial=@serial)
@@ -578,6 +584,7 @@
                     <asp:ControlParameter ControlID="TDescripcion" PropertyName="Text" Name="descripcion" DefaultValue="_" />
                     <asp:ControlParameter ControlID="TUnidad" PropertyName="Text" Name="unidad" DefaultValue="_" />
                     <asp:ControlParameter ControlID="TCodigo" PropertyName="Text" Name="codigo" DefaultValue="_" />
+                    <asp:ControlParameter ControlID="COculto" PropertyName="Checked" Name="oculto" DefaultValue="0" />
                 </SelectParameters>
             </asp:SqlDataSource>
           </td>

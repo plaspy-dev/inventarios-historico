@@ -50,8 +50,9 @@ public partial class produccion_formulacion : System.Web.UI.Page
 
                         ((ing)Master).SetModificacion(info.id);
 
-                        ViewState["id"] = 
-                        SAnalisis.SelectParameters["formulacion"].DefaultValue =
+                        ViewState["id"] =
+                            SMicro.SelectParameters["formulacion"].DefaultValue =
+                            SAnalisis.SelectParameters["formulacion"].DefaultValue =
                         info.id;
 
                         query = new Query("formulacion_ingrediente");
@@ -192,6 +193,24 @@ public partial class produccion_formulacion : System.Web.UI.Page
                     query["parametro"] = GAnalisis.DataKeys[i].Value.ToString();
 
                     if (conector.QueryMod(query.GetInsert()) == -1) {
+                        LMensaje.Text = conector.GetLastError();
+                        return;
+                    }
+                }
+            }
+
+            for (int i = 0; i < GMicro.Rows.Count; i++)
+            {
+                TextBox maximo = (TextBox)GMicro.Rows[i].FindControl("TMaximo");
+                TextBox minimo = (TextBox)GMicro.Rows[i].FindControl("TMinimo");
+                if (maximo.Text.Length > 0 || minimo.Text.Length > 0)
+                {
+                    query["minimo"] = minimo.Text;
+                    query["maximo"] = maximo.Text;
+                    query["parametro"] = GMicro.DataKeys[i].Value.ToString();
+
+                    if (conector.QueryMod(query.GetInsert()) == -1)
+                    {
                         LMensaje.Text = conector.GetLastError();
                         return;
                     }
@@ -496,7 +515,8 @@ public partial class produccion_formulacion : System.Web.UI.Page
                 }
                 
                 string IngredienteID= conector.QueryString(string.Format("SELECT id FROM producto WHERE {0} LIMIT 1", szCondicion));
-                if (string.IsNullOrEmpty(currentID)) { 
+                if (string.IsNullOrEmpty(IngredienteID))
+                {
                     LMensaje.Text="No se encontro el nombre o código del ingrediente en la línea " + linea;
                     return;
                 }

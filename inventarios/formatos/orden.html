@@ -9,11 +9,14 @@
 .tgrid th {
 	width: 1px;
 }
-#GProductos tr .c2 {
+#GProductos tr .c1,#GAnalisis tr .c0,#GMicro tr .c0 {
+	white-space: nowrap;
+}
+#GProductos tr .c2, #GProductos tr .c5,#GAnalisis tr .c9,#GMicro tr .c8 {
 	width: 100%;
 }
-#GProductos tr .c5 {
-	width: 100%;
+#GMicro tr th, #GAnalisis tr th {
+	font-size: 10px;
 }
 </style>
 </head>
@@ -29,7 +32,7 @@
 <table>
         <tr>
           <td><img src="../img/logo.ashx" width="133" height="66" alt="logo" /></td>
-          <td colspan="2" align="center" class="titulo">Orden de producción</td>
+          <td colspan="2" align="center" class="titulo">Orden de producción  <span class="anulado $claseanulado$"><span>$LAnulado$</span></span></td>
           <td align="right" nowrap="nowrap" class="numero" style="font-size: 40px">$TNumero$</td>
         </tr>
         <tr>
@@ -51,7 +54,7 @@
         </tr>
         <tr>
           <td>Cantidad programada</td>
-          <td><strong>$TCantidad$</strong></td>
+          <td><strong>$TCantidad$ Kg.</strong></td>
           <td>Lote</td>
           <td><strong>$TLote$</strong></td>
         </tr>
@@ -123,8 +126,8 @@
         <tr>
           <td>Reproceso</td>
           <td><strong>$TReproceso$ Kg.</strong></td>
-          <td>Merma</td>
-          <td><strong>$LMerma$ Kg.</strong></td>
+          <td class='$mermaclase$'>Merma</td>
+          <td class='$mermaclase$'><strong>$LMerma$ Kg.</strong></td>
         </tr>
         <tr>
           <td>&nbsp;</td>
@@ -144,6 +147,15 @@
           </tr>
         <tr>
           <td colspan="4">$GAnalisis$</td>
+        </tr>
+        <tr>
+          <td colspan="4"><hr /></td>
+        </tr>
+        <tr>
+          <td colspan="4">Análisis microbiólogico</td>
+          </tr>
+        <tr>
+          <td colspan="4">$GMicro$</td>
         </tr>
         <tr>
           <td colspan="4"><hr /></td>

@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-08-21 · Ampliar la formulación y las validaciones de órdenes.** Actualiza las pantallas de laboratorio y órdenes y amplía el controlador de formulación. Los usuarios pueden consultar los campos de fórmula y completar la orden dentro del mismo flujo.
+**2013-08-27 · Guardar más datos de laboratorio y órdenes.** Amplía las consultas, actualizaciones y campos de laboratorio, y ajusta qué columnas aparecen en órdenes. Los datos recuperados durante el trabajo pueden quedar registrados y visibles para su revisión.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-08-21 · Expand formulation and order validation.** Update laboratory and order forms and expand the formulation handler. Users can consult formula fields and complete the order within the same workflow.
+**2013-08-27 · Save additional lab and order details.** Expand lab queries, updates, and fields and adjust which order columns appear. Data gathered during the workflow can be stored and displayed for review.
 
 ### How to explore the source
 

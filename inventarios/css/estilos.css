@@ -241,11 +241,9 @@ table .tablecollapse {
 }
 .ui-autocomplete-loading { background: white url('../img/ui-anim_basic_16x16.gif') right center no-repeat; }
 
-.anulado 
-{
-    background: #FF0000;
-    color: #FFFFFF;
-    text-align: center;
-    font-size: 20px;
-    padding: 5px;
-}
+.anulado span{background:#FF0000;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:20px;line-height:2rem;position:relative;transition:0.5s;}
+.anulado span:hover{background:#006600;color:#fff;}
+.anulado span::before,.anulado span::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}
+.anulado span::after{bottom:1px;top:auto;}
+@media screen and (min-width:800px){.anulado{position:absolute;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;}
+.anulado span{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:0px 1px 4px rgba(0,0,0,0.8);}}

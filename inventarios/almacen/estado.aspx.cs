@@ -58,12 +58,21 @@ public partial class almacen_estado : System.Web.UI.Page
                     catch { }
                 }
                 CDetallado.Checked = true;
+            } else if (!string.IsNullOrEmpty(Request.QueryString["gpid"])) {
+
+                Producto info = Producto.GetProducto(Request.QueryString["gpid"]);
+                TProductoID.Text = info.id;
+                TProducto.Text = info.NombreCompleto;
             }
 
             ((ing)Master).InitAlmacen();
             DropDownList almacenes = ((ing)Master).GetDropDownAlmacen();
             for (int i = 0; i < almacenes.Items.Count; i++)
-                DAlmacenes.Items.Add(almacenes.Items[i]);
+            {
+                ListItem item = new ListItem(almacenes.Items[i].Text, almacenes.Items[i].Value);
+                item.Selected = !string.IsNullOrEmpty(Request.QueryString["gpid"]) || almacenes.Items[i].Selected;
+                DAlmacenes.Items.Add(item);
+            }
             ((ing)Master).RestoreState();
         }
 

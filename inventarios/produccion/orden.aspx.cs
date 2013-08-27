@@ -12,6 +12,23 @@ using System.Xml.Serialization;
 public partial class produccion_orden : System.Web.UI.Page
 {
     [Serializable]
+    public class Analisis
+    {
+
+        public string IdTabla { get; set; }
+        public int IdGrid { get; set; }
+        public DateTime Fecha { get; set; }
+        public string Observaciones { get; set; }
+        public Dictionary<string, string> Parametros { get; set; }
+
+        public Analisis(int idGrid)
+        {
+            IdGrid = idGrid;
+            Parametros = new Dictionary<string, string>();
+        }
+    }
+
+    [Serializable]
     public class ProductoIngrediente : Producto {
         public decimal? CantidadOriginal { get; set; }
         [XmlIgnore]
@@ -26,6 +43,8 @@ public partial class produccion_orden : System.Web.UI.Page
             get {
                 if (CantidadOriginal == null)
                     return "*";
+                if (CantidadOriginal == -1)
+                    return "(a)";
                 if (CantidadOriginal.Value > this.cantidad)
                     return "-";
                 if (CantidadOriginal.Value < this.cantidad)
@@ -58,6 +77,8 @@ public partial class produccion_orden : System.Web.UI.Page
                 Session["lorden"] = null;
             }
             BAceptar.Enabled = usuario.CanInsert();
+            Utilidades.GetGridColumn(GProductos, "Lote ").Visible = true;
+            Utilidades.GetGridColumn(GProductos, "Lote").Visible = false;
 
             if (!string.IsNullOrEmpty(Request.QueryString["oi"]))
             {
@@ -74,15 +95,36 @@ public partial class produccion_orden : System.Web.UI.Page
                     query += "cantidad";
                     query += "observaciones";
                     query += "formulacion";
+                    query += "estado";
+                    query += "anulacion";
 
                     MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["oi"])));
                     if (reader != null && reader.Read())
                     {
                         PEditar.Visible = true;
                         Session["parametros"] = Request.Url.Query;
-                        ViewState["id"] = 
-                            SAnalisis.SelectParameters["orden"].DefaultValue = 
+                        ViewState["id"] =
                             TNumero.Text = reader["id"].ToString();
+
+                        PAnulado.Visible = reader["estado"].ToString() != "";
+                        PAnular.Visible= BAnular.Visible = usuario.CanAdmin();
+                        if (PAnulado.Visible)
+                        {
+                            LAnulado.Text = "Anulada";
+                            LAnulacion.Text = reader["anulacion"].ToString();
+                            LMotivoAnulacion.Visible = true;
+                            BAnularReal.Enabled=
+                            BAnular.Enabled = BAceptar.Enabled = false;
+                        }
+
+                        if (Request.QueryString["p"] == "1")
+                        {
+                            Utilidades.GetGridColumn(GProductos, "Lote ").Visible = false;
+                            Utilidades.GetGridColumn(GProductos, "Lote").Visible = true;
+                        } else {
+                            Utilidades.GetGridColumn(GProductos, "Lote ").Visible = usuario.CanUpdate();
+                            Utilidades.GetGridColumn(GProductos, "Lote").Visible = !usuario.CanUpdate();
+                        }
 
                         HAnalisis.NavigateUrl += "?oi=" + TNumero.Text;
                         HProduccion.NavigateUrl += "?oi=" + TNumero.Text;
@@ -102,6 +144,8 @@ public partial class produccion_orden : System.Web.UI.Page
                         TProductoID.Text = info.id;
                         TRecetaID.Text = reader["formulacion"].ToString();
                         TProducto.Text = info.NombreCompleto;
+                        LEmpresa.Text = info.Empresa;
+
                         TLote.Text = reader["lote"].ToString();
                         TCantidad.Text = Convert.ToDecimal(reader["cantidad"]).ToString("0.#########", CultureInfo.InvariantCulture);
                         TObservaciones.Text = reader["observaciones"].ToString();
@@ -131,6 +175,8 @@ public partial class produccion_orden : System.Web.UI.Page
                         {
                             ViewState["orden"] = TNumero.Text;
 
+                            DMarmitaI.Visible= LMarmita.Visible = false;
+
                             TFechaInicio.Text = Conector.GetFromMySQLDate(reader["produccion_fecha"]);
                             TInicioProceso.Text = GetHora(reader["produccion_inicio"]);
                             TFinProceso.Text = GetHora(reader["produccion_fin"]);
@@ -158,7 +204,7 @@ public partial class produccion_orden : System.Web.UI.Page
                             LObtenida.Text = total.ToString("0.##");
                             try
                             {
-                                total= Convert.ToDouble(TCantidad.Text, CultureInfo.InvariantCulture)-total;
+                                total = Convert.ToDouble(TCantidad.Text.Replace(" Kg.", ""), CultureInfo.InvariantCulture) - total;
                                 total-=Convert.ToDouble(reader["reproceso"]);
                             }
                             catch { }
@@ -172,6 +218,7 @@ public partial class produccion_orden : System.Web.UI.Page
                         query += "id";
                         query += "producto";
                         query += "cantidad";
+                        query += "lote";
                         query += "cantidad_original";
 
                         reader = conector.Query(query.GetSelect("orden=" + Query.GetValor(Request.QueryString["oi"])));
@@ -179,10 +226,10 @@ public partial class produccion_orden : System.Web.UI.Page
                         {
                             while (reader.Read())
                             {
-
                                 ProductoIngrediente infoingrediente = new ProductoIngrediente(reader["producto"].ToString());
                                 infoingrediente.IdGrid = lista.Count;
                                 infoingrediente.IdTabla = reader["id"].ToString();
+                                infoingrediente.lote = reader["lote"].ToString();
                                 if(reader["cantidad_original"]!=DBNull.Value)
                                     infoingrediente.CantidadOriginal = Convert.ToDecimal(reader["cantidad_original"]);
                                 infoingrediente.cantidad = Convert.ToDecimal(reader["cantidad"]);
@@ -191,6 +238,56 @@ public partial class produccion_orden : System.Web.UI.Page
                         }
                         UpdateProductos(lista);
 
+                        query = new Query("analisis_fisico_quimico");
+
+                        query += "id";
+                        query += "fecha";
+                        query += "observaciones";
+
+                        List<Analisis> listaanalisis = new List<Analisis>();
+
+                        reader = conector.Query(query.GetSelect("orden=" + Query.GetValor(TNumero.Text) + " ORDER BY fecha DESC"));
+                        if (reader != null)
+                        {
+                            while (reader.Read())
+                            {
+                                Analisis infoanalisis = new Analisis(lista.Count);
+                                infoanalisis.IdTabla = reader["id"].ToString();
+                                infoanalisis.Fecha = (DateTime)reader["fecha"];
+                                infoanalisis.Observaciones = reader["observaciones"].ToString();
+                                AddParametros(infoanalisis, reader["id"].ToString(), "analisis_fisico_quimico_parametros");
+                                listaanalisis.Add(infoanalisis);
+                            }
+                        }
+
+                        // HAnalisis.Value = Serializar.SerializeBinary(listaanalisis);
+                        UpdateList(GAnalisis, listaanalisis);
+
+                        // analisis microbiologico
+                        query = new Query("analisis_microbiologico");
+
+                        query += "id";
+                        query += "fecha";
+                        query += "observaciones";
+
+                        listaanalisis = new List<Analisis>();
+
+                        reader = conector.Query(query.GetSelect("orden=" + Query.GetValor(TNumero.Text) + " ORDER BY fecha DESC"));
+                        if (reader != null)
+                        {
+                            while (reader.Read())
+                            {
+                                Analisis infoanalisis = new Analisis(lista.Count);
+                                infoanalisis.IdTabla = reader["id"].ToString();
+                                infoanalisis.Fecha = (DateTime)reader["fecha"];
+                                infoanalisis.Observaciones = reader["observaciones"].ToString();
+                                AddParametros(infoanalisis, reader["id"].ToString(), "analisis_microbiologico_parametros");
+                                listaanalisis.Add(infoanalisis);
+                            }
+                        }
+
+                        // HMicro.Value = Serializar.SerializeBinary(lista);
+                        UpdateList(GMicro, listaanalisis);
                         return;
                     }
                 }
@@ -199,6 +296,43 @@ public partial class produccion_orden : System.Web.UI.Page
                 TNumero.Text = conector.QueryString("SELECT IF(MAX(id),MAX(id)+1,1) FROM orden_produccion");
             TFecha.Text = DateTime.Now.ToShortDateString();
             TNumero.Focus();
+        }
+    }
+
+
+    public void UpdateList(GridView grid, List<Analisis> lista)
+    {
+        if (lista.Count > 0)
+        {
+            foreach (var info in lista[0].Parametros)
+            {
+                if (Utilidades.GetGridColumn(grid, info.Key) == null)
+                {
+                    BoundField lname = new BoundField();
+                    lname.HeaderText = info.Key;
+                    lname.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
+                    grid.Columns.Insert(grid.Columns.Count - 1, lname);
+                }
+            }
+        }
+        grid.DataSource = lista;
+        grid.DataBind();
+    }
+
+    public void AddParametros(Analisis info, string analisis, string tabla)
+    {
+
+        using (CConector conector = new CConector())
+        {
+            Query query = new Query(tabla);
+            query += "valor";
+            query += "parametro";
+            MySqlDataReader reader = conector.Query(query.GetSelect("analisis=" + analisis));
+            if (reader != null)
+            {
+                while (reader.Read())
+                    info.Parametros.Add(Almacen.GetNombreVarios(reader["parametro"].ToString()), reader["valor"] == DBNull.Value ? "" : Convert.ToDouble(reader["valor"]).ToString(CultureInfo.InvariantCulture));
+            }
         }
     }
 
@@ -221,9 +355,12 @@ public partial class produccion_orden : System.Web.UI.Page
         GProductos.DataSource = activos;
         GProductos.DataBind();
 
-        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = activos.Sum(x => x.cantidad).ToString("0.00");
-        int count=activos.Count;
-        GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = count.ToString() + " Producto" + (count==1 ? "" : "s");
+        if (GProductos.FooterRow != null)
+        {
+            GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Cantidad")].Text = activos.Sum(x => x.cantidad).ToString("0.00");
+            int count = activos.Count;
+            GProductos.FooterRow.Cells[Utilidades.GetGridColumnIndex(GProductos, "Producto")].Text = count.ToString() + " Producto" + (count == 1 ? "" : "s");
+        }
     }
 
     protected void GProductos_RowDeleting(object sender, GridViewDeleteEventArgs e)
@@ -235,6 +372,7 @@ public partial class produccion_orden : System.Web.UI.Page
                 .Where(x => x.IdGrid.ToString() == GProductos.DataKeys[e.RowIndex].Values[0].ToString())
                 .ToList().First();
             TIngredienteID.Text = info.id;
+            TLoteIngrediente.Text = info.lote;
             TIngrediente.Text = info.NombreCompleto;
             ViewState["cantidadoriginal"] = info.CantidadOriginal;
             TCantidadIngrediente.Text = info.cantidad.ToString(CultureInfo.InvariantCulture);
@@ -259,6 +397,7 @@ public partial class produccion_orden : System.Web.UI.Page
         List<ProductoIngrediente> lista = Serializar.DesSerializeBinary<List<ProductoIngrediente>>((string)ViewState["productos"]);
         ProductoIngrediente info = new ProductoIngrediente(TIngredienteID.Text);
         info.cantidad = Convert.ToDecimal(TCantidadIngrediente.Text, CultureInfo.InvariantCulture);
+        info.lote = TLoteIngrediente.Text;
         info.IdGrid = lista.Count;
         info.CantidadOriginal = (Decimal ?)ViewState["cantidadoriginal"];
         lista.Add(info);
@@ -268,8 +407,37 @@ public partial class produccion_orden : System.Web.UI.Page
 
         TIngrediente.Focus();
         TCantidadIngrediente.Text =
-        TIngredienteID.Text = TIngrediente.Text = "";
+        TIngredienteID.Text = TIngrediente.Text =TLoteIngrediente.Text=  "";
         ViewState["cantidadoriginal"] = null;
+    }
+
+    protected void BAnular_Click(object sender, EventArgs e) {
+        using (CConector conector = new CConector())
+        {
+            conector.StartTransaction();
+            Query query = new Query("orden_produccion");
+
+            query["anulacion"] = TMotivoAnulacion.Text;
+            query["estado"] = "-1";
+
+            string id = (string)ViewState["id"];
+            if (conector.QueryMod(query.GetUpdate("id=" + Query.GetValor(id))) == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
+                return;
+            }
+
+            if (conector.InsertModificacion(id) == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
+                return;
+            }
+
+            conector.Commit();
+            Session["orden_clean"] = 1;
+            Session["parametros"] = "?oi=" + id;
+            ((ing)Master).SetResultado("Orden de producción " + id + " Anulada");
+        }
     }
 
     protected void BAceptar_Click(object sender, EventArgs e)
@@ -296,11 +464,11 @@ public partial class produccion_orden : System.Web.UI.Page
             query["tercero"]= TClienteID.Text;
             query["producto"] = TProductoID.Text;
             query["lote"] = TLote.Text;
-            query["cantidad"] = TCantidad.Text;
+            query["cantidad"] = TCantidad.Text.Replace(" Kg.", "");
             query["observaciones"] = TObservaciones.Text;
             query["formulacion"] = TRecetaID.Text;
-            query["marmita"] = DMarmita.SelectedValue;
-
+            query["marmita"] = DMarmitaI.Visible ? DMarmitaI.SelectedValue : DMarmita.SelectedValue;
+            
             if (string.IsNullOrEmpty(id))
             {
                 int res = conector.QueryMod(query.GetInsert(), true);
@@ -376,7 +544,7 @@ public partial class produccion_orden : System.Web.UI.Page
                         query["producto"] = lista[i].id;
                         query["cantidad"] = lista[i].cantidad.ToString(CultureInfo.InvariantCulture);
                         query["cantidad_original"] = lista[i].CantidadOriginal==null ? "" : lista[i].CantidadOriginal.Value.ToString(CultureInfo.InvariantCulture);
-
+                        query["lote"] = Utilidades.GetGridColumn(GProductos, "Lote ").Visible ? GetLoteByRow(lista[i].IdGrid) : query["lote"] = lista[i].lote;
                         if (conector.QueryMod(query.GetInsert()) == -1)
                         {
                             LMensaje.Text = conector.GetLastError();
@@ -385,6 +553,14 @@ public partial class produccion_orden : System.Web.UI.Page
                     }
                 } else if (lista[i].IdGrid == -1) {
                     if (conector.QueryMod("DELETE FROM orden_produccion_ingredientes WHERE id=" + lista[i].IdTabla) == -1)
+                    {
+                        LMensaje.Text = conector.GetLastError();
+                        return;
+                    }
+                } else if (Utilidades.GetGridColumn(GProductos, "Lote ").Visible)
+                {  // esta es para editarla tiene idtabla
+                    query["lote"] = GetLoteByRow(lista[i].IdGrid);
+                    if (conector.QueryMod(query.GetUpdate("id=" + lista[i].IdTabla)) == -1)
                     {
                         LMensaje.Text = conector.GetLastError();
                         return;
@@ -399,10 +575,29 @@ public partial class produccion_orden : System.Web.UI.Page
         }
     }
 
+    protected string GetLoteByRow(int idGrid)
+    {
+        string id= idGrid.ToString();
+        for(int i=0; i<GProductos.Rows.Count; i++) {
+            if (GProductos.DataKeys[i].Values["IdGrid"].ToString() == id)
+            {
+                TextBox lote = (TextBox)GProductos.Rows[i].FindControl("TLote");
+                return lote.Text;
+            }
+        }
+        return "";
+    }
     protected void BCancelar_Click(object sender, EventArgs e)
     {
         Session["orden_clean"] = 1;
         Response.Redirect("~/produccion/orden.aspx");
+    }
+
+    protected void CheckEmpty(params TextBox[] textBoxs)
+    {
+        for(int i=0; i<textBoxs.Length; i++)
+            if (textBoxs[i].Text.Length == 0)
+                textBoxs[i].Text = "__________";
     }
 
     protected void OnImprimir(object sender, EventArgs e)
@@ -410,6 +605,31 @@ public partial class produccion_orden : System.Web.UI.Page
         PrintEventArgs evento = (PrintEventArgs) e;
         GProductos.Columns[0].Visible =false;
 
+        Utilidades.GetGridColumn(GProductos, "Lote ").Visible=false;
+        Utilidades.GetGridColumn(GProductos, "Lote").Visible = true;
+
+        evento.Contenido = evento.Contenido.Replace("$claseanulado$", PAnulado.Visible ? "" : "hide");
+        evento.Contenido = evento.Contenido.Replace("$mermaclase$", LObtenida.Text == "0" ? "hide" : "");
+
+        if (LObtenida.Text == "0")
+        {
+            TCantidadUnidad1.Text = 
+                TCantidadPresentacion1.Text=
+                TCantidadUnidad2.Text= 
+                TCantidadPresentacion2.Text=
+                TReproceso.Text=
+            LObtenida.Text = "__________";
+        }
+        CheckEmpty(TContenedor
+                ,TOperariosEmpaque
+                ,TOperariosProceso
+                ,TInicioEmpaque
+                ,TInicioProceso
+                ,TFinEmpaque
+                ,TFinProceso
+                ,TFechaEmpaque
+                );
+        
         int pos = evento.Contenido.IndexOf("<div");
         int posf = evento.Contenido.IndexOf("</div>");
 
@@ -440,9 +660,12 @@ public partial class produccion_orden : System.Web.UI.Page
             return;
         }
 
+        Producto producto = new Producto(TRecetaID.Text);
+        LEmpresa.Text = producto.Empresa;
+
         using (CConector conector = new CConector())
         {
-            Decimal cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
+            Decimal cantidad = Convert.ToDecimal(TCantidad.Text.Replace(" Kg.", ""), CultureInfo.InvariantCulture);
             Query query = new Query("formulacion_ingrediente");
 
             query += "producto";
@@ -478,15 +701,35 @@ public partial class produccion_orden : System.Web.UI.Page
     {
         List<ProductoIngrediente> lista = Serializar.DesSerializeBinary<List<ProductoIngrediente>>(HProductos.Value);
         HProductos.Value = "";
-
+        RLoteIngrediente.Enabled = false;
         for (int i = 0; i < lista.Count; i++)
         {
             TIngredienteID.Text = lista[i].id;
             TCantidadIngrediente.Text = lista[i].cantidad.ToString(CultureInfo.InvariantCulture);
             TIngrediente.Text = lista[i].NombreCompleto;
+            TLoteIngrediente.Text = lista[i].lote;
             ViewState["cantidadoriginal"]= lista[i].CantidadOriginal;
             Validate("agregar");
             BMas_Click(sender, e);
+        }
+        RLoteIngrediente.Enabled = true;
+    }
+
+    protected void GAnalisis_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        if (e.Row.RowIndex != -1)
+        {
+            for (int i = 1; i < e.Row.Cells.Count - 1; i++)
+                e.Row.Cells[i].Text = ((Analisis)e.Row.DataItem).Parametros[GAnalisis.Columns[i].HeaderText];
+        }
+    }
+
+    protected void GMicro_RowDataBound(object sender, GridViewRowEventArgs e)
+    {
+        if (e.Row.RowIndex != -1)
+        {
+            for (int i = 1; i < e.Row.Cells.Count - 1; i++)
+                e.Row.Cells[i].Text = ((Analisis)e.Row.DataItem).Parametros[GMicro.Columns[i].HeaderText];
         }
     }
 }

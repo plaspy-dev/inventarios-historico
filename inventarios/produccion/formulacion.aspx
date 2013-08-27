@@ -153,7 +153,7 @@
                 <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
                 <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
                 <Columns>
-                    <asp:TemplateField HeaderText="Propiedad">
+                    <asp:TemplateField HeaderText="Propiedad" ItemStyle-Wrap="false">
                         <ItemTemplate>
                             <%# Eval("nombre") %>
                             <asp:RegularExpressionValidator ID="RegularExpressionValidator1" ControlToValidate="TMinimo" ValidationExpression="[0-9]*[.]?[0-9]+" runat="server" ErrorMessage="Por favor ingrese un número decimal." Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
@@ -174,7 +174,48 @@
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo FROM varios 
                         LEFT JOIN formulacion_parametro ON (formulacion_parametro.formulacion=@formulacion AND formulacion_parametro.parametro=varios.id)
-                        WHERE varios.tipo=1003 AND varios.szReservado IS NULL ORDER BY varios.nombre;">
+                        WHERE varios.tipo=1003 AND varios.estado IS NULL ORDER BY varios.nombre;">
+                        <SelectParameters>
+                            <asp:Parameter Name="formulacion" DefaultValue="0" />
+                        </SelectParameters>
+            </asp:SqlDataSource>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="4" class="GridHeader">Análisis microbiológicos</td>
+    </tr>
+    <tr>
+        <td colspan="4" class="tda">
+            <asp:GridView ID="GMicro" runat="server" AutoGenerateColumns="False" DataSourceID="SMicro" DataKeyNames="id">
+                <RowStyle CssClass="GridRow"></RowStyle>
+                <FooterStyle CssClass="GridFooter"></FooterStyle>
+                <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                <Columns>
+                    <asp:TemplateField HeaderText="Propiedad" ItemStyle-Wrap="false">
+                        <ItemTemplate>
+                            <%# Eval("nombre") %>
+                            <asp:RegularExpressionValidator ID="RegularExpressionValidator1" ControlToValidate="TMinimo" ValidationExpression="[0-9]*[.]?[0-9]+" runat="server" ErrorMessage="Por favor ingrese un número decimal." Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+                            <asp:RegularExpressionValidator ID="RegularExpressionValidator2" ControlToValidate="TMaximo" ValidationExpression="[0-9]*[.]?[0-9]+" runat="server" ErrorMessage="Por favor ingrese un número decimal." Display="Dynamic" SetFocusOnError="True">*</asp:RegularExpressionValidator>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <asp:TemplateField HeaderText="Mínimo">
+                        <ItemTemplate><asp:TextBox runat="server" ID="TMinimo" CssClass="float" Text='<%# Eval("minimo")==DBNull.Value ? "" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
+                    </asp:TemplateField>
+                    <asp:TemplateField HeaderText="Máximo">
+                        <ItemTemplate><asp:TextBox runat="server" ID="TMaximo" CssClass="float" Text='<%# Eval("minimo")==DBNull.Value ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
+                    </asp:TemplateField>
+                    <asp:TemplateField ItemStyle-Width="100%"><ItemTemplate></ItemTemplate></asp:TemplateField>
+                </Columns>
+            </asp:GridView>
+            <asp:SqlDataSource ID="SMicro" runat="server" 
+                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo FROM varios 
+                        LEFT JOIN formulacion_parametro ON (formulacion_parametro.formulacion=@formulacion AND formulacion_parametro.parametro=varios.id)
+                        WHERE varios.tipo=1004 AND varios.estado IS NULL ORDER BY varios.nombre;">
                         <SelectParameters>
                             <asp:Parameter Name="formulacion" DefaultValue="0" />
                         </SelectParameters>

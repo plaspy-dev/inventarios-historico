@@ -88,6 +88,7 @@
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+    <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado"><asp:Label runat="server" ID="LAnulado"></asp:Label></asp:Panel>
     <table style="border-collapse: collapse;">
         <tr>
             <td colspan="4" class="GridHeader">Orden de producción</td>
@@ -134,7 +135,7 @@
                 <asp:SqlDataSource ID="SMarmita" runat="server" 
                     ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                     ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                    SelectCommand="SELECT id, nombre FROM varios WHERE tipo=1001 AND szReservado IS NULL ORDER BY nombre">
+                    SelectCommand="SELECT id, nombre FROM varios WHERE tipo=1001 AND estado IS NULL ORDER BY nombre">
                 </asp:SqlDataSource></td>
             <td>Contenedor</td>
             <td class="tdr"><asp:TextBox runat="server" ID="TContenedor" CssClass="contenedor"></asp:TextBox></td>
