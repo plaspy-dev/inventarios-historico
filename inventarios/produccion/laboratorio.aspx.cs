@@ -719,6 +719,22 @@ public partial class produccion_laboratorio : System.Web.UI.Page
         return resultado;
     }
 
+    protected string RenderCheckBox(CheckBoxList check)
+    {
+        string resultado = "";
+        for (int i = 0; i < check.Items.Count; i++) {
+            resultado += "<tr>";
+            for (int j = 0; j < check.RepeatColumns && i<check.Items.Count; j++, i++)
+            {
+                resultado += "<td><b>";
+                resultado += check.Items[i].Selected ? "X" : "_";
+                resultado += "</b> " + check.Items[i].Text + "</td>";
+            }
+            resultado += "</tr>";
+        }
+        return resultado;
+    }
+
     protected void OnImprimir(object sender, EventArgs e)
     {
         PrintEventArgs evento = (PrintEventArgs)e;
@@ -729,6 +745,8 @@ public partial class produccion_laboratorio : System.Web.UI.Page
 
         evento.Contenido = evento.Contenido.Replace("$szAnalisis$", RenderGrid(GAnalisis));
         evento.Contenido = evento.Contenido.Replace("$szMicro$", RenderGrid(GMicro));
+        evento.Contenido = evento.Contenido.Replace("$szSensorial$", RenderCheckBox(CSensorial));
+        evento.Contenido = evento.Contenido.Replace("$szEsterilidad$", RenderCheckBox(CEsterilidad));
     }
 
     protected void BMas_Click(object sender, EventArgs e)

@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-08-27 · Guardar más datos de laboratorio y órdenes.** Amplía las consultas, actualizaciones y campos de laboratorio, y ajusta qué columnas aparecen en órdenes. Los datos recuperados durante el trabajo pueden quedar registrados y visibles para su revisión.
+**2013-08-28 · Añadir una consulta al detalle de la orden.** Incorpora el controlador y los campos que consultan valores relacionados con la orden. La pantalla dispone de un área para mostrar esos datos junto al registro.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-08-27 · Save additional lab and order details.** Expand lab queries, updates, and fields and adjust which order columns appear. Data gathered during the workflow can be stored and displayed for review.
+**2013-08-28 · Add a lookup to the order details.** Add the handler and fields that look up values related to the order. The screen has an area to display this data alongside the record.
 
 ### How to explore the source
 
