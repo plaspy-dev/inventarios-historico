@@ -23,6 +23,9 @@
     {
         font-size: 10px;
     }
+    .esterilidad tr td:nth-child(odd),.sensorial tr td:nth-child(odd) { width: 146px;}
+    .esterilidad tr td:nth-child(even),.sensorial tr td:nth-child(even) { width: 129px;}
+    .esterilidad tr td { font-size: 12px;}
 </style>
 <script type="text/javascript">
     $(function() {
@@ -472,6 +475,31 @@
         </td>
     </tr>
     <tr>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="5" class="GridHeader">Análisis sensorial</td>
+    </tr>
+    <tr>
+        <td class="tdl">Chart-Color</td>
+        <td><asp:TextBox runat="server" ID="TChartColor" CssClass="chart-color"></asp:TextBox></td>
+        <td colspan="3" class="tdr"></td>
+    </tr>
+    <tr>
+        <td colspan="5" class="tdl tdr tdb">
+            <asp:CheckBoxList RepeatColumns="4" runat="server" ID="CSensorial" DataSourceID="SSensorial" DataTextField="nombre" DataValueField="id" CssClass="sensorial">
+            </asp:CheckBoxList>
+            <asp:SqlDataSource ID="SSensorial" runat="server" 
+                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                SelectCommand="SELECT varios.id, varios.nombre
+                        FROM varios
+                        WHERE varios.tipo=1005 AND varios.estado IS NULL
+                        ORDER BY varios.nombre;">
+            </asp:SqlDataSource>
+        </td>
+    </tr>
+    <tr>
         <td colspan="4">&nbsp;</td>
     </tr>
     <tr>
@@ -492,6 +520,26 @@
                     <asp:BoundField DataField="observaciones" HeaderText="Observaciones" SortExpression="observaciones" ItemStyle-HorizontalAlign="left" />
                 </Columns>
             </asp:GridView>
+        </td>
+    </tr>
+    <tr>
+        <td>&nbsp;</td>
+    </tr>
+    <tr>
+        <td colspan="5" class="GridHeader">Prueba de esterilidad comercial</td>
+    </tr>
+    <tr>
+        <td colspan="5" class="tdl tdr tdb">
+            <asp:CheckBoxList RepeatColumns="4" runat="server" ID="CEsterilidad" DataSourceID="SEsterilidad" DataTextField="nombre" DataValueField="id" CssClass="esterilidad">
+            </asp:CheckBoxList>
+            <asp:SqlDataSource ID="SEsterilidad" runat="server" 
+                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                SelectCommand="SELECT varios.id, varios.nombre
+                        FROM varios
+                        WHERE varios.tipo=1006 AND varios.estado IS NULL
+                        ORDER BY varios.nombre;">
+            </asp:SqlDataSource>
         </td>
     </tr>
     <tr>

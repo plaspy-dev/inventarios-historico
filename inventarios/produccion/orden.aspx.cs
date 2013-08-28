@@ -97,6 +97,7 @@ public partial class produccion_orden : System.Web.UI.Page
                     query += "formulacion";
                     query += "estado";
                     query += "anulacion";
+                    query += "chartcolor";
 
                     MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["oi"])));
                     if (reader != null && reader.Read())
@@ -149,6 +150,7 @@ public partial class produccion_orden : System.Web.UI.Page
                         TLote.Text = reader["lote"].ToString();
                         TCantidad.Text = Convert.ToDecimal(reader["cantidad"]).ToString("0.#########", CultureInfo.InvariantCulture);
                         TObservaciones.Text = reader["observaciones"].ToString();
+                        TChartColor.Text = reader["chartcolor"].ToString();
 
                         ViewState["FormatoLote"] = info.FormatoLote.Replace("%codigo%", info.codigo);
 
@@ -288,6 +290,40 @@ public partial class produccion_orden : System.Web.UI.Page
 
                         // HMicro.Value = Serializar.SerializeBinary(lista);
                         UpdateList(GMicro, listaanalisis);
+
+                        CSensorial.DataBind();
+                        query = new Query("analisis_sensorial_parametros");
+
+                        query += "parametro";
+                        query += "valor";
+
+                        reader = conector.Query(query.GetSelect("orden=" + Query.GetValor(Request.QueryString["oi"])));
+                        if (reader != null)
+                        {
+                            while (reader.Read())
+                            {
+                                ListItem item = CSensorial.Items.FindByValue(reader["parametro"].ToString());
+                                if (item != null)
+                                    item.Selected = reader["valor"].ToString() == "1";
+                            }
+                        }
+
+                        CEsterilidad.DataBind();
+                        query = new Query("prueba_esterilidad_parametros");
+
+                        query += "parametro";
+                        query += "valor";
+
+                        reader = conector.Query(query.GetSelect("orden=" + Query.GetValor(Request.QueryString["oi"])));
+                        if (reader != null)
+                        {
+                            while (reader.Read())
+                            {
+                                ListItem item = CEsterilidad.Items.FindByValue(reader["parametro"].ToString());
+                                if (item != null)
+                                    item.Selected = reader["valor"].ToString() == "1";
+                            }
+                        }
                         return;
                     }
                 }
@@ -467,6 +503,7 @@ public partial class produccion_orden : System.Web.UI.Page
             query["cantidad"] = TCantidad.Text.Replace(" Kg.", "");
             query["observaciones"] = TObservaciones.Text;
             query["formulacion"] = TRecetaID.Text;
+            query["chartcolor"] = TChartColor.Text;
             query["marmita"] = DMarmitaI.Visible ? DMarmitaI.SelectedValue : DMarmita.SelectedValue;
             
             if (string.IsNullOrEmpty(id))
@@ -568,6 +605,49 @@ public partial class produccion_orden : System.Web.UI.Page
                 }
             }
 
+            Query sensorial = new Query("analisis_sensorial_parametros");
+            if (conector.QueryMod(sensorial.GetDelete("orden=" + Query.GetValor(ViewState["id"].ToString()))) == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
+                return;
+            }
+            sensorial["orden"] = ViewState["id"].ToString();
+            for (int i = 0; i < CSensorial.Items.Count; i++)
+            {
+                if (CSensorial.Items[i].Selected)
+                {
+                    sensorial["parametro"] = CSensorial.Items[i].Value;
+                    sensorial["valor"] = "1";
+                    if (conector.QueryMod(sensorial.GetInsert()) == -1)
+                    {
+                        LMensaje.Text = conector.GetLastError();
+                        return;
+                    }
+                }
+            }
+
+
+            Query esterilidad = new Query("prueba_esterilidad_parametros");
+            if (conector.QueryMod(esterilidad.GetDelete("orden=" + Query.GetValor(ViewState["id"].ToString()))) == -1)
+            {
+                LMensaje.Text = conector.GetLastError();
+                return;
+            }
+            esterilidad["orden"] = ViewState["id"].ToString();
+            for (int i = 0; i < CEsterilidad.Items.Count; i++)
+            {
+                if (CEsterilidad.Items[i].Selected)
+                {
+                    esterilidad["parametro"] = CEsterilidad.Items[i].Value;
+                    esterilidad["valor"] = "1";
+                    if (conector.QueryMod(esterilidad.GetInsert()) == -1)
+                    {
+                        LMensaje.Text = conector.GetLastError();
+                        return;
+                    }
+                }
+            }
+
             conector.Commit();
             Session["orden_clean"] = 1;
             Session["parametros"] = "?oi=" + id;
@@ -600,6 +680,23 @@ public partial class produccion_orden : System.Web.UI.Page
                 textBoxs[i].Text = "__________";
     }
 
+    protected string RenderCheckBox(CheckBoxList check)
+    {
+        string resultado = "";
+        for (int i = 0; i < check.Items.Count; i++)
+        {
+            resultado += "<tr>";
+            for (int j = 0; j < check.RepeatColumns && i < check.Items.Count; j++, i++)
+            {
+                resultado += "<td><b>";
+                resultado += check.Items[i].Selected ? "X" : "_";
+                resultado += "</b> " + check.Items[i].Text + "</td>";
+            }
+            resultado += "</tr>";
+        }
+        return resultado;
+    }
+
     protected void OnImprimir(object sender, EventArgs e)
     {
         PrintEventArgs evento = (PrintEventArgs) e;
@@ -610,6 +707,9 @@ public partial class produccion_orden : System.Web.UI.Page
 
         evento.Contenido = evento.Contenido.Replace("$claseanulado$", PAnulado.Visible ? "" : "hide");
         evento.Contenido = evento.Contenido.Replace("$mermaclase$", LObtenida.Text == "0" ? "hide" : "");
+
+        evento.Contenido = evento.Contenido.Replace("$szSensorial$", RenderCheckBox(CSensorial));
+        evento.Contenido = evento.Contenido.Replace("$szEsterilidad$", RenderCheckBox(CEsterilidad));
 
         if (LObtenida.Text == "0")
         {
