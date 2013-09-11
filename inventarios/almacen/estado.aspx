@@ -184,7 +184,7 @@
             <td>Producto</td>
             <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
             <td>Grupo</td>
-            <td rowspan="4">
+            <td rowspan="4" valign="bottom">
                 <asp:Button ID="BBuscar" runat="server" Text="Actualizar" onclick="BBuscar_Click" />
             </td>
         </tr>

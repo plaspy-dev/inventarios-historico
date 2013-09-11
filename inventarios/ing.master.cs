@@ -15,6 +15,9 @@ public partial class ing : System.Web.UI.MasterPage
 
     protected void Page_Load(object sender, EventArgs e)
     {
+        Type t = Type.GetType("Mono.Runtime");
+        if (t != null) // se esta ejecutando en mono
+            LMonoFix.Text = string.Format("<script type='text/javascript' src='{0}'></script>", ResolveClientUrl("~/js/mono.js"));
         // CUsuario.CheckVariables();
         CUsuario usuario = (CUsuario)Usuario.GetUsuario();
 

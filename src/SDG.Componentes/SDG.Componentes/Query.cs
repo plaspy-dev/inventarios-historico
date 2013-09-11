@@ -9,7 +9,7 @@ namespace SDG.Componentes;
 
 public class Query
 {
-	private static bool bGetKey;
+	private static bool bGetKey = false;
 
 	protected string m_szTabla;
 

@@ -14,7 +14,6 @@ public partial class produccion_orden : System.Web.UI.Page
     [Serializable]
     public class Analisis
     {
-
         public string IdTabla { get; set; }
         public int IdGrid { get; set; }
         public DateTime Fecha { get; set; }
@@ -52,8 +51,7 @@ public partial class produccion_orden : System.Web.UI.Page
                 return "";
             } 
         }
-        public ProductoIngrediente(string idproducto) : base(idproducto) { 
-        }
+        public ProductoIngrediente(string idproducto) : base(idproducto) { }
     }
 
     protected void Page_Load(object sender, EventArgs e)
@@ -69,12 +67,12 @@ public partial class produccion_orden : System.Web.UI.Page
                 Session["orden_clean"] = null;
             } else ViewState["clean"] = false;
 
-            if (Session["lorden"] != null)
+            if (Session["loproduccion"] != null)
             {
-                ViewState["urlprint"] = Request.Url.AbsolutePath + "?oi=" + Session["lorden"].ToString() + "&p=1";
-                LImprimir.Text = "Orden de producción " + Session["lentrada"].ToString() + " Editada.<br/>¿Desea imprimirla?";
+                ViewState["urlprint"] = Request.Url.AbsolutePath + "?oi=" + Session["loproduccion"].ToString() + "&p=1";
+                LImprimir.Text = "Orden de producción " + Session["loproduccion"].ToString() + " Editada.<br/>¿Desea imprimirla?";
                 PImprimir.Visible = true;
-                Session["lorden"] = null;
+                Session["loproduccion"] = null;
             }
             BAceptar.Enabled = usuario.CanInsert();
             Utilidades.GetGridColumn(GProductos, "Lote ").Visible = true;
@@ -98,6 +96,7 @@ public partial class produccion_orden : System.Web.UI.Page
                     query += "estado";
                     query += "anulacion";
                     query += "chartcolor";
+                    query += "marmita";
 
                     MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["oi"])));
                     if (reader != null && reader.Read())
@@ -129,6 +128,9 @@ public partial class produccion_orden : System.Web.UI.Page
 
                         HAnalisis.NavigateUrl += "?oi=" + TNumero.Text;
                         HProduccion.NavigateUrl += "?oi=" + TNumero.Text;
+
+                        Conector.SelectInDropDown(DMarmita, reader["marmita"]);
+                        Conector.SelectInDropDown(DMarmitaI, reader["marmita"]);
 
                         BAceptar.Enabled = usuario.CanUpdate();
                         ((ing)Master).SetModificacion(TNumero.Text);
@@ -346,6 +348,7 @@ public partial class produccion_orden : System.Web.UI.Page
                 {
                     BoundField lname = new BoundField();
                     lname.HeaderText = info.Key;
+                    lname.HtmlEncode = false;
                     lname.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
                     grid.Columns.Insert(grid.Columns.Count - 1, lname);
                 }
@@ -651,6 +654,7 @@ public partial class produccion_orden : System.Web.UI.Page
             conector.Commit();
             Session["orden_clean"] = 1;
             Session["parametros"] = "?oi=" + id;
+            Session["loproduccion"] = id;
             ((ing)Master).SetResultado("Orden de producción " + id + " Editado");
         }
     }
@@ -736,9 +740,9 @@ public partial class produccion_orden : System.Web.UI.Page
         string contenidoreal = evento.Contenido.Substring(pos, posf - pos + 6);
         string contenido = "";
 
-        Utilidades.GetGridColumn(GProductos, "Producto").Visible = false;
+        // Utilidades.GetGridColumn(GProductos, "Producto").Visible = false;
         contenido += Utilidades.ReplaceContenido(Page.Controls, contenidoreal);
-        Utilidades.GetGridColumn(GProductos, "Producto").Visible = true;
+        // Utilidades.GetGridColumn(GProductos, "Producto").Visible = true;
 
         evento.Contenido= evento.Contenido.Insert(posf + 6, contenido);
 

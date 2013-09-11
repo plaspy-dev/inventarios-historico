@@ -10,7 +10,7 @@ namespace SDG.Web.UI.WebControls;
 
 public class ConfigureDataSource : Form
 {
-	private IContainer components;
+	private IContainer components = null;
 
 	private Label lInstructions;
 
@@ -34,11 +34,11 @@ public class ConfigureDataSource : Form
 	{
 		get
 		{
-			if (ddlTypes.SelectedItem is TypeItem typeItem)
+			if (!(ddlTypes.SelectedItem is TypeItem { Name: var name }))
 			{
-				return typeItem.Name;
+				return string.Empty;
 			}
-			return string.Empty;
+			return name;
 		}
 		set
 		{
@@ -81,11 +81,11 @@ public class ConfigureDataSource : Form
 	{
 		get
 		{
-			if (!(ddlMethods.SelectedItem is MethodItem methodItem))
+			if (!(ddlMethods.SelectedItem is MethodItem { MethodInfo: var methodInfo }))
 			{
 				return null;
 			}
-			return methodItem.MethodInfo;
+			return methodInfo;
 		}
 	}
 

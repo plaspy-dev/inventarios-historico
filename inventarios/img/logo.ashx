@@ -16,6 +16,7 @@ public class logo : IHttpHandler, IRequiresSessionState
         if(File.Exists(archivo)) {
             
             context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(archivo).ToUniversalTime().ToString("R"));
+            context.Response.Flush();
             context.Response.WriteFile(archivo);
             return;
         }
@@ -23,6 +24,7 @@ public class logo : IHttpHandler, IRequiresSessionState
         archivo = Formato.GetArchivo("logo.png");
         context.Response.ContentType = "image/png";
         context.Response.AddHeader("Last-Modified", File.GetLastWriteTime(archivo).ToUniversalTime().ToString("R"));
+        context.Response.Flush();
         context.Response.WriteFile(archivo);
     }
  
