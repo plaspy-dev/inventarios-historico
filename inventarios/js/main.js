@@ -132,8 +132,10 @@ function inicio() {
     });
 
     $(":submit,:button").each(function(i) {
-        if (this.ejecutar == undefined) {
+        if (typeof this.ejecutar === 'undefined') {
             this.ejecutar = $(this).attr("onclick");
+            if (typeof this.ejecutar !== 'undefined' && this.ejecutar == "")
+                this.ejecutar = undefined;
             //            if ($(this).data("events")) {
             //                $.each($(this).data("events"), function(evento, event) {
             //                    alert(evento);

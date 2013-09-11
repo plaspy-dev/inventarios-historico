@@ -8,6 +8,7 @@
         <span class="usuario" style="color: #001736; font-size: 120px">404</span>
         <br />
         Página no encontrada.<br />
-        Intente con otro vinculo.</p>
+        Intente con otro vinculo.<br />
+        <a href="javascript:history.back();">Volver</a></p>
 </asp:Content>
 

@@ -210,6 +210,7 @@ public partial class produccion_laboratorio : System.Web.UI.Page
                 {
                     BoundField lname = new BoundField();
                     lname.HeaderText = info.Key;
+                    lname.HtmlEncode = false;
                     lname.ItemStyle.HorizontalAlign = HorizontalAlign.Right;
                     grid.Columns.Insert(grid.Columns.Count - 1, lname);
                 }
