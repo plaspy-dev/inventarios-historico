@@ -98,13 +98,14 @@ public partial class almacen_estado : System.Web.UI.Page
         }
 
         Utilidades.GetGridColumn(GResultados, "Ubicación").Visible = !todoslosalmacenes && CConfiguracion.GetConfiguracion().nUbicacion != 0;
-        Utilidades.GetGridColumn(GResultados, "Estado").Visible = !todoslosalmacenes && CConfiguracion.GetConfiguracion().bEstado;
+        Utilidades.GetGridColumn(GResultados, "Estado").Visible = CConfiguracion.GetConfiguracion().bEstado;
         Utilidades.GetGridColumn(GResultados, "Almacén").Visible = todoslosalmacenes && CAlmacen.Checked;
 
         SKardex.SelectCommand = String.Format(SKardex.SelectCommand, ((ing)Master).GetAlmacen());
 
         if (todoslosalmacenes)
         {
+            ViewState["multiplealmacenes"] = true;
             string original = SResultados.SelectCommand = String.Format(SResultados.SelectCommand, "0", "%almacen%");
             string original1 = SResultados1.SelectCommand = String.Format(SResultados1.SelectCommand, "0", "%almacen%");
 
@@ -127,9 +128,8 @@ public partial class almacen_estado : System.Web.UI.Page
                 + " FROM ("
                 + SResultados.SelectCommand;
             if(CAlmacen.Checked)
-                SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence,almacen ORDER BY codigo,nombre,lote,vence,almacen";
-            else SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence ORDER BY codigo,nombre,lote,vence";
-
+                SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence,estado,almacen ORDER BY codigo,nombre,lote,vence,almacen";
+            else SResultados.SelectCommand += ") AS t GROUP BY producto,lote,vence,estado ORDER BY codigo,nombre,lote,vence";
 
             original1 = original1.Replace("estado0.", "")
                   .Replace("producto.", "")
@@ -141,9 +141,10 @@ public partial class almacen_estado : System.Web.UI.Page
                 + " FROM ("
                 + SResultados1.SelectCommand;
             if (CAlmacen.Checked)
-                SResultados1.SelectCommand += ") AS t GROUP BY producto,lote,vence,almacen ORDER BY nombre,lote,vence,almacen";
-            else SResultados1.SelectCommand += ") AS t GROUP BY producto,lote,vence ORDER BY nombre,lote,vence";
+                SResultados1.SelectCommand += ") AS t GROUP BY producto,lote,vence,estado,almacen ORDER BY nombre,lote,vence,almacen";
+            else SResultados1.SelectCommand += ") AS t GROUP BY producto,lote,estado,vence ORDER BY nombre,lote,vence";
         } else {
+            ViewState["multiplealmacenes"] = null;
             SResultados.SelectCommand = String.Format(SResultados.SelectCommand, ((ing)Master).GetAlmacen(), ((ing)Master).GetAlmacen());
             SResultados1.SelectCommand = String.Format(SResultados1.SelectCommand, ((ing)Master).GetAlmacen(), ((ing)Master).GetAlmacen());
         }

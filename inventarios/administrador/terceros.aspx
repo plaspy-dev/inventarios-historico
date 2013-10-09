@@ -32,10 +32,55 @@
                 return false;
             }
         });
+        addDialog("#<%= PArchivos.ClientID %>", "#dImportar");
     });
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
+<asp:Panel ID="PArchivos" runat="server" Visible="false">
+<div title="Importar y exportar" id="dImportar" class="hide">
+<table>
+    <tr>
+        <td colspan="3">
+        Consideraciones para importar la formulación
+        <ul>
+            <li>Es importante tener una copia de seguridad de la formulación. Puede realizarla con el boton Exportar.</li>
+            <li>El archivo para importar tiene el mismo formato del exportado.</li>
+            <li>Los archivos deben tener en la primera línea las columnas que se van a modificar. </li>
+            <li>Sí la columna Id se encuenta registrada se omitira el nombre y código del producto.</li>
+            <li>Sí la columna Id se encuenta en blanco se buscara por nombre y/o código del producto.</li>
+            <li>Si no se quiere modificar una columna se puede eliminar la columna. </li>
+            <li>Despues de una columna con el título en blanco el resto son omitidas</li>
+            <li>Las unicas columnas obligatorias es el 'id' y 'CantidadIngrediente'.</li>
+            <li>El archivo debe estar codificado en UTF-7.</li>
+        </ul>
+        </td>
+    </tr>
+    <tr>
+        <td>Exportar en archivo separador por comas</td>
+        <td><asp:Button runat="server" ID="BExportar" Text="Exportar" CausesValidation="false" onclick="BExportar_Click" /></td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Importar archivo separador por comas (Max: 20MB)</td>
+        <td><asp:FileUpload runat="server" ID="FImportar" /></td>
+        <td><asp:Button runat="server" ID="BImportar" Text="Importar" ValidationGroup="archivo" onclick="BImportar_Click" /></td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <asp:RegularExpressionValidator ValidationGroup="archivo" ID="RFoto1" SetFocusOnError="true" ValidationExpression="^.+\.((csv)|(CSV))$" Display="Dynamic" ControlToValidate="FImportar" runat="server" ErrorMessage="Por favor seleccione un archivo csv valido."></asp:RegularExpressionValidator>
+            <asp:RequiredFieldValidator ValidationGroup="archivo" ControlToValidate="FImportar" ErrorMessage="Por favor seleccione una archivo." ID="RFFoto1" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3" align="right">
+            <hr />
+            <asp:Button runat="server" ID="BCancelarArchivo" Text="Cancelar" CausesValidation="false" OnClick="BArchivos_Click" />
+        </td>
+    </tr>
+</table>
+</div>
+</asp:Panel>
 <asp:Panel ID="Panel1" runat="server" DefaultButton="BAceptar">
     <table width="100%" border="0">
   <tr>
@@ -101,11 +146,15 @@
               <td></td>
           </tr>
           <tr>
+            <td colspan="3"><asp:Label runat="server" ID="LMensaje" ForeColor="Red"></asp:Label></td>
+          </tr>
+          <tr>
             <td></td>
             <td></td>
             <td>
                 <asp:Button ID="BAceptar" runat="server" Text="Aceptar" onclick="BAceptar_Click" />
                 <asp:Button ID="BCancelar" runat="server" CausesValidation="False" Text="Cancelar" onclick="BCancelar_Click" />
+                <asp:Button runat="server" ID="BArchivos" Text="Importar y exportar" CausesValidation="false" OnClick="BArchivos_Click" />
               </td>
           </tr>
         </table></td>

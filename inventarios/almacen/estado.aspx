@@ -183,10 +183,8 @@
             <td><asp:Label runat="server" ID="LVence" Text="Vence"></asp:Label></td>
             <td>Producto</td>
             <td><asp:Label runat="server" ID="LUbicacion" Text="Ubicación"></asp:Label></td>
+            <td>Línea</td>
             <td>Grupo</td>
-            <td rowspan="4" valign="bottom">
-                <asp:Button ID="BBuscar" runat="server" Text="Actualizar" onclick="BBuscar_Click" />
-            </td>
         </tr>
         <tr>
             <td>
@@ -200,7 +198,19 @@
                 <asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote tubicacion"></asp:TextBox>
                 <asp:TextBox runat="server" ID="TUbicacionID" CssClass="hide"></asp:TextBox>
             </td>
-            <td><asp:DropDownList ID="DGrupo" runat="server" AppendDataBoundItems="true" 
+                <td>
+                    <asp:DropDownList ID="DLinea" runat="server" AppendDataBoundItems="true" Width="220" 
+                        DataSourceID="SLinea" DataTextField="nombre" DataValueField="id">
+                        <asp:ListItem Text="(Todos)" Value="-1"></asp:ListItem>
+                        <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
+                    </asp:DropDownList>
+                    <asp:SqlDataSource ID="SLinea" runat="server" 
+                        ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                        ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                        SelectCommand="SELECT id, nombre FROM varios WHERE tipo=3 AND estado IS NULL ORDER BY nombre">
+                    </asp:SqlDataSource>
+                </td>
+                <td><asp:DropDownList ID="DGrupo" runat="server" AppendDataBoundItems="true" Width="220"
                     DataSourceID="SGrupo" DataTextField="nombre" DataValueField="id">
                     <asp:ListItem Text="(Todos)" Value="-1"></asp:ListItem>
                     <asp:ListItem Text="(Ninguno)" Value="0"></asp:ListItem>
@@ -217,6 +227,9 @@
             <td><asp:CheckBox runat="server" ID="CAlmacen" Text="Ver almacén" CssClass="hide" /></td>
             <td><asp:Label runat="server" ID="LEstado" Text="Estado"></asp:Label></td>
             <td><asp:Label runat="server" ID="LAlmacenes" Text="Almacenes"></asp:Label></td>
+            <td rowspan="2" valign="bottom" align="right">
+                <asp:Button ID="BBuscar" runat="server" Text="Actualizar" onclick="BBuscar_Click" />
+            </td>
         </tr>
         <tr>
             <td nowrap=nowrap>
@@ -270,9 +283,9 @@
                     <asp:LinkButton runat="server" ID="LUbicacion" CommandName="Select" Text='<%# Eval("ubicacion") %>'></asp:LinkButton>
                 </ItemTemplate>
             </asp:TemplateField>
-            <asp:TemplateField HeaderText="Estado" SortExpression="estado">
+            <asp:TemplateField HeaderText="Estado" SortExpression="estado" ItemStyle-Wrap="false">
                 <ItemTemplate>
-                    <asp:LinkButton runat="server" ID="LEstado" CommandName="Estado" Text='<%# Eval("estado") %>'></asp:LinkButton>
+                    <asp:LinkButton Enabled='<%# ViewState["multiplealmacenes"]==null %>' runat="server" ID="LEstado" CommandName="Estado" Text='<%# Eval("estado") %>'></asp:LinkButton>
                 </ItemTemplate>
             </asp:TemplateField>
             <asp:BoundField HeaderText="Almacén" DataField="almacen" SortExpression="almacen" />
@@ -285,7 +298,8 @@
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
                 SelectCommand="SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa
-                        ,producto.unidad,producto.codigo
+                        ,producto.unidad
+                        ,CONCAT(producto.codigo,IFNULL(producto_proveedor.codigo,'')) AS codigo
                         ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,'' AS lote,'' AS vence,'' AS szSerial,estado{0}.costo AS costo
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
@@ -294,13 +308,15 @@
                         LEFT JOIN producto ON (producto.id=estado{0}.producto) 
                         LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion)
                         LEFT JOIN varios AS estado ON (estado.id=estado{0}.estado)
+                        LEFT JOIN producto_proveedor ON (producto_proveedor.producto=producto.id AND producto_proveedor.proveedor=estado{0}.proveedor)
                         LEFT JOIN almacen ON (almacen.id={1})
                         WHERE 
                         (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=estado{0}.vence)
                         AND (@todos=1 OR estado{0}.cantidad>0)
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
                         AND (@estado=-1 OR estado{0}.estado=@estado)
-                        AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto IS NULL))
+                        AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto.grupo IS NULL))
+                        AND (@linea=-1 OR producto.linea=@linea OR (@linea=0 AND producto.linea IS NULL))
                         AND (@producto=0 OR producto.id=@producto)
                         AND (@producto!=0 OR @nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
@@ -315,6 +331,7 @@
                     <asp:ControlParameter ControlID="CTodos" PropertyName="Checked" Name="todos" />
                     <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
+                    <asp:ControlParameter ControlID="DLinea" PropertyName="SelectedValue" Name="linea" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>
     </asp:SqlDataSource>
@@ -324,7 +341,8 @@
                 SelectCommand="SELECT estado{0}.producto,estado{0}.lote
                         ,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence
                         ,SUM(estado{0}.cantidad) AS cantidad,producto.nombre,producto.empresa,estado{0}.szSerial,estado{0}.costo AS costo
-                        ,producto.unidad,producto.codigo
+                        ,producto.unidad
+                        ,CONCAT(producto.codigo,IFNULL(producto_proveedor.codigo,'')) AS codigo
                         ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
                         ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado
@@ -332,13 +350,15 @@
                         LEFT JOIN producto ON (producto.id=estado{0}.producto) 
                         LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion)
                         LEFT JOIN varios AS estado ON (estado.id=estado{0}.estado)
+                        LEFT JOIN producto_proveedor ON (producto_proveedor.producto=producto.id AND producto_proveedor.proveedor=estado{0}.proveedor)
                         LEFT JOIN almacen ON (almacen.id={1})
                         WHERE 
                         (@todos=1 OR estado{0}.cantidad>0)
                         AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=estado{0}.vence)
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
                         AND (@estado=-1 OR estado{0}.estado=@estado)
-                        AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto IS NULL))
+                        AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto.grupo IS NULL))
+                        AND (@linea=-1 OR producto.linea=@linea OR (@linea=0 AND producto.linea IS NULL))
                         AND (@producto=0 OR producto.id=@producto)
                         AND (@producto!=0 OR @nombre='_' OR producto.codigo LIKE CONCAT('%', @nombre, '%')
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
@@ -353,6 +373,7 @@
                     <asp:ControlParameter ControlID="CTodos" PropertyName="Checked" Name="todos" />
                     <asp:ControlParameter ControlID="TUbicacionID" PropertyName="Text" Name="ubicacion" DefaultValue="-1" />
                     <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
+                    <asp:ControlParameter ControlID="DLinea" PropertyName="SelectedValue" Name="linea" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                  </SelectParameters>
     </asp:SqlDataSource>

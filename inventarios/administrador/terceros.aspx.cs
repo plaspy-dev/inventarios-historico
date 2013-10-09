@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.IO;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -11,9 +13,9 @@ public partial class administrador_terceros : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
+        CConector.ReplaceConnectionString(Master.Controls);
         if (!IsPostBack)
         {
-            CConector.ReplaceConnectionString(Master.Controls);
             TIdentificacion.Focus();
             CUsuario usuario = (CUsuario)Usuario.GetUsuario();
 
@@ -117,5 +119,198 @@ public partial class administrador_terceros : System.Web.UI.Page
     protected void GResultado_SelectedIndexChanged(object sender, EventArgs e)
     {
         Response.Redirect(Request.Url.AbsolutePath + "?ti=" + GResultado.SelectedDataKey.Value.ToString());
+    }
+
+    protected void BExportar_Click(object sender, EventArgs e) {
+        bool paging = GResultado.AllowPaging;
+
+        if (paging)
+        {
+            GResultado.AllowPaging = false;
+            GResultado.DataBind();
+        }
+
+        Response.Clear();
+        Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(Page.Title + ".csv"));
+        Response.ContentEncoding = System.Text.Encoding.Unicode;
+
+        Response.Write("id;");
+        for (int i = 2; i < GResultado.Columns.Count; i++)
+        {
+            Response.Write(HttpUtility.HtmlDecode(GResultado.Columns[i].HeaderText).Trim());
+            Response.Write(";");
+        }
+        Response.Write("\n");
+
+        for (int i = 0; i < GResultado.Rows.Count; i++)
+        {
+            Response.Write(GResultado.DataKeys[i].Values["id"].ToString());
+            Response.Write(";");
+            for (int j = 2; j < GResultado.Columns.Count; j++)
+            {
+                Response.Write(HttpUtility.HtmlDecode(GResultado.Rows[i].Cells[j].Text).Trim());
+                Response.Write(";");
+            }
+            Response.Write("\n");
+        }
+
+        if (paging)
+        {
+            GResultado.AllowPaging = true;
+        }
+
+        Response.End();
+    }
+
+    public static Dictionary<string, string> GetDiccionario(DropDownList lista)
+    {
+
+        Dictionary<string, string> diccionario = new Dictionary<string, string>();
+
+        for (int i = 0; i < lista.Items.Count; i++)
+        {
+            if (lista.Items[i].Value != "-1")
+                diccionario[lista.Items[i].Text.ToLower()] = lista.Items[i].Value;
+        }
+
+        return diccionario;
+    }
+
+    protected void BImportar_Click(object sender, EventArgs e) {
+        
+        if (!IsValid)
+            return;
+        if (!FImportar.HasFile)
+            return;
+
+        List<string> campos = new List<string>();
+
+        int id = -1;
+
+        Query query = new Query("tercero");
+        StreamReader reader = new StreamReader(FImportar.FileContent, System.Text.Encoding.UTF7);
+        if (reader.Peek() < 0)
+        {
+            LMensaje.Text = "No se puede leer el archivo";
+            return;
+        }
+        string header = reader.ReadLine();
+        string[] textos = header.ToLower().Split(';');
+        for (int i = 0; i < textos.Length; i++)
+        {
+            bool found = false;
+            if (textos[i] == "id")
+            {
+                campos.Add(textos[i]);
+                id = i;
+                found = true;
+            }
+            else
+            {
+                for (int j = 2; j < GResultado.Columns.Count; j++)
+                {
+                    if (GResultado.Columns[j].HeaderText.ToLower() == textos[i])
+                    {
+                        campos.Add(((BoundField)GResultado.Columns[j]).DataField);
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (textos[i].Length == 0)
+                break;
+            if (!found)
+            {
+                LMensaje.Text = "No se encontro la columna '" + textos[i] + "'";
+                return;
+            }
+        }
+        if (id == -1)
+        {
+            // no se encontro el id
+            LMensaje.Text = "No se encontro la columna id";
+            return;
+        }
+        if (campos.Count == 1)
+        {
+            LMensaje.Text = "No se encontraron columnas a modificar";
+            return;
+        }
+
+        using (CConector conector = new CConector())
+        {
+            conector.StartTransaction();
+            int nuevos = 0, actualizados = 0;
+            string valor;
+            int linea = 1;
+
+            Dictionary<string, string> tipos = GetDiccionario(DTipo);
+
+            while (reader.Peek() >= 0)
+            {
+
+                header = reader.ReadLine();
+                textos = header.Split(';');
+                string currentID = "";
+                linea++;
+
+                for (int i = 0; i < textos.Length && i < campos.Count; i++)
+                {
+                    if (i == id)
+                    {
+                        currentID = textos[i];
+                    }
+                    else
+                    {
+                        valor = textos[i];
+                        switch (campos[i])
+                        {
+                            case "nombre":
+                                if (valor.Length == 0)
+                                {
+                                    LMensaje.Text = "No se puede ingresar el nombre esta en blanco en la línea " + linea;
+                                    return;
+                                }
+                                break;
+                            case "tipo":
+                                try
+                                {
+                                    valor = tipos[textos[i].ToLower()];
+                                }
+                                catch
+                                {
+                                    LMensaje.Text = "No existe el tipo llamado '" + textos[i] + "' en línea " + linea;
+                                    return;
+                                }
+                                break;
+                        }
+                        query[campos[i]] = valor;
+                    }
+                }
+                if (string.IsNullOrEmpty(currentID))
+                {
+                    nuevos++;
+                    if (conector.QueryMod(query.GetInsert()) == -1)
+                        return;
+                }
+                else
+                {
+                    actualizados++;
+                    if (conector.QueryMod(query.GetUpdate("id=" + Query.GetValor(currentID))) == -1)
+                        return;
+                    Producto.RemoveProducto(currentID);
+                }
+            }
+            reader.Close();
+            conector.Commit();
+            GResultado.DataBind();
+
+            LMensaje.Text = string.Format("Importacion realizada con exito.<br/>{0} productos, {1} Nuevos y {2} actualizados", nuevos + actualizados, nuevos, actualizados);
+        }
+    }
+
+    protected void BArchivos_Click(object sender, EventArgs e)
+    {
+        PArchivos.Visible = !PArchivos.Visible;
     }
 }

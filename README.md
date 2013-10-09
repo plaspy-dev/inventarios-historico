@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-09-11 · Validar órdenes y revisar la selección de ingredientes.** Añade validación del formulario en el navegador y ajusta la selección de ingredientes en el controlador. El flujo puede revisar los campos de la orden junto con el producto que se está usando.
+**2013-10-09 · Asociar proveedores con los productos.** Amplía el formulario para enlazar proveedores y actualiza cómo se guardan y consultan registros de terceros. La ficha de producto puede mostrar quién suministra el artículo.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-09-11 · Validate orders and revise ingredient selection.** Add browser form validation and revise ingredient selection in the handler. The workflow can check order fields alongside the product being used.
+**2013-10-09 · Associate suppliers with products.** Expand the form to bind suppliers and update how business contact records are saved and queried. The product record can show who supplies the item.
 
 ### How to explore the source
 

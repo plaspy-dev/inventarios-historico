@@ -14,6 +14,11 @@ public class Tercero
     public String Direccion { set; get; }
     public String Telefono { set; get; }
     public String Email { set; get; }
+    public String NombreCompleto {
+        get {
+            return Documento + " - " + Nombre;
+        }
+    }
 
     public Tercero() { }
     public Tercero(string id, string nombre, string documento, string direccion, string telefono, string email)

@@ -26,6 +26,15 @@ public partial class administrador_productos : System.Web.UI.Page
         }
     }
 
+    [Serializable]
+    class Proveedor : Tercero {
+
+        public string Codigo { get; set; }
+        public Proveedor(string id, string codigo) : base(id) {
+            Codigo = codigo;
+        }
+    }
+
     protected void Page_Load(object sender, EventArgs e)
     {
         CConector.ReplaceConnectionString(Master.Controls);
@@ -86,6 +95,7 @@ public partial class administrador_productos : System.Web.UI.Page
                     query += "valor";
                     query += "maxmin_tipo";
                     query += "estado";
+                    query += "linea";
 
                     MySqlDataReader reader = conector.Query(query.GetSelect("id=" + Query.GetValor(Request.QueryString["pid"])));
                     if (reader != null && reader.Read())
@@ -133,6 +143,7 @@ public partial class administrador_productos : System.Web.UI.Page
                         TDiasVencimiento.Text = reader["diasvencimiento"].ToString();
                         TFormatoLote.Text = reader["formatolote"].ToString();
                         CConector.SelectInDropDown(DGrupo, reader["grupo"]);
+                        CConector.SelectInDropDown(DLinea, reader["linea"]);
 
                         ViewState["codigo"] = TCodigo.Text;
 
@@ -160,6 +171,18 @@ public partial class administrador_productos : System.Web.UI.Page
                         GPreciosC.DataSource = preciocliente;
                         GPreciosC.DataBind();
                         ViewState["cliente"] = preciocliente;
+
+                        List<Proveedor> proveedor = new List<Proveedor>();
+                        reader = conector.Query(string.Format("SELECT proveedor, codigo FROM producto_proveedor WHERE producto={0}", HId.Value));
+                        if (reader != null) {
+                            while (reader.Read()) { 
+                                proveedor.Add(new Proveedor(reader["proveedor"].ToString(), reader["codigo"].ToString()));
+                            }
+                        }
+
+                        GProveedores.DataSource= proveedor;
+                        GProveedores.DataBind();
+                        ViewState["proveedores"]= proveedor;
 
                         lcostos.Visible =
                         PCostos.Visible = CConfiguracion.GetConfiguracion().nCosto != 0;
@@ -203,6 +226,7 @@ public partial class administrador_productos : System.Web.UI.Page
             query["empresa"] = TEmpresa.Text;
             query["entero"] = DCantidades.SelectedValue;
             query["grupo"] = DGrupo.SelectedValue;
+            query["linea"] = DLinea.SelectedValue;
             query["nEstado"] = DEstado.SelectedValue;
             query["serial"] = DSerial.SelectedValue;
             query["dias_alerta"] = TDAlertaV.Text;
@@ -307,6 +331,28 @@ public partial class administrador_productos : System.Web.UI.Page
                 }
             }
 
+            // agregamos los proveedores del producto
+            if (conector.QueryMod("DELETE FROM producto_proveedor WHERE producto=" + HId.Value) == -1)
+                return;
+
+            query = new Query("producto_proveedor");
+            query["producto"] = HId.Value;
+
+            List<Proveedor> proveedores = (List<Proveedor>)ViewState["proveedores"];
+
+            // agregamos los precios por almacen
+            if (proveedores != null)
+            {
+                for (int i = 0; i < proveedores.Count; i++)
+                {
+                    query["proveedor"] = proveedores[i].Id;
+                    query["codigo"] = proveedores[i].Codigo;
+
+                    if (conector.QueryMod(query.GetInsert()) == -1)
+                        return;
+                }
+            }
+
             conector.Commit();
             Producto.RemoveProducto(HId.Value);
             ((ing)Master).SetResultado(mensaje);
@@ -332,6 +378,40 @@ public partial class administrador_productos : System.Web.UI.Page
         
         TTercero.Text = TTerceroID.Text = TValor.Text = "";
         TTercero.Focus();
+    }
+
+    protected void BMasCodigoProveedor_Click(object sender, EventArgs e) {
+
+        if (!IsValid)
+            return;
+
+        List<Proveedor> proveedores = (List<Proveedor>)ViewState["proveedores"];
+        if (proveedores == null)
+            proveedores = new List<Proveedor>();
+
+        List<Proveedor> listado = (from p in proveedores
+                                    where p.Id == UCTercero.IdTercero
+                                       select p).ToList();
+
+        Proveedor info;
+        if (listado.Count == 0)
+        {
+            info = new Proveedor(UCTercero.IdTercero
+                        , TCodigoProveedor.Text);
+            proveedores.Add(info);
+        }
+        else
+        {
+            info = listado[0];
+            info.Codigo = TCodigoProveedor.Text;
+        }
+
+        ViewState["proveedores"] = proveedores;
+        GProveedores.DataSource = proveedores;
+        GProveedores.DataBind();
+
+        UCTercero.IdTercero = "";
+        TCodigoProveedor.Text = "";
     }
 
     protected void BAgregar_Click(object sender, EventArgs e)
@@ -364,6 +444,32 @@ public partial class administrador_productos : System.Web.UI.Page
         GPreciosC.DataBind();
 
         BCAgregar_Click(sender, e);
+    }
+
+    protected void GProveedores_RowDeleting(object sender, GridViewDeleteEventArgs e) {
+
+        List<Proveedor> proveedores = (List<Proveedor>)ViewState["proveedores"];
+        if (proveedores == null)
+        {
+            e.Cancel = true;
+            return;
+        }
+        List<Proveedor> listado = (from p in proveedores
+                                       where p.Id == GProveedores.DataKeys[e.RowIndex].Values["Id"].ToString()
+                                       select p).ToList();
+        if (listado.Count != 0)
+        {
+            Proveedor info = listado[0];
+
+            UCTercero.IdTercero = info.Id;
+            TCodigoProveedor.Text = info.Codigo;
+
+            proveedores.Remove(info);
+            ViewState["proveedores"] = proveedores;
+            GProveedores.DataSource = proveedores;
+            GProveedores.DataBind();
+        }
+        e.Cancel = true;
     }
 
     protected void GPreciosC_RowDeleting(object sender, GridViewDeleteEventArgs e)
@@ -507,6 +613,7 @@ public partial class administrador_productos : System.Web.UI.Page
             string valor;
 
             // iniciamos los diccionarios
+            Dictionary<string, string> lineas = GetDiccionario(DLinea);
             Dictionary<string, string> grupos = GetDiccionario(DGrupo);
             Dictionary<string, string> manejocantidades = GetDiccionario(DCantidades);
             Dictionary<string, string> serial = GetDiccionario(DSerial);
@@ -543,6 +650,24 @@ public partial class administrador_productos : System.Web.UI.Page
                                 {
                                     LMensaje.Text = "No se puede ingresar el nombre esta en blanco en la línea " + linea;
                                     return;
+                                }
+                                break;
+                            case "linea":
+                                try
+                                {
+                                    if (textos[i].Length > 0)
+                                        valor = lineas[textos[i].ToLower()];
+                                    else valor = "0";
+                                }
+                                catch
+                                {
+                                    int res = conector.QueryMod(string.Format("INSERT INTO varios (nombre,tipo) VALUES ({0}, 3)", Query.GetValor(textos[i])));
+                                    if (res == -1)
+                                    {
+                                        LMensaje.Text = "No se puede crear la línea " + textos[i] + " en línea " + linea;
+                                        return;
+                                    }
+                                    lineas[textos[i].ToLower()] = valor = res.ToString();
                                 }
                                 break;
                             case "grupo":
@@ -723,6 +848,7 @@ public partial class administrador_productos : System.Web.UI.Page
 
             conector.Commit();
             DGrupo.DataBind();
+            DLinea.DataBind();
             GResultado.DataBind();
 
             LMensaje.Text = string.Format("Importacion realizada con exito.<br/>{0} productos, {1} Nuevos y {2} actualizados", nuevos + actualizados, nuevos, actualizados);
