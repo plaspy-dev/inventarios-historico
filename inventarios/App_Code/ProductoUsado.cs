@@ -296,7 +296,7 @@ public class ProductoUsado
                 + " AND estado{0}.ubicacion=" + ubicacion.ToString()
                 , almacen);
             if (salida)
-                consulta += " AND varios.parametro1 IS NULL";
+                consulta += string.Format(" AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL", almacen);
 
             string szDisponible = conector.QueryString(consulta);
             Decimal dCantidad = Convert.ToDecimal(szDisponible);
@@ -305,13 +305,13 @@ public class ProductoUsado
             if (dCantidad < cantidad)
                 return null;
 
-            consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.estado,estado{0}.szSerial FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
+            consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.estado,estado{0}.szSerial,estado{0}.proveedor FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto=" + Query.GetValor(producto)
                 + " AND estado{0}.lote=" + szLote + " AND estado{0}.vence=" + szVencimiento
                 + " AND estado{0}.estado=" + estado.ToString() + " AND estado{0}.szSerial=" + szSerial
                 + " AND estado{0}.ubicacion=" + ubicacion.ToString()
                 , almacen);
             if (salida)
-                consulta += " AND varios.parametro1 IS NULL";
+                consulta += string.Format(" AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL", almacen);
 
             MySqlDataReader reader = conector.Query(consulta);
             if (reader != null)
@@ -331,6 +331,7 @@ public class ProductoUsado
                         dCantidad = cantidad;
 
                     Producto info = new Producto(producto, dCantidad, lote, vencimiento, ubicacion, reader["szSerial"].ToString(), nEstado);
+                    info.IdProveedor = reader["proveedor"].ToString();
 
                     productos.Add(info);
                     cantidad -= dCantidad;
@@ -365,7 +366,7 @@ public class ProductoUsado
 
             string consulta;
             if (salida)
-                consulta = string.Format("SELECT SUM(estado{0}.cantidad) FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND varios.parametro1 IS NULL", almacen, Query.GetValor(producto));
+                consulta = string.Format("SELECT SUM(estado{0}.cantidad) FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL", almacen, Query.GetValor(producto));
             else
                 consulta = string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto={1}", almacen, Query.GetValor(producto));
 
@@ -378,9 +379,9 @@ public class ProductoUsado
                 return null;
 
             if (salida)
-                consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.lote,estado{0}.vence,estado{0}.ubicacion,estado{0}.szSerial,estado{0}.estado FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND estado{0}.cantidad>0 AND varios.parametro1 IS NULL ORDER BY vence", almacen, Query.GetValor(producto));
+                consulta = string.Format("SELECT estado{0}.cantidad,estado{0}.lote,estado{0}.vence,estado{0}.ubicacion,estado{0}.szSerial,estado{0}.estado,estado{0}.proveedor FROM estado{0} LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.producto={1} AND estado{0}.cantidad>0 AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL ORDER BY vence", almacen, Query.GetValor(producto));
             else
-                consulta = string.Format("SELECT cantidad,lote,vence,ubicacion,szSerial,estado FROM estado{0} WHERE producto={1} AND cantidad>0 ORDER BY vence", almacen, Query.GetValor(producto));
+                consulta = string.Format("SELECT cantidad,lote,vence,ubicacion,szSerial,estado,proveedor FROM estado{0} WHERE producto={1} AND cantidad>0 ORDER BY vence", almacen, Query.GetValor(producto));
 
             MySqlDataReader reader = conector.Query(consulta);
             if (reader != null)
@@ -401,6 +402,7 @@ public class ProductoUsado
                         dCantidad = cantidad;
 
                     Producto info = new Producto(producto, dCantidad, reader["lote"].ToString(), CConector.GetFromMySQLDate(vence), ubicacion, reader["szSerial"].ToString(), estado);
+                    info.IdProveedor = reader["proveedor"].ToString();
                     productos.Add(info);
 
                     cantidad -= dCantidad;

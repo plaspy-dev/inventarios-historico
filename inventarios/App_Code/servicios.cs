@@ -113,23 +113,24 @@ public class servicios : System.Web.Services.WebService {
         using (CConector conector = new CConector())
         {
 
-            string query = "SELECT id FROM producto WHERE estado IS NULL";
+            string query = "SELECT producto.id FROM producto WHERE producto.estado IS NULL";
             string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
             for (int i = 0; i < split.Length; i++)
             {
                 if (split[i].Length > 0)
                 { // verificamos que no este vacio
-                    query += String.Format(" AND (codigo LIKE '%{0}%' OR descripcion LIKE '%{0}%' OR nombre LIKE '%{0}%' OR empresa LIKE '%{0}%') ", split[i]);
+                    query += String.Format(" AND (producto.codigo LIKE '%{0}%' OR producto.descripcion LIKE '%{0}%' OR producto.nombre LIKE '%{0}%' OR producto.empresa LIKE '%{0}%') ", split[i]);
                 }
             }
-            query += " ORDER BY nombre LIMIT 20;";
+            query += " ORDER BY producto.nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
             {
                 while (reader.Read())
                 {
                     Producto info = new Producto(reader["id"].ToString());
+                    info.IdProveedor = p;
                     info.GetCosto(p);
                     lista.Add(info);
                 }
@@ -148,8 +149,8 @@ public class servicios : System.Web.Services.WebService {
 
             string query;
             if (auto)
-                query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 AND varios.parametro1 IS NULL ", almacen);
-            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion) WHERE estado{0}.cantidad>0 AND varios.parametro1 IS NULL ", almacen);
+                query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL ", almacen);
+            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion,estado{0}.proveedor FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion) WHERE estado{0}.cantidad>0 AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL ", almacen);
 
             string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
@@ -165,7 +166,7 @@ public class servicios : System.Web.Services.WebService {
             }
             if (auto)
                 query += String.Format(" GROUP BY estado{0}.producto", almacen);
-            else query += String.Format(" GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion", almacen);
+            else query += String.Format(" GROUP BY estado{0}.producto,estado{0}.lote,estado{0}.vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion,estado{0}.proveedor", almacen);
             query += " ORDER BY producto.nombre LIMIT 20;";
             MySqlDataReader reader = conector.Query(query);
             if (reader != null)
@@ -185,6 +186,7 @@ public class servicios : System.Web.Services.WebService {
                         info.vence = CConector.GetFromMySQLDate(reader["vence"]);
                         info.serial = reader["szSerial"].ToString();
                         info.estado = Convert.ToInt32(reader["estado"]);
+                        info.IdProveedor = reader["proveedor"].ToString();
                         info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
                         cantidad -= productousado.GetProductoUsado(info.id, info.lote, info.vence);
                     }

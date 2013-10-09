@@ -115,27 +115,41 @@ public partial class administrador_almacenes : System.Web.UI.Page
         ((ing)Master).SetModificacion(HId.Value);
     }
 
+    protected static void UpdateTable(CConector conector, string almacen) {
+        
+        conector.QueryMod(string.Format("ALTER TABLE entrada_items{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
+        conector.QueryMod(string.Format("ALTER TABLE estado{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
+        conector.QueryMod(string.Format("ALTER TABLE traslado_items{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
+        conector.QueryMod(string.Format("ALTER TABLE salida_items{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
+        conector.QueryMod(string.Format("ALTER TABLE transformacion_salida{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
+        conector.QueryMod(string.Format("ALTER TABLE transformacion_entrada{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
+
+
+        conector.QueryMod(string.Format("UPDATE estado{0} SET proveedor=0;", almacen));
+        conector.QueryMod(string.Format("DROP TABLE IF EXISTS estadotemp;", almacen));
+        conector.QueryMod(string.Format("CREATE TABLE estadotemp LIKE estado{0};", almacen));
+        conector.QueryMod(string.Format("ALTER TABLE estadotemp DROP PRIMARY KEY;", almacen));
+        conector.QueryMod(string.Format("ALTER TABLE estadotemp ADD PRIMARY KEY (producto,lote,vence,szSerial, ubicacion, estado, proveedor);", almacen));
+        conector.QueryMod(string.Format("INSERT INTO estadotemp SELECT * FROM estado{0};", almacen));
+        conector.QueryMod(string.Format("DROP TABLE estado{0};", almacen));
+        conector.QueryMod(string.Format("RENAME TABLE estadotemp TO estado{0};", almacen));
+    }
+
     protected void BActualizar_Click(object sender, EventArgs e)
     {
+        using (CConector conector2 = new CConector())
         using (CConector conector = new CConector())
         {
-            /*conector.QueryMod("TRUNCATE TABLE estado_global");
+            // conector.QueryMod("TRUNCATE TABLE estado_global");
             MySqlDataReader reader = conector.Query("SELECT id FROM almacen");
             if (reader != null)
             {
-
                 while (reader.Read())
                 {
-
-                    CConector conector2 = new CConector();
-
-                    HId.Value = reader["id"].ToString();
+                    UpdateTable(conector2, reader["id"].ToString());
                 }
             }
-
-            HId.Value = "0";
-
-            CConector conector3 = new CConector();*/
+            UpdateTable(conector2, "0");
         }
 
         ((ing)Master).SetResultado("Almacenes actualizados");

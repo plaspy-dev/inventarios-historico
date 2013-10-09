@@ -115,6 +115,7 @@ public partial class almacen_traslado : System.Web.UI.Page
                         query += "estado";
                         query += "ingreso";
                         query += "costo";
+                        query += "proveedor";
 
                         reader = conector.Query(query.GetSelect("traslado=" + HId.Value));
                         if (reader != null)
@@ -127,6 +128,7 @@ public partial class almacen_traslado : System.Web.UI.Page
                                 info.cantidad = Convert.ToDecimal(reader["cantidad"]);
                                 info.lote = reader["lote"].ToString();
                                 info.vence = "";
+                                info.IdProveedor = reader["proveedor"].ToString();
                                 try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
                                 catch { }
                                 info.ubicacion = Convert.ToInt32(reader["ubicacion"]);

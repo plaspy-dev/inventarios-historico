@@ -28,6 +28,7 @@ public class Producto
     protected int _nNumero= -1;
     protected int _nEstado = -1;
     protected string _Empresa;
+    protected Dictionary<string, string> _Proveedores = null;
 
     public String id { set; get; }
     public String lote { set; get; }
@@ -40,6 +41,7 @@ public class Producto
     public Decimal Valor { set; get; }
     public int DiasV { set; get; }
     public string FormatoLote { set; get; }
+    public string IdProveedor { set; get; }
 
     [XmlIgnore]
     public bool bIngreso = false;
@@ -67,6 +69,27 @@ public class Producto
     }
 
     [XmlIgnore]
+    public Dictionary<string, string> Proveedores {
+        get {
+            if (_Proveedores == null && !string.IsNullOrEmpty(id))
+               _Proveedores = GetProducto(id)._Proveedores;
+            return _Proveedores;
+        }
+    }
+
+    [XmlIgnore]
+    public string ProveedorCodigo {
+
+        get {
+            try
+            {
+                return Proveedores[IdProveedor];
+            } catch { }
+            return "";
+        }
+    }
+
+    [XmlIgnore]
     public string szEstado { get {
         return Almacen.GetNombreEstado(estado);
     }}
@@ -76,7 +99,7 @@ public class Producto
             DateTime actual = DateTime.Now;
 
             string lote = FormatoLote
-                .Replace("%codigo%", codigo)
+                .Replace("%codigo%", codigoCompleto)
                 .Replace("%dia%", actual.Day.ToString("00"))
                 .Replace("%mes%", actual.Month.ToString("00"))
                 .Replace("%ano%",  actual.Year.ToString().Substring(2))
@@ -171,6 +194,15 @@ public class Producto
         } 
     }
     [XmlIgnore]
+    public string codigoCompleto { 
+        get {
+            string resultado=codigo;
+            if (!string.IsNullOrEmpty(ProveedorCodigo))
+                resultado+= ProveedorCodigo;
+            return resultado;
+        } 
+    }
+    [XmlIgnore]
     public string codigo { 
         set { 
             _Codigo = value; 
@@ -207,8 +239,8 @@ public class Producto
     public string NombreCompleto {
         get {
             string completo="";
-            if (!string.IsNullOrEmpty(codigo))
-                completo = codigo + " - ";
+            if (!string.IsNullOrEmpty(codigoCompleto))
+                completo+= codigoCompleto + " - ";
             completo += nombre;
             return completo;
         }
@@ -219,8 +251,10 @@ public class Producto
         get
         {
             string completo = "";
-            if (!string.IsNullOrEmpty(codigo))
-                completo = codigo + " - ";
+            if (!string.IsNullOrEmpty(codigoCompleto))
+            {
+                completo += codigoCompleto + " - ";
+            }
             completo += nombre;
             if (!string.IsNullOrEmpty(lote))
                 completo += " (" + lote + ")";
@@ -244,11 +278,13 @@ public class Producto
     {
         Producto producto = (Producto)Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "p" + id);
         if(producto==null) {
+            
             producto = new Producto();
+            producto._Proveedores = new Dictionary<string, string>();
+
             Query query = new Query("producto");
             using (CConector conector = new CConector())
             {
-
                 query += "nombre";
                 query += "descripcion";
                 query += "codigo";
@@ -302,6 +338,19 @@ public class Producto
                     catch { producto.DiasV = 0; }
                     producto.Empresa = reader["empresa"].ToString();
                     producto.FormatoLote = reader["formatolote"].ToString();
+
+                    query = new Query("producto_proveedor");
+                    
+                    query += "proveedor";
+                    query += "codigo";
+
+                    reader = conector.Query(query.GetSelect("producto=" + Query.GetValor(id)));
+                    if (reader != null) {
+                        while (reader.Read())
+                        {
+                            producto._Proveedores[reader["proveedor"].ToString()] = reader["codigo"].ToString();
+                        }
+                    }
                 }
             }
             Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "p" + id, producto);
@@ -371,6 +420,7 @@ public class Producto
         nEstado = producto.nEstado;
         Costo = producto.Costo;
         DiasV = producto.DiasV;
+        IdProveedor = producto.IdProveedor;
         FormatoLote = producto.FormatoLote;
 
         ubicacion = 0;
@@ -607,8 +657,9 @@ public class Producto
             szVencimiento = "0000-00-00";
 
         // actualizamos el estado
-        string query = string.Format("UPDATE estado{0} SET cantidad=cantidad-{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7};"
-            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado);
+        string query = string.Format("UPDATE estado{0} SET cantidad=cantidad-{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7} AND proveedor={8};"
+            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado
+            , string.IsNullOrEmpty(IdProveedor) ? "0" : IdProveedor);
         if (conector.QueryMod(query) == -1)
             return false;
 
@@ -650,8 +701,9 @@ public class Producto
             szVencimiento = "0000-00-00";
 
         string query = string.Format("UPDATE estado{0} SET cantidad=cantidad+{1},modificacion=SYSDATE()"
-                                    + " WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7};"
-            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado);
+                                    + " WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7} AND proveedor={8};"
+            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado
+            , string.IsNullOrEmpty(IdProveedor) ? "0" : IdProveedor);
         if (conector.QueryMod(query) == -1)
             return false;
 
@@ -661,9 +713,10 @@ public class Producto
         if (conector.QueryMod(query) == -1)
             return false;
 
-        query = string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad,szSerial,ubicacion,estado, modificacion) "
-            + " VALUES ({1}, {2}, {3}, {4}, {5},{6},{7}, SYSDATE());"
-            , almacen, id, szLote, Query.GetValor(szVencimiento), cantidad.ToString(CultureInfo.InvariantCulture), szSerial, ubicacion, estado);
+        query = string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad,szSerial,ubicacion,estado, modificacion, proveedor) "
+            + " VALUES ({1}, {2}, {3}, {4}, {5},{6},{7}, SYSDATE(), {8});"
+            , almacen, id, szLote, Query.GetValor(szVencimiento), cantidad.ToString(CultureInfo.InvariantCulture), szSerial, ubicacion, estado
+            , string.IsNullOrEmpty(IdProveedor) ? "0" : IdProveedor);
         if (conector.QueryMod(query) == -1)
             return false;
 
@@ -707,6 +760,7 @@ public class Producto
         query["estado"]= estado.ToString();
         query["ingreso"] = bIngreso ? "SYSDATE()" : "";
         query["costo"] = Costo.ToString(CultureInfo.InvariantCulture);
+        query["proveedor"] = IdProveedor;
 
         query.AddCampo("lote", szLote, false);
         query.AddCampo("szSerial", szSerial, false);
@@ -728,6 +782,7 @@ public class Producto
         producto.Ingreso = Ingreso;
         producto.Costo = Costo;
         producto.Valor = Valor;
+        producto.IdProveedor = IdProveedor;
 
         return producto;
     }

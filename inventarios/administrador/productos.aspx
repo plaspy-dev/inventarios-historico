@@ -1,5 +1,5 @@
 ﻿<%@ Page Title="Productos" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="productos.aspx.cs" Inherits="administrador_productos" %>
-
+<%@ Register TagPrefix="uc" TagName="Tercero" Src="~/tercero/tercero.ascx" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
     <script type="text/javascript">
         addFunctionToStart(function() {
@@ -98,12 +98,13 @@
     <asp:Panel ID="Panel1" runat="server" DefaultButton="BAceptar">
     <table width="100%" border="0">
   <tr>
-    <td valign="top"><table width="100%" border="0">
+    <td valign="top"><table border="0">
       <tr>
         <td>
         <div id="tpr">
             <ul>
                 <li><a href="#dProducto">Producto</a></li>
+                <li><a href="#dProvedores">Proveedores</a></li>
                 <li><a href="#dMaxMin">Máximos y mínimos</a></li>
                 <li runat="server" visible="false" id="lcostos"><a href="#<%= PCostos.ClientID %>">Costos</a></li>
                 <li runat="server" visible="false" id="lprecios"><a href="#<%= UPrecios.ClientID %>">Precios</a></li>
@@ -112,7 +113,7 @@
             <div id="dProducto">
             <table width="100%" border="0" style="border-collapse: collapse">
           <tr>
-            <td>Nombre</td>
+            <td width=1>Nombre</td>
             <td>
                 <asp:TextBox ID="TNombre" runat="server" Width="98%"></asp:TextBox>
               </td>
@@ -154,6 +155,21 @@
               </td>
             <td align="right">
               </td>
+          </tr>
+          <tr>
+            <td>Línea</td>
+            <td>
+            <asp:DropDownList ID="DLinea" runat="server" AppendDataBoundItems="true" 
+                    DataSourceID="SLinea" DataTextField="nombre" DataValueField="id">
+                    <asp:ListItem Text="(Ninguna)" Value="0"></asp:ListItem>
+            </asp:DropDownList>
+            <asp:SqlDataSource ID="SLinea" runat="server" 
+                ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                SelectCommand="SELECT id, nombre FROM varios WHERE tipo=3 AND estado IS NULL ORDER BY nombre">
+            </asp:SqlDataSource>
+            </td>
+            <td>&nbsp;</td>
           </tr>
           <tr>
             <td>Grupo</td>
@@ -229,7 +245,7 @@
               <td class="tdr"><asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="REntero" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDiasVencimiento" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
           </tr>
           <tr>
-              <td class="tdl tdb">Días alerta vencimiento</td>
+              <td class="tdl tdb" nowrap="nowrap">Días alerta vencimiento</td>
               <td class="tdb"><asp:TextBox runat="server" ID="TDAlertaV" CssClass="entero"></asp:TextBox></td>
               <td class="tdr tdb"><asp:RegularExpressionValidator ValidationExpression="[0-9]+" ID="RegularExpressionValidator1" runat="server" ErrorMessage="Por favor ingrese un numero entero." ControlToValidate="TDAlertaV" Display="Dynamic" SetFocusOnError="True"></asp:RegularExpressionValidator></td>
           </tr>
@@ -258,6 +274,48 @@
             <td><asp:CheckBox runat="server" ID="COculto" Text="Produto oculto" /></td>
           </tr>
         </table>
+            </div>
+            <div id="dProvedores" class="hide">
+                <asp:UpdatePanel runat="server" ID="UProveedores" UpdateMode="Conditional">
+                <ContentTemplate>
+                    <table>
+                        <tr>
+                            <td colspan="2">
+                                <asp:GridView ID="GProveedores" runat="server" DataKeyNames="Id" 
+                                    AutoGenerateColumns="false" AllowSorting="True" AllowPaging="true" EmptyDataText="No hay proveedores" OnRowDeleting="GProveedores_RowDeleting" >
+                                        <RowStyle CssClass="GridRow"></RowStyle>
+                                        <FooterStyle CssClass="GridFooter"></FooterStyle>
+                                        <PagerStyle CssClass="GridPager" ForeColor="White"></PagerStyle>
+                                        <SelectedRowStyle CssClass="GridSelRow"></SelectedRowStyle>
+                                        <HeaderStyle CssClass="GridHeader" ForeColor="White"></HeaderStyle>
+                                        <AlternatingRowStyle CssClass="GridAltRow"></AlternatingRowStyle>
+                                        <Columns>
+                                            <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
+                                            <asp:BoundField HeaderText="Proveedor" DataField="NombreCompleto" SortExpression="NombreCompleto" ItemStyle-Wrap="false" />
+                                            <asp:BoundField DataField="Codigo" HeaderText="Código" SortExpression="codigo" />
+                                        </Columns>
+                                    </asp:GridView>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Proveedor<asp:RequiredFieldValidator ID="RequiredFieldValidator7" runat="server" ValidationGroup="proveedor" Display="Dynamic" ControlToValidate="UCTercero$TTerceroID" ErrorMessage="Por favor seleccione un proveedor">*</asp:RequiredFieldValidator></td>
+                            <td><uc:Tercero ID="UCTercero" runat="server" Tipo="0" /></td>
+                        </tr>
+                        <tr>
+                            <td>Código</td>
+                            <td><asp:TextBox runat="server" ID="TCodigoProveedor"></asp:TextBox></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                            <asp:Label runat="server" ID="LMensajeProveedor" ForeColor="Red"></asp:Label>
+                            <asp:ValidationSummary ID="ValidationSummary1" runat="server" ValidationGroup="proveedor" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="right"><asp:Button runat="server" ValidationGroup="proveedor" ID="BMasCodigoProveedor" Text="+" OnClick="BMasCodigoProveedor_Click" /></td>
+                        </tr>
+                    </table>
+                </ContentTemplate></asp:UpdatePanel>
             </div>
             <div id="dMaxMin" class="hide">
             <table>
@@ -499,8 +557,7 @@
              <asp:CheckBox ID="CFiltrado" runat="server" CssClass="hide" />
         </td>
       </tr>
-      <tr>
-        <td>
+      </table>
             <asp:GridView ID="GResultado" runat="server" AutoGenerateColumns="False" EmptyDataText="No se encontraron productos"
                 DataKeyNames="id,estado" DataSourceID="SResultados" AllowSorting="true"
                 onselectedindexchanged="GResultado_SelectedIndexChanged" 
@@ -519,6 +576,7 @@
                     <asp:BoundField DataField="unidad" HeaderText="Unidad" SortExpression="unidad" />
                     <asp:BoundField DataField="empresa" HeaderText="Empresa" SortExpression="empresa" />
                     <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" />
+                    <asp:BoundField DataField="linea" HeaderText="Línea" SortExpression="linea" />
                     <asp:BoundField DataField="grupo" HeaderText="Grupo" SortExpression="grupo" />
                     <asp:BoundField DataField="entero" HeaderText="Manejo de cantidades" SortExpression="entero" />
                     <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
@@ -552,14 +610,18 @@
                         ,producto.dias_alerta
                         ,producto.minimo
                         ,producto.maximo
+                        ,lineas.nombre AS linea
                         ,CASE producto.maxmin_tipo WHEN 1 THEN 'Si' ELSE 'No' END AS maxmin_tipo
                         ,producto.estado
                         FROM producto 
                         LEFT JOIN varios ON (producto.grupo=varios.id)
+                        LEFT JOIN varios AS lineas ON (producto.linea=lineas.id)
                         WHERE (producto.estado IS NULL OR producto.estado=1)
                         AND (@filtrado=0 
                         OR (
                             ((producto.estado=@oculto=1) OR (@oculto=0 AND producto.estado IS NULL))
+                            AND (@grupo=0 OR producto.grupo=@grupo)
+                            AND (@linea=0 OR producto.linea=@linea)
                             AND (@vence=-1 OR producto.vence=@vence)
                             AND (@lote=-1 OR producto.lote=@lote)
                             AND (@cantidades=-1 OR producto.entero=@cantidades)
@@ -578,6 +640,8 @@
                     <asp:ControlParameter ControlID="DVence" PropertyName="SelectedValue" Name="vence" />
                     <asp:ControlParameter ControlID="DLote" PropertyName="SelectedValue" Name="lote" />
                     <asp:ControlParameter ControlID="DCantidades" PropertyName="SelectedValue" Name="cantidades" />
+                    <asp:ControlParameter ControlID="DGrupo" PropertyName="SelectedValue" Name="grupo" />
+                    <asp:ControlParameter ControlID="DLinea" PropertyName="SelectedValue" Name="linea" />
                     <asp:ControlParameter ControlID="DEstado" PropertyName="SelectedValue" Name="estado" />
                     <asp:ControlParameter ControlID="DSerial" PropertyName="SelectedValue" Name="serial" />
                     <asp:ControlParameter ControlID="TNombre" PropertyName="Text" Name="nombre" DefaultValue="_" />
@@ -587,9 +651,7 @@
                     <asp:ControlParameter ControlID="COculto" PropertyName="Checked" Name="oculto" DefaultValue="0" />
                 </SelectParameters>
             </asp:SqlDataSource>
-          </td>
-      </tr>
-    </table></td>
+            </td>
   </tr>
 </table>
 </asp:Panel>

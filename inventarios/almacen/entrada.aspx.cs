@@ -146,19 +146,20 @@ public partial class almacen_entrada : System.Web.UI.Page
                         query += "estado";
                         query += "ingreso";
                         query += "costo";
+                        query += "proveedor";
 
                         reader = conector.Query(query.GetSelect("entrada=" + HId.Value));
                         if (reader != null)
                         {
                             while (reader.Read())
                             {
-
                                 Producto info = new Producto(reader["producto"].ToString());
 
                                 info.IdTabla = reader["id"].ToString();
                                 info.cantidad = Convert.ToDecimal(reader["cantidad"]);
                                 info.lote = reader["lote"].ToString();
                                 info.vence = "";
+                                info.IdProveedor = reader["proveedor"].ToString();
                                 try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
                                 catch { }
                                 info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
@@ -246,6 +247,7 @@ public partial class almacen_entrada : System.Web.UI.Page
         producto.lote=TLote.Text;
         producto.vence=TVencimiento.Text;
         producto.serial = TSerial.Text;
+        producto.IdProveedor = TTerceroID.Text;
         try
         {
             producto.Costo = Decimal.Parse(TCosto.Text, NumberStyles.Currency, CultureInfo.InvariantCulture);
@@ -503,6 +505,7 @@ public partial class almacen_entrada : System.Web.UI.Page
                 }
                 if (productos[i].bIngreso)
                 {
+                    productos[i].IdProveedor = terceroid;
                     if (!productos[i].AddProductoFromEstado(conector, ((ing)Master).GetAlmacen()))
                         return;
                     if (!productos[i].UpdateCosto(conector, TTerceroID.Text))

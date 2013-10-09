@@ -55,7 +55,7 @@ public partial class administrador_Default : System.Web.UI.Page
 
             Add("Grupos", 1, parent);
             // Add("Estados", 2, parent);
-
+            Add("Línea", 3, parent);
 
 
             // demo_inventory

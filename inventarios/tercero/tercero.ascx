@@ -1,0 +1,2 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="tercero.ascx.cs" Inherits="tercero_tercero" %>
+<asp:TextBox runat="server" ID="TTercero" Width="100%"></asp:TextBox><asp:TextBox runat="server" ID="TTerceroID" CssClass="hide"></asp:TextBox>

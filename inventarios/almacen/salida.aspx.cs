@@ -20,7 +20,6 @@ public partial class almacen_salida : System.Web.UI.Page
 
         if (!IsPostBack)
         {
-
             CConfiguracion configuracion = CConfiguracion.GetConfiguracion();
 
             Utilidades.GetGridColumn(GProductos, "Precio U.").Visible =
@@ -133,6 +132,7 @@ public partial class almacen_salida : System.Web.UI.Page
                         query += "ingreso";
                         query += "costo";
                         query += "valor";
+                        query += "proveedor";
 
                         reader = conector.Query(query.GetSelect("salida=" + HId.Value));
                         if (reader != null)
@@ -145,6 +145,7 @@ public partial class almacen_salida : System.Web.UI.Page
                                 info.cantidad = Convert.ToDecimal(reader["cantidad"]);
                                 info.lote = reader["lote"].ToString();
                                 info.vence = "";
+                                info.IdProveedor = reader["proveedor"].ToString();
                                 try { info.vence = CConector.GetFromMySQLDate(reader["vence"]); }
                                 catch { }
                                 info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
