@@ -130,14 +130,14 @@ public class ProductoUsado
         pProductos.Add(producto);
     }
 
-    public Decimal GetProductoUsado(string producto)
+    public double GetProductoUsado(string producto)
     {
         var resultado = from p in pProductos
                         where p.id == producto
                         select p;
         return resultado.Sum(p => p.cantidad);
     }
-    public Decimal GetProductoUsado(string producto, string lote, string fecha, int ubicacion, int estado)
+    public double GetProductoUsado(string producto, string lote, string fecha, int ubicacion, int estado)
     {
         var resultado = from p in pProductos
                         where p.id == producto && p.lote == lote && p.vence == fecha && p.ubicacion==ubicacion && p.estado==estado
@@ -145,7 +145,7 @@ public class ProductoUsado
         return resultado.Sum(p => p.cantidad);
     }
 
-    public Decimal GetTotalProductos()
+    public double GetTotalProductos()
     {
         return pProductos.Sum(p => p.cantidad);
     }
@@ -160,7 +160,7 @@ public class ProductoUsado
         return pProductos.Sum(p => p.ValorTotal);
     }
 
-    public Decimal GetProductoUsado(string producto, string lote, string fecha)
+    public double GetProductoUsado(string producto, string lote, string fecha)
     {
         var resultado = from p in pProductos
                         where p.id == producto && p.lote == lote && p.vence == fecha
@@ -261,17 +261,17 @@ public class ProductoUsado
         return info.Count==0 ? null : info[0];
     }
 
-    public void DeleteProducto(String producto, Decimal cantidad, string lote, string vencimiento, int ubicacion, int estado, string serial)
+    public void DeleteProducto(String producto, double cantidad, string lote, string vencimiento, int ubicacion, int estado, string serial)
     {
         pProductos.RemoveAll(p => p.id == producto && p.cantidad == cantidad && p.lote == lote && p.vence == vencimiento && p.ubicacion == ubicacion && p.serial==serial && p.estado==estado);
     }
 
-    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, string lote, string vencimiento, int estado, string serial, int ubicacion/*, bool salida=false*/)
+    public ArrayList GetProductos(String producto, double cantidad, String almacen, string lote, string vencimiento, int estado, string serial, int ubicacion/*, bool salida=false*/)
     {
         return GetProductos(producto, cantidad, almacen, lote, vencimiento, estado, serial, ubicacion, false);
     }
 
-    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, string lote, string vencimiento, int estado, string serial, int ubicacion, bool salida)
+    public ArrayList GetProductos(String producto, double cantidad, String almacen, string lote, string vencimiento, int estado, string serial, int ubicacion, bool salida)
     {
         ArrayList productos = new ArrayList();
         using (CConector conector = new CConector())
@@ -299,7 +299,7 @@ public class ProductoUsado
                 consulta += string.Format(" AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL", almacen);
 
             string szDisponible = conector.QueryString(consulta);
-            Decimal dCantidad = Convert.ToDecimal(szDisponible);
+            double dCantidad = Convert.ToDouble(szDisponible);
             dCantidad -= GetProductoUsado(producto, lote, vencimiento);
 
             if (dCantidad < cantidad)
@@ -318,7 +318,7 @@ public class ProductoUsado
             {
                 while (reader.Read())
                 {
-                    dCantidad = Convert.ToDecimal(reader["cantidad"]);
+                    dCantidad = Convert.ToDouble(reader["cantidad"]);
                     int nEstado = Convert.ToInt32(reader["estado"]);
                     object vence = null;
                     try { vence = reader["vence"]; }
@@ -353,12 +353,12 @@ public class ProductoUsado
         return productos;
     }
 
-    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen/*, bool salida=false*/) {
+    public ArrayList GetProductos(String producto, double cantidad, String almacen/*, bool salida=false*/) {
 
         return GetProductos(producto, cantidad, almacen, false);
     }
 
-    public ArrayList GetProductos(String producto, Decimal cantidad, String almacen, bool salida)
+    public ArrayList GetProductos(String producto, double cantidad, String almacen, bool salida)
     {
         ArrayList productos = new ArrayList();
         using (CConector conector = new CConector())
@@ -371,7 +371,7 @@ public class ProductoUsado
                 consulta = string.Format("SELECT SUM(cantidad) FROM estado{0} WHERE producto={1}", almacen, Query.GetValor(producto));
 
             string szDisponible = conector.QueryString(consulta);
-            Decimal dCantidad = Convert.ToDecimal(Convert.ToDecimal(szDisponible));
+            double dCantidad = Convert.ToDouble(szDisponible);
             if (cantidad == -1)
                 cantidad = dCantidad;
             else dCantidad -= GetProductoUsado(producto);
@@ -388,7 +388,7 @@ public class ProductoUsado
             {
                 while (reader.Read())
                 {
-                    dCantidad = Convert.ToDecimal(reader["cantidad"]);
+                    dCantidad = Convert.ToDouble(reader["cantidad"]);
                     int ubicacion = Convert.ToInt32(reader["ubicacion"]);
                     int estado = Convert.ToInt32(reader["estado"]);
                     object vence = null;

@@ -29,7 +29,7 @@ public partial class produccion_orden : System.Web.UI.Page
 
     [Serializable]
     public class ProductoIngrediente : Producto {
-        public decimal? CantidadOriginal { get; set; }
+        public double? CantidadOriginal { get; set; }
         [XmlIgnore]
         public string codigoExtra {
             get
@@ -235,8 +235,8 @@ public partial class produccion_orden : System.Web.UI.Page
                                 infoingrediente.IdTabla = reader["id"].ToString();
                                 infoingrediente.lote = reader["lote"].ToString();
                                 if(reader["cantidad_original"]!=DBNull.Value)
-                                    infoingrediente.CantidadOriginal = Convert.ToDecimal(reader["cantidad_original"]);
-                                infoingrediente.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                                    infoingrediente.CantidadOriginal = Convert.ToDouble(reader["cantidad_original"]);
+                                infoingrediente.cantidad = Convert.ToDouble(reader["cantidad"]);
                                 lista.Add(infoingrediente);
                             }
                         }
@@ -435,10 +435,10 @@ public partial class produccion_orden : System.Web.UI.Page
 
         List<ProductoIngrediente> lista = Serializar.DesSerializeBinary<List<ProductoIngrediente>>((string)ViewState["productos"]);
         ProductoIngrediente info = new ProductoIngrediente(TIngredienteID.Text);
-        info.cantidad = Convert.ToDecimal(TCantidadIngrediente.Text, CultureInfo.InvariantCulture);
+        info.cantidad = Convert.ToDouble(TCantidadIngrediente.Text, CultureInfo.InvariantCulture);
         info.lote = TLoteIngrediente.Text;
         info.IdGrid = lista.Count;
-        info.CantidadOriginal = (Decimal ?)ViewState["cantidadoriginal"];
+        info.CantidadOriginal = (double ?)ViewState["cantidadoriginal"];
         lista.Add(info);
 
         UpdateProductos(lista);
@@ -769,7 +769,7 @@ public partial class produccion_orden : System.Web.UI.Page
 
         using (CConector conector = new CConector())
         {
-            Decimal cantidad = Convert.ToDecimal(TCantidad.Text.Replace(" Kg.", ""), CultureInfo.InvariantCulture);
+            double cantidad = Convert.ToDouble(TCantidad.Text.Replace(" Kg.", ""), CultureInfo.InvariantCulture);
             Query query = new Query("formulacion_ingrediente");
 
             query += "producto";
@@ -789,7 +789,7 @@ public partial class produccion_orden : System.Web.UI.Page
                 while (reader.Read())
                 {
                     ProductoIngrediente info = new ProductoIngrediente(reader["producto"].ToString());
-                    info.cantidad = Convert.ToDecimal(reader["cantidad"])*cantidad;
+                    info.cantidad = Convert.ToDouble(reader["cantidad"]) * cantidad;
                     info.IdGrid = lista.Count;
                     info.CantidadOriginal = info.cantidad;
                     lista.Add(info);

@@ -156,7 +156,7 @@ public partial class almacen_entrada : System.Web.UI.Page
                                 Producto info = new Producto(reader["producto"].ToString());
 
                                 info.IdTabla = reader["id"].ToString();
-                                info.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                                info.cantidad = Convert.ToDouble(reader["cantidad"]);
                                 info.lote = reader["lote"].ToString();
                                 info.vence = "";
                                 info.IdProveedor = reader["proveedor"].ToString();
@@ -243,7 +243,7 @@ public partial class almacen_entrada : System.Web.UI.Page
         if (!Page.IsValid)
             return;
 
-        producto.cantidad=Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
+        producto.cantidad = Convert.ToDouble(TCantidad.Text, CultureInfo.InvariantCulture);
         producto.lote=TLote.Text;
         producto.vence=TVencimiento.Text;
         producto.serial = TSerial.Text;

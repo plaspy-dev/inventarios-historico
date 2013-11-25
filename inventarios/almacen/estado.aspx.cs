@@ -123,6 +123,7 @@ public partial class almacen_estado : System.Web.UI.Page
                   .Replace("IFNULL(almacen.nombre,'(Ajustes)') AS ", "")
                   .Replace("IF(COUNT(DISTINCT ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ", "")
                   .Replace("IF(COUNT(DISTINCT estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS ", "")
+                  .Replace(",CONCAT(codigo,IFNULL(producto_proveedor.codigo,'')) AS codigo", ",codigo")
                   ;
             SResultados.SelectCommand = original.Substring(0, original.IndexOf(" FROM "))
                 + " FROM ("
@@ -136,6 +137,7 @@ public partial class almacen_estado : System.Web.UI.Page
                   .Replace("IFNULL(almacen.nombre,'(Ajustes)') AS ", "")
                   .Replace("IF(COUNT(DISTINCT ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ", "")
                   .Replace("IF(COUNT(DISTINCT estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS ", "")
+                  .Replace(",CONCAT(codigo,IFNULL(producto_proveedor.codigo,'')) AS codigo", ",codigo")
                   ;
             SResultados1.SelectCommand = original1.Substring(0, original1.IndexOf(" FROM "))
                 + " FROM ("
@@ -278,7 +280,7 @@ public partial class almacen_estado : System.Web.UI.Page
         producto.estado=Convert.ToInt32(detalle[6]);
         producto.bIngreso = true;
 
-        producto.cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
+        producto.cantidad = Convert.ToDouble(TCantidad.Text, CultureInfo.InvariantCulture);
 
         using (CConector conector = new CConector())
         {
@@ -415,7 +417,7 @@ public partial class almacen_estado : System.Web.UI.Page
         producto.estado = Convert.ToInt32(detalle[3]);
         producto.bIngreso = true;
 
-        producto.cantidad = Convert.ToDecimal(TEstadoCantidad.Text, CultureInfo.InvariantCulture);
+        producto.cantidad = Convert.ToDouble(TEstadoCantidad.Text, CultureInfo.InvariantCulture);
 
         using (CConector conector = new CConector())
         {

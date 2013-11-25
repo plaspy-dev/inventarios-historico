@@ -243,6 +243,7 @@
                         DataSourceID="SEstado" DataTextField="nombre" DataValueField="id">
                         <asp:ListItem Text="(Todos)" Value="-1"></asp:ListItem>
                         <asp:ListItem Text="(Ninguno)" Value="0"></asp:ListItem>
+                        <asp:ListItem Text="(Vencido)" Value="-2"></asp:ListItem>
                 </asp:DropDownList>
                 <asp:SqlDataSource ID="SEstado" runat="server" 
                     ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
@@ -275,10 +276,10 @@
             <asp:HyperLinkField HeaderText="Empresa" DataNavigateUrlFormatString="~/almacen/estado.aspx?pid={0}" DataNavigateUrlFields="producto" DataTextField="empresa" SortExpression="empresa" ItemStyle-Wrap="false" />
             <asp:BoundField HeaderText="Lote" DataField="lote" SortExpression="lote" />
             <asp:BoundField HeaderText="Vence" DataField="vence" SortExpression="vence" DataFormatString="{0:d}" />
-            <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" />
+            <asp:BoundField HeaderText="Cantidad" DataField="cantidad" SortExpression="cantidad" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:0.###}" />
             <asp:BoundField HeaderText="Costo" DataField="costo" SortExpression="costo" ItemStyle-HorizontalAlign="Right" DataFormatString="{0:C}" />
             <asp:BoundField HeaderText="Un." DataField="unidad" SortExpression="unidad" ItemStyle-Wrap="false" />
-            <asp:TemplateField HeaderText="Ubicación" SortExpression="ubicacion">
+            <asp:TemplateField HeaderText="Ubicación" SortExpression="ubicacion" ItemStyle-Wrap="false">
                 <ItemTemplate>
                     <asp:LinkButton runat="server" ID="LUbicacion" CommandName="Select" Text='<%# Eval("ubicacion") %>'></asp:LinkButton>
                 </ItemTemplate>
@@ -303,7 +304,7 @@
                         ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,'' AS lote,'' AS vence,'' AS szSerial,estado{0}.costo AS costo
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
-                        ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado
+                        ,IF(COUNT(DISTINCT IF(DATE(SYSDATE())>=estado{0}.vence AND estado{0}.vence!='0000-00-00',estado{0}.estado,'(Vencido)'))=1,IFNULL(IF(DATE(SYSDATE())>=estado{0}.vence AND estado{0}.vence!='0000-00-00','(Vencido)',estado.nombre),'(Ninguno)'), '(Multiple)') AS estado
                         FROM estado{0} 
                         LEFT JOIN producto ON (producto.id=estado{0}.producto) 
                         LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion)
@@ -311,10 +312,10 @@
                         LEFT JOIN producto_proveedor ON (producto_proveedor.producto=producto.id AND producto_proveedor.proveedor=estado{0}.proveedor)
                         LEFT JOIN almacen ON (almacen.id={1})
                         WHERE 
-                        (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=estado{0}.vence)
+                        (@vence=' ' OR (STR_TO_DATE(@vence, '%d/%m/%Y')>=estado{0}.vence AND estado{0}.vence!='0000-00-00'))
                         AND (@todos=1 OR estado{0}.cantidad>0)
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
-                        AND (@estado=-1 OR estado{0}.estado=@estado)
+                        AND (@estado=-1 OR (@estado=-2 AND DATE(SYSDATE())>=estado{0}.vence AND estado{0}.vence!='0000-00-00') OR (@estado!=-2 AND estado{0}.estado=@estado))
                         AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto.grupo IS NULL))
                         AND (@linea=-1 OR producto.linea=@linea OR (@linea=0 AND producto.linea IS NULL))
                         AND (@producto=0 OR producto.id=@producto)
@@ -345,7 +346,7 @@
                         ,CONCAT(producto.codigo,IFNULL(producto_proveedor.codigo,'')) AS codigo
                         ,IFNULL(almacen.nombre,'(Ajustes)') AS almacen
                         ,IF(COUNT(DISTINCT estado{0}.ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ubicacion
-                        ,IF(COUNT(DISTINCT estado{0}.estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS estado
+                        ,IF(COUNT(DISTINCT IF(DATE(SYSDATE())>=estado{0}.vence AND estado{0}.vence!='0000-00-00',estado{0}.estado,'(Vencido)'))=1,IFNULL(IF(DATE(SYSDATE())>=estado{0}.vence AND estado{0}.vence!='0000-00-00','(Vencido)',estado.nombre),'(Ninguno)'), '(Multiple)') AS estado
                         FROM estado{0} 
                         LEFT JOIN producto ON (producto.id=estado{0}.producto) 
                         LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion)
@@ -354,9 +355,9 @@
                         LEFT JOIN almacen ON (almacen.id={1})
                         WHERE 
                         (@todos=1 OR estado{0}.cantidad>0)
-                        AND (@vence=' ' OR STR_TO_DATE(@vence, '%d/%m/%Y')>=estado{0}.vence)
+                        AND (@vence=' ' OR (STR_TO_DATE(@vence, '%d/%m/%Y')>=estado{0}.vence AND estado{0}.vence!='0000-00-00'))
                         AND (@ubicacion=-1 OR estado{0}.ubicacion=@ubicacion)
-                        AND (@estado=-1 OR estado{0}.estado=@estado)
+                        AND (@estado=-1 OR (@estado=-2 AND DATE(SYSDATE())>=estado{0}.vence AND estado{0}.vence!='0000-00-00') OR (@estado!=-2 AND estado{0}.estado=@estado))
                         AND (@grupo=-1 OR producto.grupo=@grupo OR (@grupo=0 AND producto.grupo IS NULL))
                         AND (@linea=-1 OR producto.linea=@linea OR (@linea=0 AND producto.linea IS NULL))
                         AND (@producto=0 OR producto.id=@producto)

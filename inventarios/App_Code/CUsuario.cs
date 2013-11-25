@@ -5,6 +5,7 @@ using System.Web;
 using System.Configuration;
 using SDG.Componentes;
 using MySql.Data.MySqlClient;
+// using Plaspy.Comun;
 /// <summary>
 /// Descripción breve de CUsuario
 /// </summary>

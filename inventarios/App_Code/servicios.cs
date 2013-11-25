@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Services;
+using System.Threading;
+using System.Globalization;
 using MySql.Data.MySqlClient;
 using SDG.Componentes;
 
@@ -31,6 +33,7 @@ public class servicios : System.Web.Services.WebService {
 
     public servicios () {
 
+        Thread.CurrentThread.CurrentCulture= CultureInfo.InvariantCulture;
         //Eliminar la marca de comentario de la línea siguiente si utiliza los componentes diseñados 
         //InitializeComponent(); 
     }
@@ -174,7 +177,7 @@ public class servicios : System.Web.Services.WebService {
                 ProductoUsado productousado = new ProductoUsado(productos);
                 while (reader.Read())
                 {
-                    Decimal cantidad = Convert.ToDecimal(reader["cantidad"]);
+                    double cantidad = Convert.ToDouble(reader["cantidad"]);
                     Producto info = new Producto(reader["producto"].ToString());
                     if (auto)
                     {
@@ -190,7 +193,7 @@ public class servicios : System.Web.Services.WebService {
                         info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
                         cantidad -= productousado.GetProductoUsado(info.id, info.lote, info.vence);
                     }
-                    if (cantidad > 0.0000001m)
+                    if (cantidad > 0.0000001)
                     {
                         info.cantidad = cantidad;
                         info.GetValor(t, Convert.ToInt32(almacen));
@@ -237,7 +240,7 @@ public class servicios : System.Web.Services.WebService {
                 ProductoUsado productousado = new ProductoUsado(productos);
                 while (reader.Read())
                 {
-                    Decimal cantidad = Convert.ToDecimal(reader["cantidad"]);
+                    double cantidad = Convert.ToDouble(reader["cantidad"]);
                     Producto info = new Producto(reader["producto"].ToString());
                     if (auto)
                     {
@@ -252,7 +255,7 @@ public class servicios : System.Web.Services.WebService {
                         info.ubicacion = Convert.ToInt32(reader["ubicacion"]);
                         cantidad -= productousado.GetProductoUsado(info.id, info.lote, info.vence);
                     }
-                    if (cantidad > 0.0000001m)
+                    if (cantidad > 0.0000001)
                     {
                         info.cantidad = cantidad;
                         lista.Add(info);
@@ -300,7 +303,7 @@ public class servicios : System.Web.Services.WebService {
                 while (reader.Read())
                 {
                     Producto info = new Producto(reader["producto"].ToString());
-                    info.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                    info.cantidad = Convert.ToDouble(reader["cantidad"]);
 
                     if (auto)
                     {
@@ -353,7 +356,7 @@ public class servicios : System.Web.Services.WebService {
                 while (reader.Read())
                 {
                     Producto info = new Producto(reader["id"].ToString());
-                    info.cantidad = Convert.ToDecimal(reader["proporcion"].ToString());
+                    info.cantidad = Convert.ToDouble(reader["proporcion"]);
                     lista.Add(info);
                 }
                 reader.Close();

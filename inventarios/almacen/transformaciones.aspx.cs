@@ -199,14 +199,14 @@ public partial class almacen_transformaciones : System.Web.UI.Page
             ArrayList productos;
             ProductoUsado productousado = new ProductoUsado();
 
-            Decimal proporcion = 1;
+            double proporcion = 1;
             // buscamos los nuevo
             if (conector.QueryString("SELECT COUNT(*) FROM transformacion") != "0")
             { // se definieron patrones de trasformacion
                 proporcion = -1;
                 try
                 {
-                    proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto1=" + Query.GetValor(producto[0]) + " AND producto2=" + Query.GetValor(TProductoID2.Text)));
+                    proporcion = Convert.ToDouble(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto1=" + Query.GetValor(producto[0]) + " AND producto2=" + Query.GetValor(TProductoID2.Text)));
                     proporcion = 1 / proporcion;
                 }
                 catch { }
@@ -214,7 +214,7 @@ public partial class almacen_transformaciones : System.Web.UI.Page
                 {
                     try
                     {
-                        proporcion = Convert.ToDecimal(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto2=" + Query.GetValor(producto[0]) + " AND producto1=" + Query.GetValor(TProductoID2.Text)));
+                        proporcion = Convert.ToDouble(conector.QueryString("SELECT proporcion FROM transformacion WHERE producto2=" + Query.GetValor(producto[0]) + " AND producto1=" + Query.GetValor(TProductoID2.Text)));
                     }
                     catch { }
                 }
@@ -225,12 +225,12 @@ public partial class almacen_transformaciones : System.Web.UI.Page
                 }
             }
 
-            Decimal cantidad = Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture);
+            double cantidad = Convert.ToDouble(TCantidad.Text, CultureInfo.InvariantCulture);
             if (REntero2.Enabled)
             { // es un entero
 
                 int entero = Convert.ToInt32(Math.Floor(cantidad / proporcion));
-                Decimal cantidadreal = entero * proporcion;
+                double cantidadreal = entero * proporcion;
                 if (cantidadreal != cantidad)
                     cantidad = cantidadreal;
             }

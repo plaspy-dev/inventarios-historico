@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-10-09 · Asociar proveedores con los productos.** Amplía el formulario para enlazar proveedores y actualiza cómo se guardan y consultan registros de terceros. La ficha de producto puede mostrar quién suministra el artículo.
+**2013-11-25 · Actualizar valores y cantidades de productos usados.** Amplía el controlador de productos y revisa cómo se recuperan los valores y se convierten las cantidades de productos usados. Los cálculos de la operación pueden usar los datos que guarda la ficha.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-10-09 · Associate suppliers with products.** Expand the form to bind suppliers and update how business contact records are saved and queried. The product record can show who supplies the item.
+**2013-11-25 · Update values and quantities for products in use.** Expand the product handler and revise value retrieval and quantity conversion for products in use. Workflow calculations can use the values saved on the product record.
 
 ### How to explore the source
 

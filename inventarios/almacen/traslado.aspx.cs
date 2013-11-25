@@ -125,7 +125,7 @@ public partial class almacen_traslado : System.Web.UI.Page
                                 Producto info = new Producto(reader["producto"].ToString());
 
                                 info.IdTabla = reader["id"].ToString();
-                                info.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                                info.cantidad = Convert.ToDouble(reader["cantidad"]);
                                 info.lote = reader["lote"].ToString();
                                 info.vence = "";
                                 info.IdProveedor = reader["proveedor"].ToString();
@@ -205,9 +205,9 @@ public partial class almacen_traslado : System.Web.UI.Page
 
         if (saProducto.Length == 1)
         { // automatico
-            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen());
+            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDouble(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen());
         } else { // manual
-            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDecimal(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4], Convert.ToInt32(saProducto[5]));
+            productos = productousadoNuevo.GetProductos(saProducto[0], Convert.ToDouble(TCantidad.Text, CultureInfo.InvariantCulture), ((ing)Master).GetAlmacen(), saProducto[1], saProducto[2], Convert.ToInt32(saProducto[3]), saProducto[4], Convert.ToInt32(saProducto[5]));
         }
         if (productos == null)
         {
