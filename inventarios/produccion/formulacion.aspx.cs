@@ -65,7 +65,7 @@ public partial class produccion_formulacion : System.Web.UI.Page
                         if (reader != null) {
                             while (reader.Read()) {
                                 info = new Producto(reader["producto"].ToString());
-                                info.cantidad= Convert.ToDecimal(reader["cantidad"]);
+                                info.cantidad = Convert.ToDouble(reader["cantidad"]);
                                 info.IdGrid = lista.Count;
                                 lista.Add(info);
                             }
@@ -121,7 +121,7 @@ public partial class produccion_formulacion : System.Web.UI.Page
 
         List<Producto> lista = Serializar.DesSerializeBinary <List<Producto>> (HProductos.Value);
         Producto info = new Producto(TIngredienteID.Text);
-        info.cantidad = Convert.ToDecimal(TCantidadIngrediente.Text, CultureInfo.InvariantCulture);
+        info.cantidad = Convert.ToDouble(TCantidadIngrediente.Text, CultureInfo.InvariantCulture);
         info.IdGrid = lista.Count;
         lista.Add(info);
 

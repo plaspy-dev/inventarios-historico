@@ -6,7 +6,7 @@ public class PrintEventArgs : EventArgs
 {
 	public string Contenido = "";
 
-	public bool pdf = false;
+	public bool pdf;
 
 	public PrintEventArgs()
 	{

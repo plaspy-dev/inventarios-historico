@@ -10,7 +10,9 @@ namespace SDG.Componentes;
 
 public class Usuario
 {
-	private static bool bGetKey = false;
+	private static bool bHeaderCache;
+
+	private static bool bGetKey;
 
 	protected string m_szNombre;
 
@@ -27,6 +29,16 @@ public class Usuario
 	protected ArrayList m_saCampos = new ArrayList();
 
 	protected ArrayList m_saValores = new ArrayList();
+
+	public string Nombre => m_szNombre;
+
+	public string Id => m_szID;
+
+	public int Grupo => m_nGrupo;
+
+	public string Login => m_szLogin;
+
+	public string ForceURL => m_szUrl;
 
 	public string this[string campo]
 	{
@@ -257,7 +269,18 @@ public class Usuario
 
 	public static Usuario GetInstance(bool redirect)
 	{
-		HttpContext.Current.Response.AddHeader("pragma", "no-cache");
+		if (!bHeaderCache)
+		{
+			try
+			{
+				HttpContext.Current.Response.Headers["pragma"] = "no-cache";
+			}
+			catch
+			{
+				HttpContext.Current.Response.AddHeader("pragma", "no-cache");
+			}
+			bHeaderCache = true;
+		}
 		HttpContext.Current.Response.CacheControl = "Private";
 		HttpContext.Current.Response.Expires = 0;
 		Usuario usuario = (Usuario)HttpContext.Current.Session["Usuario"];

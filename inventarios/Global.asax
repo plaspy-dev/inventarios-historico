@@ -24,18 +24,7 @@
         
 #if DEBUG
 #else        
-        try
-        {
-            Exception objErr = Server.GetLastError().GetBaseException();
-            string err = DateTime.Now.ToString() + " Error[app] : "
-                    + Request.Url.ToString() + " - '"
-                    + objErr.Message.ToString()
-                    + "'\r\n" + objErr.StackTrace.ToString();
-            SDG.Componentes.Logs.WriteLog(err);
-        }
-        catch 
-        {
-        }
+        SDG.Componentes.Logs.WriteLog(SDG.Componentes.Logs.DumpPage(Server, Request));
 #endif
         // Server.ClearError();
     }

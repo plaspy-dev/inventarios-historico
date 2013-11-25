@@ -9,9 +9,9 @@ using System.Web.UI.WebControls;
 
 namespace SDG.Web.UI.WebControls;
 
-[ParseChildren(true)]
 [Designer(typeof(CustomDataSourceDesigner))]
 [PersistChildren(false)]
+[ParseChildren(true)]
 public class CustomDataSource : DataSourceControl
 {
 	protected static readonly string[] _views = new string[1] { "DefaultView" };
@@ -30,8 +30,8 @@ public class CustomDataSource : DataSourceControl
 
 	protected CustomDataSourceView _view;
 
-	[DefaultValue("")]
 	[Category("ParentDataSource")]
+	[DefaultValue("")]
 	public string ParentDataSource
 	{
 		get
@@ -44,8 +44,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[Category("InsertCommand")]
 	[DefaultValue("")]
+	[Category("InsertCommand")]
 	public string InsertCommand
 	{
 		get
@@ -58,8 +58,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[Category("SelectCommand")]
 	[DefaultValue("")]
+	[Category("SelectCommand")]
 	public string SelectCommand
 	{
 		get
@@ -128,8 +128,8 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	[Category("Data")]
 	[DefaultValue("")]
+	[Category("Data")]
 	public string SelectMethod
 	{
 		get
@@ -142,11 +142,11 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
+	[Category("Data")]
 	[PersistenceMode(PersistenceMode.InnerProperty)]
 	[DefaultValue(null)]
 	[MergableProperty(false)]
 	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
-	[Category("Data")]
 	public ParameterCollection SelectParameters => View.SelectParameters;
 
 	[DefaultValue(null)]
@@ -156,11 +156,11 @@ public class CustomDataSource : DataSourceControl
 	[MergableProperty(false)]
 	public ParameterCollection InsertParameters => View.InsertParameters;
 
-	[PersistenceMode(PersistenceMode.InnerProperty)]
-	[DefaultValue(null)]
-	[MergableProperty(false)]
-	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
 	[Category("Data")]
+	[Editor(typeof(ParameterCollectionEditor), typeof(UITypeEditor))]
+	[DefaultValue(null)]
+	[PersistenceMode(PersistenceMode.InnerProperty)]
+	[MergableProperty(false)]
 	public ParameterCollection UpdateParameters => View.UpdateParameters;
 
 	protected CustomDataSourceView View
@@ -179,7 +179,17 @@ public class CustomDataSource : DataSourceControl
 		}
 	}
 
-	public string ModifyTable => (ParentDataSource.Length == 0) ? ID : ParentDataSource;
+	public string ModifyTable
+	{
+		get
+		{
+			if (ParentDataSource.Length != 0)
+			{
+				return ParentDataSource;
+			}
+			return ID;
+		}
+	}
 
 	protected override DataSourceView GetView(string viewName)
 	{

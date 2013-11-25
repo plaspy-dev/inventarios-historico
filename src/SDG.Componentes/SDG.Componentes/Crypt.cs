@@ -26,14 +26,21 @@ public class Crypt
 		{
 			return "";
 		}
-		byte[] array = Convert.FromBase64String(palabra);
-		byte[] bytes = Encoding.UTF8.GetBytes(key);
-		DESCryptoServiceProvider dESCryptoServiceProvider = new DESCryptoServiceProvider();
-		MemoryStream memoryStream = new MemoryStream();
-		CryptoStream cryptoStream = new CryptoStream(memoryStream, dESCryptoServiceProvider.CreateDecryptor(bytes, IV), CryptoStreamMode.Write);
-		cryptoStream.Write(array, 0, array.Length);
-		cryptoStream.FlushFinalBlock();
-		return Encoding.UTF8.GetString(memoryStream.ToArray());
+		try
+		{
+			byte[] array = Convert.FromBase64String(palabra);
+			byte[] bytes = Encoding.UTF8.GetBytes(key);
+			DESCryptoServiceProvider dESCryptoServiceProvider = new DESCryptoServiceProvider();
+			MemoryStream memoryStream = new MemoryStream();
+			CryptoStream cryptoStream = new CryptoStream(memoryStream, dESCryptoServiceProvider.CreateDecryptor(bytes, IV), CryptoStreamMode.Write);
+			cryptoStream.Write(array, 0, array.Length);
+			cryptoStream.FlushFinalBlock();
+			return Encoding.UTF8.GetString(memoryStream.ToArray());
+		}
+		catch
+		{
+		}
+		return null;
 	}
 
 	public static string EncriptarDES(string palabra)
@@ -82,15 +89,22 @@ public class Crypt
 		{
 			return "";
 		}
-		byte[] array = Convert.FromBase64String(palabra);
-		byte[] bytes = Encoding.UTF8.GetBytes(key);
-		TripleDESCryptoServiceProvider tripleDESCryptoServiceProvider = new TripleDESCryptoServiceProvider();
-		tripleDESCryptoServiceProvider.Mode = CipherMode.CBC;
-		MemoryStream memoryStream = new MemoryStream();
-		CryptoStream cryptoStream = new CryptoStream(memoryStream, tripleDESCryptoServiceProvider.CreateDecryptor(bytes, IV), CryptoStreamMode.Write);
-		cryptoStream.Write(array, 0, array.Length);
-		cryptoStream.FlushFinalBlock();
-		return Encoding.UTF8.GetString(memoryStream.ToArray());
+		try
+		{
+			byte[] array = Convert.FromBase64String(palabra);
+			byte[] bytes = Encoding.UTF8.GetBytes(key);
+			TripleDESCryptoServiceProvider tripleDESCryptoServiceProvider = new TripleDESCryptoServiceProvider();
+			tripleDESCryptoServiceProvider.Mode = CipherMode.CBC;
+			MemoryStream memoryStream = new MemoryStream();
+			CryptoStream cryptoStream = new CryptoStream(memoryStream, tripleDESCryptoServiceProvider.CreateDecryptor(bytes, IV), CryptoStreamMode.Write);
+			cryptoStream.Write(array, 0, array.Length);
+			cryptoStream.FlushFinalBlock();
+			return Encoding.UTF8.GetString(memoryStream.ToArray());
+		}
+		catch
+		{
+		}
+		return null;
 	}
 
 	public static string GetMD5(string str)

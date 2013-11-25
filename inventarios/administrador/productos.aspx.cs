@@ -540,6 +540,168 @@ public partial class administrador_productos : System.Web.UI.Page
         Response.End();
     }
 
+    protected void BExportarP_Click(object sender, EventArgs e)
+    {
+        Response.Clear();
+        Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode("ProductosyProveedores.csv"));
+        Response.ContentEncoding = System.Text.Encoding.Unicode;
+
+        using (CConector conector = new CConector()) {
+
+            Query query = new Query("producto");
+
+            query["IdProducto"]="producto.id";
+            query["Producto"]="producto.nombre";
+            query["IdTercero"]="tercero.id";
+            query["DocumentoTercero"]="tercero.identificacion";
+            query["NombreTercero"]="tercero.nombre";
+            query["Codigo"]="producto_proveedor.codigo";
+
+            MySqlDataReader reader= conector.Query(query.GetSelect("producto.estado IS NULL",
+                "LEFT JOIN producto_proveedor ON (producto_proveedor.producto=producto.id)"
+                + " LEFT JOIN tercero ON (tercero.id=producto_proveedor.proveedor)"));
+            if (reader != null) {
+
+                for(int i=0; i<reader.FieldCount; i++)
+                {
+                    Response.Write(HttpUtility.HtmlDecode(reader.GetName(i)));
+                    Response.Write(";");
+                }
+                Response.Write("\n");
+
+                while (reader.Read()) {
+                    for (int i = 0; i < reader.FieldCount; i++) {
+                        Response.Write(HttpUtility.HtmlDecode(reader.GetValue(i).ToString()));
+                        Response.Write(";");
+                    }
+                    Response.Write("\n");
+                }
+            }
+        }
+        Response.End();
+    }
+
+    protected void BImportarP_Click(object sender, EventArgs e) {
+
+        if (!IsValid)
+            return;
+        if (!FImportarP.HasFile)
+            return;
+
+        StreamReader reader = new StreamReader(FImportarP.FileContent, System.Text.Encoding.UTF7);
+        if (reader.Peek() < 0)
+        {
+            LMensaje.Text = "No se puede leer el archivo";
+            return;
+        }
+
+        List<string> campos = new List<string>();
+        List<string> productos = new List<string>();
+        string header = reader.ReadLine();
+        string []textos= header.ToLower().Split(';');
+        bool producto = false;
+
+        for (int i = 0; i < textos.Length; i++)
+        {
+            if (textos[i] == "idproducto" || textos[i] == "producto")
+                producto = true;
+            campos.Add(textos[i]);
+        }
+        if (!producto) {
+            LMensaje.Text = "No se encontraron las columnas IdProducto o Producto";
+            return;
+        }
+
+        using (CConector conector = new CConector())
+        {
+            conector.StartTransaction();
+            int nuevos = 0;
+            int linea = 1;
+
+            Query producto_proveedor = new Query("producto_proveedor");
+
+            while (reader.Peek() >= 0)
+            {
+                Query query = new Query("");
+                header = reader.ReadLine();
+                textos = header.Split(';');
+                linea++;
+
+                for (int i = 0; i < textos.Length && i < campos.Count; i++) {
+
+                    query[campos[i]] = textos[i];
+                }
+                if (string.IsNullOrEmpty(query["idproducto"])) {
+                    if (string.IsNullOrEmpty(query["producto"]))
+                    {
+                        LMensaje.Text = "No se encontro id o nombre del producto en la línea " + linea;
+                        return;
+                    }
+                    query["idproducto"] = conector.QueryString(string.Format("SELECT id FROM producto WHERE nombre LIKE {0}", Query.GetValor(query["Producto"])));
+                    if (string.IsNullOrEmpty(query["idproducto"]))
+                    {
+                        LMensaje.Text = "No se encontro id del producto llamado '" + query["Producto"] + "' en la línea " + linea;
+                        return;
+                    }
+                }
+
+                if (productos.IndexOf(query["idproducto"]) == -1)
+                {
+                    if (conector.QueryMod(string.Format("DELETE FROM producto_proveedor WHERE producto={0}", Query.GetValor(query["idproducto"]))) == -1)
+                    {
+                        LMensaje.Text = linea + ". " + conector.GetLastError();
+                        return;
+                    }
+                    productos.Add(query["idproducto"]);
+                }
+
+                if (!string.IsNullOrEmpty(query["codigo"]))
+                {
+                    if (string.IsNullOrEmpty(query["idtercero"]))
+                    {
+                        string condicion="";
+                        if (!string.IsNullOrEmpty(query["documentotercero"]))
+                            condicion = "identificacion=" + Query.GetValor(query["documentotercero"]);
+                        if (!string.IsNullOrEmpty(query["nombretercero"]))
+                        {
+                            if (!string.IsNullOrEmpty(condicion))
+                                condicion += " AND ";
+                            condicion += "nombre=" + Query.GetValor(query["nombretercero"]);
+                        }
+                        if(string.IsNullOrEmpty(condicion))
+                        {
+                            LMensaje.Text = "No se encontro id, nombre o identificacion del proveedor en la línea " + linea;
+                            return;
+                        }
+                        query["idtercero"] = conector.QueryString(string.Format("SELECT id FROM tercero WHERE {0}", condicion));
+                        if (string.IsNullOrEmpty(query["idtercero"]))
+                        {
+                            LMensaje.Text = "No se encontro id del proveedor llamado '" + query["nombretercero"] + "' o identificado con '" + query["documentotercero"] + "' en la línea " + linea;
+                            return;
+                        }
+                    }
+
+                    nuevos++;
+                    producto_proveedor["codigo"] = query["codigo"];
+                    producto_proveedor["proveedor"] = query["idtercero"];
+                    producto_proveedor["producto"] = query["idproducto"];
+
+                    if (conector.QueryMod(producto_proveedor.GetInsert()) == -1) {
+                        LMensaje.Text = linea + ". " + conector.GetLastError();
+                        return;
+                    }
+                }
+            }
+            reader.Close();
+            conector.Commit();
+
+            for (int i = 0; i < productos.Count; i++) 
+                Producto.RemoveProducto(productos[i]);
+
+            LMensaje.Text = string.Format("Importacion realizada con exito.<br/>{0} códigos y {1} productos actualizados", nuevos, productos.Count);
+        }
+    }
+
     public static Dictionary<string, string> GetDiccionario(DropDownList lista) {
         
         Dictionary<string, string> diccionario = new Dictionary<string, string>();

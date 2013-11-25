@@ -25,7 +25,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 
 	protected ParameterCollection _InsertParameters;
 
-	protected bool _init = false;
+	protected bool _init;
 
 	public override bool CanInsert => false;
 
@@ -253,7 +253,7 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 		{
 			foreach (object key in orderedDictionary.Keys)
 			{
-				object obj2 = orderedDictionary[key];
+				_ = orderedDictionary[key];
 				text = text.Replace("@" + key.ToString(), SessionState.GetValor(orderedDictionary[key]));
 			}
 		}
@@ -290,23 +290,23 @@ public class CustomDataSourceView : DataSourceView, IStateManager
 			mySqlCommand.CommandTimeout = 0;
 			mySqlDataReader = mySqlCommand.ExecuteReader();
 		}
-		catch (MySqlException innerException)
+		catch (MySqlException innerException2)
 		{
-			throw new InvalidOperationException(_owner.ID + ": Error en la consulta", innerException);
+			throw new InvalidOperationException(_owner.ID + ": Error en la consulta", innerException2);
 		}
 		if (mySqlDataReader != null)
 		{
-			for (int i = 0; i < mySqlDataReader.FieldCount; i++)
+			for (int k = 0; k < mySqlDataReader.FieldCount; k++)
 			{
-				sessionState2.dataTable.Columns.Add(mySqlDataReader.GetName(i), mySqlDataReader.GetFieldType(i));
+				sessionState2.dataTable.Columns.Add(mySqlDataReader.GetName(k), mySqlDataReader.GetFieldType(k));
 			}
 			sessionState2.dataTable.Columns.Add("sqlexists");
 			object[] values = new object[mySqlDataReader.FieldCount + 1];
 			while (mySqlDataReader.Read())
 			{
 				mySqlDataReader.GetValues(values);
-				DataRow dataRow = sessionState2.dataTable.Rows.Add(values);
-				dataRow["sqlexists"] = true;
+				DataRow dataRow2 = sessionState2.dataTable.Rows.Add(values);
+				dataRow2["sqlexists"] = true;
 			}
 		}
 		mySqlDataReader.Close();

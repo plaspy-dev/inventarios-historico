@@ -14,7 +14,7 @@ namespace SDG.Componentes;
 
 public class Conector : IDisposable
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	protected string m_szLastError;
 
@@ -22,7 +22,7 @@ public class Conector : IDisposable
 
 	protected string m_szConexion;
 
-	protected bool m_bTransaccion = false;
+	protected bool m_bTransaccion;
 
 	protected MySqlConnection m_pSQLConector;
 
@@ -123,6 +123,11 @@ public class Conector : IDisposable
 
 	public void ShowError(string error)
 	{
+		string text = DateTime.Now.ToString() + " Error[Conector] : ";
+		text = ((HttpContext.Current != null) ? (text + HttpContext.Current.Request.Url.ToString()) : (text + Path.GetFileName(Assembly.GetEntryAssembly().Location)));
+		string text2 = text;
+		text = text2 + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
+		Logs.WriteLog(text);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -411,7 +416,6 @@ public class Conector : IDisposable
 
 	public static string GetMySQLDateFormat(DateTime fecha, bool horas)
 	{
-		bool flag = 0 == 0;
 		string text = fecha.ToString("yyyy-MM-dd");
 		if (horas)
 		{

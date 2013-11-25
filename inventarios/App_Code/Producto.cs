@@ -33,7 +33,7 @@ public class Producto
     public String id { set; get; }
     public String lote { set; get; }
     public String vence { set; get; }
-    public Decimal cantidad { set; get; }
+    public double cantidad { set; get; }
     public string serial { set; get; }
     public int estado { set; get; }
     public int ubicacion { set; get; }
@@ -60,12 +60,12 @@ public class Producto
     public Producto pProductoAntiguo = null;
     [XmlIgnore]
     public Decimal CostoTotal {
-        get { return cantidad*Costo; }
+        get { return Convert.ToDecimal(cantidad)*Costo; }
     }
     [XmlIgnore]
     public Decimal ValorTotal
     {
-        get { return cantidad * Valor; }
+        get { return Convert.ToDecimal(cantidad) * Valor; }
     }
 
     [XmlIgnore]
@@ -428,7 +428,7 @@ public class Producto
         serial = "";
     }
 
-    public Producto(String _producto, String _nombre, Decimal _cantidad, String _lote, String _fecha, string _codigo, string _unidad, string _descripcion)
+    public Producto(String _producto, String _nombre, double _cantidad, String _lote, String _fecha, string _codigo, string _unidad, string _descripcion)
     {
         id = _producto;
         nombre = _nombre;
@@ -456,7 +456,7 @@ public class Producto
         serial="";
     }
 
-    public Producto(String _producto, String _nombre, Decimal _cantidad, string _codigo, string _unidad, string _descripcion)
+    public Producto(String _producto, String _nombre, double _cantidad, string _codigo, string _unidad, string _descripcion)
     {
         id = _producto;
         nombre = _nombre;
@@ -469,7 +469,7 @@ public class Producto
         serial="";
     }
 
-    public Producto(String _producto, Decimal _cantidad, String _lote, String _fecha, int _ubicacion, string _serial, int _estado)
+    public Producto(String _producto, double _cantidad, String _lote, String _fecha, int _ubicacion, string _serial, int _estado)
     {
         id = _producto;
         cantidad = _cantidad;
@@ -658,20 +658,20 @@ public class Producto
 
         // actualizamos el estado
         string query = string.Format("UPDATE estado{0} SET cantidad=cantidad-{1},modificacion=SYSDATE() WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7} AND proveedor={8};"
-            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado
+            , almacen, cantidad.ToString("R", CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado
             , string.IsNullOrEmpty(IdProveedor) ? "0" : IdProveedor);
         if (conector.QueryMod(query) == -1)
             return false;
 
         // actualizamos el estado global
         query = string.Format("UPDATE estado_global SET cantidad=cantidad-{0},modificacion=SYSDATE() WHERE producto={1} AND estado={2};"
-            , cantidad.ToString(CultureInfo.InvariantCulture), id, estado);
+            , cantidad.ToString("R", CultureInfo.InvariantCulture), id, estado);
         if (conector.QueryMod(query) == -1)
             return false;
 
         // actualizamos el costo acumulado
         query = string.Format("UPDATE estado{0} SET costoacumulado=costoacumulado-({2}*costo) WHERE producto={1};"
-            , almacen, id, cantidad.ToString(CultureInfo.InvariantCulture));
+            , almacen, id, cantidad.ToString("R", CultureInfo.InvariantCulture));
         if (conector.QueryMod(query) == -1)
             return false;
 
@@ -702,34 +702,34 @@ public class Producto
 
         string query = string.Format("UPDATE estado{0} SET cantidad=cantidad+{1},modificacion=SYSDATE()"
                                     + " WHERE producto={2} AND lote={3} AND vence={4} AND szSerial={5} AND ubicacion={6} AND estado={7} AND proveedor={8};"
-            , almacen, cantidad.ToString(CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado
+            , almacen, cantidad.ToString("R", CultureInfo.InvariantCulture), id, szLote, Query.GetValor(szVencimiento), szSerial, ubicacion, estado
             , string.IsNullOrEmpty(IdProveedor) ? "0" : IdProveedor);
         if (conector.QueryMod(query) == -1)
             return false;
 
         // actualizamos el estado global
         query = string.Format("UPDATE estado_global SET cantidad=cantidad+{0},modificacion=SYSDATE() WHERE producto={1} AND estado={2};"
-            , cantidad.ToString(CultureInfo.InvariantCulture), id, estado);
+            , cantidad.ToString("R", CultureInfo.InvariantCulture), id, estado);
         if (conector.QueryMod(query) == -1)
             return false;
 
         query = string.Format("INSERT IGNORE INTO estado{0} (producto, lote, vence, cantidad,szSerial,ubicacion,estado, modificacion, proveedor) "
             + " VALUES ({1}, {2}, {3}, {4}, {5},{6},{7}, SYSDATE(), {8});"
-            , almacen, id, szLote, Query.GetValor(szVencimiento), cantidad.ToString(CultureInfo.InvariantCulture), szSerial, ubicacion, estado
+            , almacen, id, szLote, Query.GetValor(szVencimiento), cantidad.ToString("R", CultureInfo.InvariantCulture), szSerial, ubicacion, estado
             , string.IsNullOrEmpty(IdProveedor) ? "0" : IdProveedor);
         if (conector.QueryMod(query) == -1)
             return false;
 
         // insertamos el producto en el estado global
         query = string.Format("INSERT IGNORE INTO estado_global (producto,estado,cantidad,modificacion) VALUES ({1},{2},{0},SYSDATE());"
-            , cantidad.ToString(CultureInfo.InvariantCulture), id, estado);
+            , cantidad.ToString("R", CultureInfo.InvariantCulture), id, estado);
         if (conector.QueryMod(query) == -1)
             return false;
 
         // actualizamos el costo promedio y el costo acumulado
         query = string.Format("UPDATE estado{0},(SELECT MAX(costoacumulado)+({2}*{3}) AS costoa,SUM(cantidad) AS cantidad FROM estado{0} WHERE producto={1}) AS t"
                 + " SET costoacumulado=t.costoa,costo=t.costoa/t.cantidad WHERE producto={1};"
-            , almacen, id, cantidad.ToString(CultureInfo.InvariantCulture), Costo.ToString(CultureInfo.InvariantCulture));
+            , almacen, id, cantidad.ToString("R", CultureInfo.InvariantCulture), Costo.ToString(CultureInfo.InvariantCulture));
         if (conector.QueryMod(query) == -1)
             return false;
 
@@ -754,7 +754,7 @@ public class Producto
             szVencimiento = "0000-00-00";
 
         query["producto"]= id.ToString();
-        query["cantidad"]= cantidad.ToString(CultureInfo.InvariantCulture);
+        query["cantidad"] = cantidad.ToString("R", CultureInfo.InvariantCulture);
         query["vence"] = szVencimiento;
         query["ubicacion"]= ubicacion.ToString();
         query["estado"]= estado.ToString();

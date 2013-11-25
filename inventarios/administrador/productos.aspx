@@ -536,9 +536,24 @@
                         <td class="tdr tdb"><asp:Button runat="server" ID="BImportar" Text="Importar" ValidationGroup="archivo" onclick="BImportar_Click" /></td>
                     </tr>
                     <tr>
+                        <td colspan="3" class="GridHeader">Proveedores</td>
+                    </tr>
+                    <tr>
+                        <td class="tdl">Exportar en archivo separador por comas</td>
+                        <td><asp:Button runat="server" ID="BExportarP" Text="Exportar" CausesValidation="false" onclick="BExportarP_Click" /></td>
+                        <td class="tdr"></td>
+                    </tr>
+                    <tr>
+                        <td class="tdl tdb">Importar archivo separador por comas (Max: 20MB)</td>
+                        <td class="tdb"><asp:FileUpload runat="server" ID="FImportarP" /></td>
+                        <td class="tdr tdb"><asp:Button runat="server" ID="BImportarP" Text="Importar" ValidationGroup="archivop" onclick="BImportarP_Click" /></td>
+                    </tr>
+                    <tr>
                         <td colspan="3">
                             <asp:RegularExpressionValidator ValidationGroup="archivo" ID="RFoto1" SetFocusOnError="true" ValidationExpression="^.+\.((csv)|(CSV))$" Display="Dynamic" ControlToValidate="FImportar" runat="server" ErrorMessage="Por favor seleccione un archivo csv valido."></asp:RegularExpressionValidator>
                             <asp:RequiredFieldValidator ValidationGroup="archivo" ControlToValidate="FImportar" ErrorMessage="Por favor seleccione una archivo." ID="RFFoto1" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
+                            <asp:RegularExpressionValidator ValidationGroup="archivop" ID="RegularExpressionValidator4" SetFocusOnError="true" ValidationExpression="^.+\.((csv)|(CSV))$" Display="Dynamic" ControlToValidate="FImportarP" runat="server" ErrorMessage="Por favor seleccione un archivo csv valido."></asp:RegularExpressionValidator>
+                            <asp:RequiredFieldValidator ValidationGroup="archivop" ControlToValidate="FImportarP" ErrorMessage="Por favor seleccione una archivo." ID="RequiredFieldValidator8" runat="server" Display="Dynamic" SetFocusOnError="true"></asp:RequiredFieldValidator>
                             </td>
                     </tr>
                 </table>

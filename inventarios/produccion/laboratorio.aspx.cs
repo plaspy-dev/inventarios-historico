@@ -156,7 +156,7 @@ public partial class produccion_laboratorio : System.Web.UI.Page
                                 infoingrediente.IdGrid = lista.Count;
                                 infoingrediente.IdTabla = reader["id"].ToString();
                                 infoingrediente.lote = reader["lote"].ToString();
-                                infoingrediente.cantidad = Convert.ToDecimal(reader["cantidad"]);
+                                infoingrediente.cantidad = Convert.ToDouble(reader["cantidad"]);
                                 ajustes.Add(infoingrediente);
                             }
                         }
@@ -757,7 +757,7 @@ public partial class produccion_laboratorio : System.Web.UI.Page
 
         List<Producto> lista = Serializar.DesSerializeBinary<List<Producto>>((string)ViewState["productos"]);
         Producto info = new Producto(TIngredienteID.Text);
-        info.cantidad = Convert.ToDecimal(TCantidadIngrediente.Text, CultureInfo.InvariantCulture);
+        info.cantidad = Convert.ToDouble(TCantidadIngrediente.Text, CultureInfo.InvariantCulture);
         info.lote = TLoteIngrediente.Text;
         info.IdGrid = lista.Count;
         lista.Add(info);

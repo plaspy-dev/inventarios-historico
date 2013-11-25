@@ -11,7 +11,7 @@ namespace SDG.Componentes;
 
 public class Utilidades
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	public static string GetURLFullPath(Page page, string archivo)
 	{
@@ -147,14 +147,14 @@ public class Utilidades
 
 	public static string RenderGrid(GridView grid)
 	{
-		return RenderGrid(grid, "border=1 width=100% cellspacing=0");
+		return RenderGrid(grid, "width=100%");
 	}
 
 	public static string GetGridRowCellHTML(GridView grid, GridViewRow row, int columna)
 	{
-		string text = "class=c" + columna;
+		string text = "class='c" + columna + "'";
 		string text2 = "";
-		text2 = ((grid.Columns[columna].ItemStyle.HorizontalAlign == HorizontalAlign.Right) ? (text2 + "<td align=right " + text + ">") : ((grid.Columns[columna].ItemStyle.HorizontalAlign != HorizontalAlign.Center) ? (text2 + "<td " + text + ">") : (text2 + "<td align=center " + text + ">")));
+		text2 = ((grid.Columns[columna].ItemStyle.HorizontalAlign == HorizontalAlign.Right) ? (text2 + "<td align=right " + text + " style='text-align: right'>") : ((grid.Columns[columna].ItemStyle.HorizontalAlign != HorizontalAlign.Center) ? (text2 + "<td " + text + ">") : (text2 + "<td align=center " + text + " style='text-align: center'>")));
 		if (row.Cells[columna].HasControls())
 		{
 			ControlCollection controls = row.Cells[columna].Controls;
@@ -207,52 +207,54 @@ public class Utilidades
 			return grid.EmptyDataText;
 		}
 		string text = "<table " + parametrostabla + " id='" + grid.ID + "' class='tgrid'>";
-		text += "<tr>";
+		text += "<tr class='gh'>";
 		for (int i = 0; i < grid.Columns.Count; i++)
 		{
 			if (grid.Columns[i].Visible)
 			{
 				object obj = text;
-				text = string.Concat(obj, "<th class=h", i, " bgcolor='#EEEEEE'><b>", grid.Columns[i].HeaderText, "</b></th>");
+				text = string.Concat(obj, "<th class='h", i, "' bgcolor='#EEEEEE'><b>", grid.Columns[i].HeaderText, "</b></th>");
 			}
 		}
 		text += "</tr>";
-		for (int i = 0; i < grid.Rows.Count; i++)
+		bool flag = true;
+		for (int j = 0; j < grid.Rows.Count; j++)
 		{
-			GridViewRow gridViewRow = grid.Rows[i];
-			text += "<tr>";
-			for (int j = 0; j < gridViewRow.Cells.Count; j++)
+			GridViewRow gridViewRow = grid.Rows[j];
+			flag = !flag;
+			text += (flag ? "<tr class='ga'>" : "<tr class='gr'>");
+			for (int k = 0; k < gridViewRow.Cells.Count; k++)
 			{
-				if (grid.Columns[j].Visible)
+				if (grid.Columns[k].Visible)
 				{
-					text += GetGridRowCellHTML(grid, gridViewRow, j);
+					text += GetGridRowCellHTML(grid, gridViewRow, k);
 				}
 			}
 			text += "</tr>";
 		}
 		if (grid.ShowFooter && grid.FooterRow != null)
 		{
-			text += "<tr>";
-			for (int i = 0; i < grid.Columns.Count; i++)
+			text += "<tr class='gf'>";
+			for (int l = 0; l < grid.Columns.Count; l++)
 			{
-				if (grid.Columns[i].Visible)
+				if (grid.Columns[l].Visible)
 				{
-					if (grid.Columns[i].FooterStyle.HorizontalAlign == HorizontalAlign.Right)
+					if (grid.Columns[l].FooterStyle.HorizontalAlign == HorizontalAlign.Right)
 					{
-						object obj = text;
-						text = string.Concat(obj, "<td align=right class=f", i, ">");
+						object obj2 = text;
+						text = string.Concat(obj2, "<td align=right class='f", l, "' style='text-align: right'>");
 					}
-					else if (grid.Columns[i].FooterStyle.HorizontalAlign == HorizontalAlign.Center)
+					else if (grid.Columns[l].FooterStyle.HorizontalAlign == HorizontalAlign.Center)
 					{
-						object obj = text;
-						text = string.Concat(obj, "<td align=center class=f", i, ">");
+						object obj3 = text;
+						text = string.Concat(obj3, "<td align=center class='f", l, "' style='text-align: center'>");
 					}
 					else
 					{
-						object obj = text;
-						text = string.Concat(obj, "<td class=f", i, ">");
+						object obj4 = text;
+						text = string.Concat(obj4, "<td class='f", l, "'>");
 					}
-					text = text + "<b>" + grid.FooterRow.Cells[i].Text + "</b></td>";
+					text = text + "<b>" + grid.FooterRow.Cells[l].Text + "</b></td>";
 				}
 			}
 			text += "</tr>";
@@ -286,67 +288,73 @@ public class Utilidades
 			{
 				iD = "$" + controles[i].ID + "$";
 				contenido = contenido.Replace(iD, "");
-				continue;
 			}
-			if (controles[i].GetType() == typeof(TextBox))
+			else
 			{
-				text = ((TextBox)controles[i]).Text;
-			}
-			else if (controles[i].GetType() == typeof(CheckBox))
-			{
-				text = (((CheckBox)controles[i]).Checked ? "X" : "_");
-			}
-			else if (controles[i].GetType() == typeof(Label))
-			{
-				text = ((Label)controles[i]).Text;
-			}
-			else if (controles[i].GetType() == typeof(DropDownList))
-			{
-				try
+				if (contenido.IndexOf(iD) == -1)
 				{
-					if (((DropDownList)controles[i]).SelectedItem == null)
+					continue;
+				}
+				if (controles[i].GetType() == typeof(TextBox))
+				{
+					text = ((TextBox)controles[i]).Text;
+				}
+				else if (controles[i].GetType() == typeof(CheckBox))
+				{
+					text = (((CheckBox)controles[i]).Checked ? "X" : "_");
+				}
+				else if (controles[i].GetType() == typeof(Label))
+				{
+					text = ((Label)controles[i]).Text;
+				}
+				else if (controles[i].GetType() == typeof(DropDownList))
+				{
+					try
 					{
-						((DropDownList)controles[i]).DataBind();
-					}
-				}
-				catch
-				{
-				}
-				if (((DropDownList)controles[i]).SelectedItem != null)
-				{
-					text = ((DropDownList)controles[i]).SelectedItem.Text;
-				}
-			}
-			else if (controles[i].GetType() == typeof(HiddenField))
-			{
-				text = ((HiddenField)controles[i]).Value;
-			}
-			else if (controles[i].GetType() == typeof(GridView))
-			{
-				text = RenderGrid((GridView)controles[i]);
-			}
-			else if (controles[i].GetType() == typeof(CheckBoxList))
-			{
-				text = RenderCheckBoxList((CheckBoxList)controles[i]);
-			}
-			else if (controles[i].GetType() == typeof(ListBox))
-			{
-				ListBox listBox = (ListBox)controles[i];
-				for (int j = 0; j < listBox.Items.Count; j++)
-				{
-					if (listBox.Items[j].Selected)
-					{
-						if (text.Length > 0)
+						if (((DropDownList)controles[i]).SelectedItem == null)
 						{
-							text += ", ";
+							((DropDownList)controles[i]).DataBind();
 						}
-						text += listBox.Items[j].Text;
+					}
+					catch
+					{
+					}
+					if (((DropDownList)controles[i]).SelectedItem != null)
+					{
+						text = ((DropDownList)controles[i]).SelectedItem.Text;
 					}
 				}
-			}
-			if (contenido.IndexOf(iD) != -1)
-			{
-				contenido = contenido.Replace(iD, text);
+				else if (controles[i].GetType() == typeof(HiddenField))
+				{
+					text = ((HiddenField)controles[i]).Value;
+				}
+				else if (controles[i].GetType() == typeof(GridView))
+				{
+					text = RenderGrid((GridView)controles[i]);
+				}
+				else if (controles[i].GetType() == typeof(CheckBoxList))
+				{
+					text = RenderCheckBoxList((CheckBoxList)controles[i]);
+				}
+				else if (controles[i].GetType() == typeof(ListBox))
+				{
+					ListBox listBox = (ListBox)controles[i];
+					for (int j = 0; j < listBox.Items.Count; j++)
+					{
+						if (listBox.Items[j].Selected)
+						{
+							if (text.Length > 0)
+							{
+								text += ", ";
+							}
+							text += listBox.Items[j].Text;
+						}
+					}
+				}
+				if (contenido.IndexOf(iD) != -1)
+				{
+					contenido = contenido.Replace(iD, text);
+				}
 			}
 		}
 		return contenido;
@@ -399,7 +407,7 @@ public class Utilidades
 			view.DataBind();
 		}
 		Response.Clear();
-		Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(titulo + ".xls"));
+		Response.AddHeader("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode(titulo + ".xls").Replace("+", "%20"));
 		Response.ContentType = "application/vnd.ms-excel";
 		Response.ContentEncoding = Encoding.GetEncoding("ISO-8859-1");
 		Response.Write("<html>");
@@ -416,14 +424,14 @@ public class Utilidades
 			}
 		}
 		Response.Write("</tr>\n");
-		for (int i = 0; i < view.Rows.Count; i++)
+		for (int j = 0; j < view.Rows.Count; j++)
 		{
 			Response.Write("<tr>\n");
-			for (int j = 0; j < view.Columns.Count; j++)
+			for (int k = 0; k < view.Columns.Count; k++)
 			{
-				if (view.Columns[j].Visible)
+				if (view.Columns[k].Visible)
 				{
-					Response.Write(GetGridRowCellHTML(view, view.Rows[i], j));
+					Response.Write(GetGridRowCellHTML(view, view.Rows[j], k));
 				}
 			}
 			Response.Write("</tr>\n");

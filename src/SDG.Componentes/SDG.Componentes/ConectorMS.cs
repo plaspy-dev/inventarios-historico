@@ -12,7 +12,7 @@ namespace SDG.Componentes;
 
 public class ConectorMS : IDisposable
 {
-	private static bool bGetKey = false;
+	private static bool bGetKey;
 
 	protected string m_szLastError;
 
@@ -20,7 +20,7 @@ public class ConectorMS : IDisposable
 
 	protected string m_szConexion;
 
-	public bool m_bTransaccion = false;
+	public bool m_bTransaccion;
 
 	protected SqlConnection m_pSQLConector;
 
@@ -90,6 +90,11 @@ public class ConectorMS : IDisposable
 
 	public void ShowError(string error)
 	{
+		string text = DateTime.Now.ToString() + " Error[ConectorMS] : ";
+		text = ((HttpContext.Current != null) ? (text + HttpContext.Current.Request.Url.ToString()) : (text + Path.GetFileName(Assembly.GetEntryAssembly().Location)));
+		string text2 = text;
+		text = text2 + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
+		Logs.WriteLog(text);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
