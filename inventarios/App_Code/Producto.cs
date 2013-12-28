@@ -91,7 +91,13 @@ public class Producto
 
     [XmlIgnore]
     public string szEstado { get {
-        return Almacen.GetNombreEstado(estado);
+        string temp = Almacen.GetNombreEstado(estado);
+        try
+        {
+            if (DateTime.Now > Convert.ToDateTime(vence))
+                temp += " (Vencido)";
+        } catch { }
+        return temp;
     }}
 
     public string LoteTemporal {

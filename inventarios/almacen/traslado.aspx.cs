@@ -52,9 +52,8 @@ public partial class almacen_traslado : System.Web.UI.Page
             
             if (Session["ltraslado"] != null)
             {
-                ViewState["urlprint"] = Request.Url.AbsolutePath + "?ti=" + Session["ltraslado"].ToString() + "&p=1";
-                LImprimir.Text = "Traslado " + Session["ltraslado"].ToString() + " Editado.<br/>¿Desea imprimirla?";
-                PImprimir.Visible = true;
+                UCImprimir.Show(Request.Url.AbsolutePath + "?ti=" + Session["ltraslado"].ToString() + "&p=1"
+                    ,"Traslado " + Session["ltraslado"].ToString() + " Editado.<br/>¿Desea imprimirla?");
                 Session["ltraslado"] = null;
             }
 

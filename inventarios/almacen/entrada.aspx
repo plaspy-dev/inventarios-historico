@@ -1,4 +1,5 @@
 ﻿<%@ Page Title="Entrada" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="entrada.aspx.cs" Inherits="almacen_entrada" %>
+<%@ Register Src="~/almacen/imprimir.ascx" TagName="Imprimir" TagPrefix="uc" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 <style type="text/css">
@@ -181,16 +182,7 @@
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-<asp:Panel runat="server" ID="PImprimir" Visible="false">
-    <div id="dialog-confirm" title="Imprimir" class="hide"> 
-        <p><asp:Label runat="server" ID="LImprimir"></asp:Label></p>
-    </div>
-    <script type="text/javascript">
-        $(function() {
-            $("#dialog-confirm").dialog({resizable: false,modal: true,buttons: { "Imprimir": function() { window.open('<%= ViewState["urlprint"] %>', '_blank'); $(this).dialog("close"); }, "Cancelar" : function() {$(this).dialog("close");}}});
-        });
-    </script>
-</asp:Panel>
+<uc:Imprimir runat="server" ID="UCImprimir" />
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
 <ContentTemplate>
     <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado"><asp:Label runat="server" ID="LAnulado"></asp:Label></asp:Panel>

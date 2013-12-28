@@ -164,15 +164,16 @@
                         <ItemTemplate><asp:TextBox runat="server" ID="TMinimo" CssClass="float" Text='<%# Eval("minimo")==DBNull.Value ? "" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Máximo">
-                        <ItemTemplate><asp:TextBox runat="server" ID="TMaximo" CssClass="float" Text='<%# Eval("minimo")==DBNull.Value ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
+                        <ItemTemplate><asp:TextBox runat="server" ID="TMaximo" CssClass="float" Text='<%# Eval("maximo")==DBNull.Value ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
                     </asp:TemplateField>
-                    <asp:TemplateField ItemStyle-Width="100%"><ItemTemplate></ItemTemplate></asp:TemplateField>
+                    <asp:BoundField HeaderText="" DataField="descripcion" ItemStyle-Wrap="false" ItemStyle-Width="100%" />
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SAnalisis" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo FROM varios 
+                SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo, varios.descripcion
+                        FROM varios 
                         LEFT JOIN formulacion_parametro ON (formulacion_parametro.formulacion=@formulacion AND formulacion_parametro.parametro=varios.id)
                         WHERE varios.tipo=1003 AND varios.estado IS NULL ORDER BY varios.nombre;">
                         <SelectParameters>
@@ -205,15 +206,16 @@
                         <ItemTemplate><asp:TextBox runat="server" ID="TMinimo" CssClass="float" Text='<%# Eval("minimo")==DBNull.Value ? "" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
                     </asp:TemplateField>
                     <asp:TemplateField HeaderText="Máximo">
-                        <ItemTemplate><asp:TextBox runat="server" ID="TMaximo" CssClass="float" Text='<%# Eval("minimo")==DBNull.Value ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
+                        <ItemTemplate><asp:TextBox runat="server" ID="TMaximo" CssClass="float" Text='<%# Eval("maximo")==DBNull.Value ? "" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></ItemTemplate>
                     </asp:TemplateField>
-                    <asp:TemplateField ItemStyle-Width="100%"><ItemTemplate></ItemTemplate></asp:TemplateField>
+                    <asp:BoundField HeaderText="" DataField="descripcion" ItemStyle-Wrap="false" ItemStyle-Width="100%" />
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SMicro" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo FROM varios 
+                SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo, varios.descripcion
+                        FROM varios 
                         LEFT JOIN formulacion_parametro ON (formulacion_parametro.formulacion=@formulacion AND formulacion_parametro.parametro=varios.id)
                         WHERE varios.tipo=1004 AND varios.estado IS NULL ORDER BY varios.nombre;">
                         <SelectParameters>

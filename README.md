@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-11-25 · Actualizar valores y cantidades de productos usados.** Amplía el controlador de productos y revisa cómo se recuperan los valores y se convierten las cantidades de productos usados. Los cálculos de la operación pueden usar los datos que guarda la ficha.
+**2013-12-28 · Ajustar campos de laboratorio y de movimientos.** Añade campos enlazados en laboratorio y reorganiza controles de salida y traslado. Esto alinea la información visible con las operaciones que se pueden completar desde cada pantalla.
 
 ### Cómo explorar el código
 
@@ -25,7 +25,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-11-25 · Update values and quantities for products in use.** Expand the product handler and revise value retrieval and quantity conversion for products in use. Workflow calculations can use the values saved on the product record.
+**2013-12-28 · Update lab and movement form fields.** Add bound lab fields and reorganize withdrawal and transfer controls. This aligns visible information with the operations available on each screen.
 
 ### How to explore the source
 

@@ -71,9 +71,8 @@ public partial class almacen_salida : System.Web.UI.Page
 
             if (Session["lsalida"] != null)
             {
-                ViewState["urlprint"] = Request.Url.AbsolutePath + "?si=" + Session["lsalida"].ToString() + "&p=1";
-                LImprimir.Text = "Salida " + Session["lsalida"].ToString() + " Editada.<br/>¿Desea imprimirla?";
-                PImprimir.Visible = true;
+                UCImprimir.Show(Request.Url.AbsolutePath + "?si=" + Session["lsalida"].ToString() + "&p=1",
+                            "Salida " + Session["lsalida"].ToString() + " Editada.<br/>¿Desea imprimirla?");
                 Session["lsalida"] = null;
             }
 

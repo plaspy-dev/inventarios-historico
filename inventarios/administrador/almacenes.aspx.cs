@@ -7,6 +7,7 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Globalization;
 using SDG.Componentes;
 using MySql.Data.MySqlClient;
 
@@ -44,6 +45,7 @@ public partial class administrador_almacenes : System.Web.UI.Page
 
             query["nombre"] = TNombre.Text;
             query["descripcion"] = TDescripcion.Text;
+            query["vencido"] = CVencidos.Checked ? "1" : "";
 
             if (HId.Value.Length == 0)
             {
@@ -111,13 +113,14 @@ public partial class administrador_almacenes : System.Web.UI.Page
         HId.Value = GResultado.SelectedDataKey.Value.ToString();
         TNombre.Text = HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[2].Text).Trim();
         TDescripcion.Text = HttpUtility.HtmlDecode(GResultado.SelectedRow.Cells[3].Text).Trim();
+        CVencidos.Checked = ((CheckBox)GResultado.SelectedRow.FindControl("C")).Checked;
 
         ((ing)Master).SetModificacion(HId.Value);
     }
 
     protected static void UpdateTable(CConector conector, string almacen) {
         
-        conector.QueryMod(string.Format("ALTER TABLE entrada_items{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
+        /*conector.QueryMod(string.Format("ALTER TABLE entrada_items{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
         conector.QueryMod(string.Format("ALTER TABLE estado{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
         conector.QueryMod(string.Format("ALTER TABLE traslado_items{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
         conector.QueryMod(string.Format("ALTER TABLE salida_items{0} ADD proveedor BIGINT UNSIGNED DEFAULT 0;", almacen));
@@ -132,24 +135,39 @@ public partial class administrador_almacenes : System.Web.UI.Page
         conector.QueryMod(string.Format("ALTER TABLE estadotemp ADD PRIMARY KEY (producto,lote,vence,szSerial, ubicacion, estado, proveedor);", almacen));
         conector.QueryMod(string.Format("INSERT INTO estadotemp SELECT * FROM estado{0};", almacen));
         conector.QueryMod(string.Format("DROP TABLE estado{0};", almacen));
-        conector.QueryMod(string.Format("RENAME TABLE estadotemp TO estado{0};", almacen));
+        conector.QueryMod(string.Format("RENAME TABLE estadotemp TO estado{0};", almacen));*/
     }
 
     protected void BActualizar_Click(object sender, EventArgs e)
     {
+        string consulta = string.Format("(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado{0} GROUP BY producto,estado HAVING SUM(cantidad)>0)", "0");
         using (CConector conector2 = new CConector())
         using (CConector conector = new CConector())
         {
-            // conector.QueryMod("TRUNCATE TABLE estado_global");
+            conector.QueryMod("TRUNCATE TABLE estado_global");
             MySqlDataReader reader = conector.Query("SELECT id FROM almacen");
             if (reader != null)
             {
                 while (reader.Read())
                 {
-                    UpdateTable(conector2, reader["id"].ToString());
+                    consulta += " UNION ALL " +
+                        string.Format("(SELECT producto,estado,SUM(cantidad) AS cantidad FROM estado{0} GROUP BY producto,estado HAVING SUM(cantidad)>0)", reader["id"].ToString());
+                    // UpdateTable(conector2, reader["id"].ToString());
                 }
             }
-            UpdateTable(conector2, "0");
+            reader = conector.Query("SELECT producto,estado,SUM(cantidad) AS cantidad FROM (" + consulta + ") AS t GROUP BY producto,estado");
+            if (reader != null) {
+                while (reader.Read()) {
+                    conector2.QueryMod(
+                        string.Format("INSERT INTO estado_global (producto,estado,cantidad,modificacion) VALUES ({0}, {1}, {2}, SYSDATE())"
+                            ,reader["producto"].ToString()
+                            ,reader["estado"].ToString()
+                            ,Convert.ToDouble(reader["cantidad"]).ToString(CultureInfo.InvariantCulture)
+                            ));
+                }
+            }
+
+            // UpdateTable(conector2, "0");
         }
 
         ((ing)Master).SetResultado("Almacenes actualizados");

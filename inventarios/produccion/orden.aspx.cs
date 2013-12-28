@@ -69,9 +69,8 @@ public partial class produccion_orden : System.Web.UI.Page
 
             if (Session["loproduccion"] != null)
             {
-                ViewState["urlprint"] = Request.Url.AbsolutePath + "?oi=" + Session["loproduccion"].ToString() + "&p=1";
-                LImprimir.Text = "Orden de producción " + Session["loproduccion"].ToString() + " Editada.<br/>¿Desea imprimirla?";
-                PImprimir.Visible = true;
+                UCImprimir.Show(Request.Url.AbsolutePath + "?oi=" + Session["loproduccion"].ToString() + "&p=1"
+                            ,"Orden de producción " + Session["loproduccion"].ToString() + " Editada.<br/>¿Desea imprimirla?");
                 Session["loproduccion"] = null;
             }
             BAceptar.Enabled = usuario.CanInsert();
@@ -609,12 +608,12 @@ public partial class produccion_orden : System.Web.UI.Page
             }
 
             Query sensorial = new Query("analisis_sensorial_parametros");
-            if (conector.QueryMod(sensorial.GetDelete("orden=" + Query.GetValor(ViewState["id"].ToString()))) == -1)
+            if (conector.QueryMod(sensorial.GetDelete("orden=" + Query.GetValor(id))) == -1)
             {
                 LMensaje.Text = conector.GetLastError();
                 return;
             }
-            sensorial["orden"] = ViewState["id"].ToString();
+            sensorial["orden"] = id;
             for (int i = 0; i < CSensorial.Items.Count; i++)
             {
                 if (CSensorial.Items[i].Selected)
@@ -631,12 +630,12 @@ public partial class produccion_orden : System.Web.UI.Page
 
 
             Query esterilidad = new Query("prueba_esterilidad_parametros");
-            if (conector.QueryMod(esterilidad.GetDelete("orden=" + Query.GetValor(ViewState["id"].ToString()))) == -1)
+            if (conector.QueryMod(esterilidad.GetDelete("orden=" + Query.GetValor(id))) == -1)
             {
                 LMensaje.Text = conector.GetLastError();
                 return;
             }
-            esterilidad["orden"] = ViewState["id"].ToString();
+            esterilidad["orden"] = id;
             for (int i = 0; i < CEsterilidad.Items.Count; i++)
             {
                 if (CEsterilidad.Items[i].Selected)
@@ -714,6 +713,9 @@ public partial class produccion_orden : System.Web.UI.Page
 
         evento.Contenido = evento.Contenido.Replace("$szSensorial$", RenderCheckBox(CSensorial));
         evento.Contenido = evento.Contenido.Replace("$szEsterilidad$", RenderCheckBox(CEsterilidad));
+
+        if(TLote.Text.Length==0)
+            evento.Contenido = evento.Contenido.Replace("$TLote$", "____________________________");
 
         if (LObtenida.Text == "0")
         {

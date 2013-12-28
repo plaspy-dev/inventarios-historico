@@ -323,7 +323,7 @@
                             OR producto.nombre LIKE CONCAT('%', @nombre, '%')
                             OR producto.empresa LIKE CONCAT('%', @nombre, '%')
                             OR producto.descripcion LIKE CONCAT('%', @nombre, '%'))
-                        GROUP BY producto.id HAVING (@todos=1 OR SUM(estado{0}.cantidad)>0)
+                        GROUP BY producto.id HAVING (@todos=1 OR SUM(estado{0}.cantidad)>0.0001)
                         ORDER BY producto.codigo,producto.nombre">
                  <SelectParameters>
                     <asp:ControlParameter ControlID="TVence" PropertyName="Text" Name="vence" DefaultValue=" " />

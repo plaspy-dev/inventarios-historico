@@ -33,7 +33,8 @@ public class servicios : System.Web.Services.WebService {
 
     public servicios () {
 
-        Thread.CurrentThread.CurrentCulture= CultureInfo.InvariantCulture;
+        // Daña el formato de las fechas.
+        // Thread.CurrentThread.CurrentCulture= CultureInfo.InvariantCulture;
         //Eliminar la marca de comentario de la línea siguiente si utiliza los componentes diseñados 
         //InitializeComponent(); 
     }
@@ -75,6 +76,7 @@ public class servicios : System.Web.Services.WebService {
                 reader.Close();
             }
         }
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         return lista;
     }
 
@@ -106,6 +108,7 @@ public class servicios : System.Web.Services.WebService {
                 reader.Close();
             }
         }
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         return lista;
     }
 
@@ -140,6 +143,7 @@ public class servicios : System.Web.Services.WebService {
                 reader.Close();
             }
         }
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         return lista;
     }
 
@@ -149,11 +153,14 @@ public class servicios : System.Web.Services.WebService {
         List<Producto> lista = new List<Producto>();
         using (CConector conector = new CConector())
         {
+            string vencidos="";
+            if (auto || !Almacen.GetAlmacenVence(almacen))
+                vencidos = "AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE()))";
 
             string query;
             if (auto)
-                query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL ", almacen);
-            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion,estado{0}.proveedor FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion) WHERE estado{0}.cantidad>0 AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL ", almacen);
+                query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) WHERE estado{0}.cantidad>0 " + vencidos + " AND varios.parametro1 IS NULL ", almacen);
+            else query = String.Format("SELECT estado{0}.producto,SUM(estado{0}.cantidad) AS cantidad,estado{0}.lote,IF(estado{0}.vence='0000-00-00',NULL,estado{0}.vence) AS vence,estado{0}.estado,estado{0}.szSerial,estado{0}.ubicacion,estado{0}.proveedor FROM estado{0} LEFT JOIN producto ON (producto.id=estado{0}.producto) LEFT JOIN varios ON (varios.id=estado{0}.estado) LEFT JOIN ubicacion ON (ubicacion.id=estado{0}.ubicacion) WHERE estado{0}.cantidad>0 " + vencidos + " AND varios.parametro1 IS NULL ", almacen);
 
             string[] split = q.Trim().Split(new Char[] { ' ', '\0' });
 
@@ -203,6 +210,7 @@ public class servicios : System.Web.Services.WebService {
                 reader.Close();
             }
         }
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         return lista;
     }
 
@@ -264,6 +272,7 @@ public class servicios : System.Web.Services.WebService {
                 reader.Close();
             }
         }
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         return lista;
     }
 
@@ -319,6 +328,7 @@ public class servicios : System.Web.Services.WebService {
                 reader.Close();
             }
         }
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
         return lista;
     }
 
@@ -362,6 +372,7 @@ public class servicios : System.Web.Services.WebService {
                 reader.Close();
             }
         }
+        Thread.CurrentThread.CurrentCulture= CultureInfo.InvariantCulture;
         return lista;
     }
 }

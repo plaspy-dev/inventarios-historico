@@ -1,5 +1,5 @@
 ﻿<%@ Page Title="Salida" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="salida.aspx.cs" Inherits="almacen_salida" %>
-
+<%@ Register Src="~/almacen/imprimir.ascx" TagName="Imprimir" TagPrefix="uc" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 <style type="text/css">
     .tvence
@@ -166,16 +166,7 @@
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-<asp:Panel runat="server" ID="PImprimir" Visible="false">
-    <div id="dialog-confirm" title="Imprimir" class="hide"> 
-        <p><asp:Label runat="server" ID="LImprimir"></asp:Label></p>
-    </div>
-    <script type="text/javascript">
-        $(function() {
-            $("#dialog-confirm").dialog({ resizable: false, modal: true, buttons: { "Imprimir": function() { window.open('<%= ViewState["urlprint"] %>', '_blank'); $(this).dialog("close"); }, "Cancelar": function() { $(this).dialog("close"); } } });
-        });
-    </script>
-</asp:Panel>
+<uc:Imprimir runat="server" ID="UCImprimir" />
 <asp:UpdatePanel runat="server" ID="UProducto" UpdateMode="Conditional">
     <ContentTemplate>
     <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado"><asp:Label runat="server" ID="LAnulado"></asp:Label></asp:Panel>
@@ -240,22 +231,20 @@
             <td colspan="5" class="tdl tdr"><asp:Label runat="server" ID="LMensaje" ForeColor="Red"></asp:Label></td>
         </tr>
         <tr>
-            <td class="tdl"><asp:CheckBox runat="server" ID="CAutomatico" Text="Automático" Checked="true" /></td>
-            <td align="right"><asp:Label runat="server" ID="LLote" Text="Lote: "></asp:Label></td>
-            <td><asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LLoteA" Text="Automático"></asp:Label></td>
-            <td align="right"><asp:Label runat="server" ID="LVencimiento" Text="Vence: "></asp:Label></td>
-            <td class="tdr"><asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><asp:Label runat="server" ID="LVencimientoA" Text="Automático"></asp:Label>
+            <td class="tdl" colspan="5"><asp:CheckBox runat="server" ID="CAutomatico" Text="Automático" Checked="true" />
+                <asp:Label runat="server" ID="LLote" Text=", Lote: "></asp:Label>
+                <asp:TextBox ID="TLote" runat="server" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LLoteA" Text="Automático"></asp:Label>
+                <asp:Label runat="server" ID="LVencimiento" Text=", Vence: "></asp:Label>
+                <asp:TextBox ID="TVencimiento" runat="server" CssClass="tvence hide"></asp:TextBox><asp:Label runat="server" ID="LVencimientoA" Text="Automático"></asp:Label>
+                <asp:Label runat="server" ID="LUbicacion" Text=", Ubicación: "></asp:Label><asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LUbicacionA" Text="Automática"></asp:Label>
+                <asp:Label runat="server" ID="LSerial" Text=", Serial:"></asp:Label>
+                <asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LSerialA" Text="Automático"></asp:Label>
+                <asp:Label runat="server" ID="LEstado" Text=", Estado:"></asp:Label>
+                <asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LEstadoA" Text="Automático"></asp:Label>
             </td>
         </tr>
-        <tr>
-            <td class="tdl"><asp:Label runat="server" ID="LUbicacion" Text="Ubicación: "></asp:Label><asp:TextBox runat="server" ID="TUbicacion" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LUbicacionA" Text="Automática"></asp:Label></td>
-            <td align="right"><asp:Label runat="server" ID="LSerial" Text="Serial:"></asp:Label></td>
-            <td><asp:TextBox runat="server" ID="TSerial" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LSerialA" Text="Automático"></asp:Label></td>
-            <td align="right"><asp:Label runat="server" ID="LEstado" Text="Estado:"></asp:Label></td>
-            <td class="tdr"><asp:TextBox ID="TEstado" runat="server" CssClass="tlote hide"></asp:TextBox><asp:Label runat="server" ID="LEstadoA" Text="Automático"></asp:Label></td>
-        </tr>
         <tr class="GridAltRow">
-            <td class="tdl"><span id="smax"></span></td>
+            <td class="tdl" id="smax"></td>
             <td colspan="4" class="tdr" id="tdescripcion"></td>
         </tr>
         <tr class="GridAltRow">
@@ -301,7 +290,7 @@
                         <asp:BoundField DataField="vence" HeaderText="Vence" SortExpression="vence" DataFormatString="{0:d}" />
                         <asp:BoundField DataField="serial" HeaderText="Serial" SortExpression="serial" />
                         <asp:BoundField DataField="NombreUbicacion" HeaderText="Ubicación" SortExpression="NombreUbicacion" />
-                        <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" />
+                        <asp:BoundField DataField="szEstado" HeaderText="Estado" SortExpression="szEstado" ItemStyle-Wrap="false" />
                     </Columns>
                 </asp:GridView>
             </td>
