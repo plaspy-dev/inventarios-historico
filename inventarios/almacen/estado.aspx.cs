@@ -122,7 +122,7 @@ public partial class almacen_estado : System.Web.UI.Page
                   .Replace("producto.", "")
                   .Replace("IFNULL(almacen.nombre,'(Ajustes)') AS ", "")
                   .Replace("IF(COUNT(DISTINCT ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ", "")
-                  .Replace("IF(COUNT(DISTINCT estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS ", "")
+                  .Replace("IF(COUNT(DISTINCT IF(DATE(SYSDATE())>=vence AND vence!='0000-00-00',estado,'(Vencido)'))=1,IFNULL(IF(DATE(SYSDATE())>=vence AND vence!='0000-00-00','(Vencido)',estado.nombre),'(Ninguno)'), '(Multiple)') AS ", "")
                   .Replace(",CONCAT(codigo,IFNULL(producto_proveedor.codigo,'')) AS codigo", ",codigo")
                   ;
             SResultados.SelectCommand = original.Substring(0, original.IndexOf(" FROM "))
@@ -136,7 +136,7 @@ public partial class almacen_estado : System.Web.UI.Page
                   .Replace("producto.", "")
                   .Replace("IFNULL(almacen.nombre,'(Ajustes)') AS ", "")
                   .Replace("IF(COUNT(DISTINCT ubicacion)=1,IFNULL(ubicacion.nombre,'(Ninguna)'), '(Multiple)') AS ", "")
-                  .Replace("IF(COUNT(DISTINCT estado)=1,IFNULL(estado.nombre,'(Ninguno)'), '(Multiple)') AS ", "")
+                  .Replace("IF(COUNT(DISTINCT IF(DATE(SYSDATE())>=vence AND vence!='0000-00-00',estado,'(Vencido)'))=1,IFNULL(IF(DATE(SYSDATE())>=vence AND vence!='0000-00-00','(Vencido)',estado.nombre),'(Ninguno)'), '(Multiple)') AS ", "")
                   .Replace(",CONCAT(codigo,IFNULL(producto_proveedor.codigo,'')) AS codigo", ",codigo")
                   ;
             SResultados1.SelectCommand = original1.Substring(0, original1.IndexOf(" FROM "))

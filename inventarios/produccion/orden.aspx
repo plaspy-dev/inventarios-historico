@@ -1,5 +1,5 @@
 ﻿<%@ Page Title="Orden de producción" Language="C#" MasterPageFile="~/ing.master" AutoEventWireup="true" CodeFile="orden.aspx.cs" Inherits="produccion_orden" %>
-
+<%@ Register Src="~/almacen/imprimir.ascx" TagName="Imprimir" TagPrefix="uc" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" Runat="Server">
 <style type="text/css">
     .aanalisis 
@@ -255,16 +255,7 @@
 </script>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" Runat="Server">
-<asp:Panel runat="server" ID="PImprimir" Visible="false">
-    <div id="dialog-confirm" title="Imprimir" class="hide"> 
-        <p><asp:Label runat="server" ID="LImprimir"></asp:Label></p>
-    </div>
-    <script type="text/javascript">
-        $(function() {
-            $("#dialog-confirm").dialog({ resizable: false, modal: true, buttons: { "Imprimir": function() { window.open('<%= ViewState["urlprint"] %>', '_blank'); $(this).dialog("close"); }, "Cancelar": function() { $(this).dialog("close"); } } });
-        });
-    </script>
-</asp:Panel>
+<uc:Imprimir runat="server" ID="UCImprimir" />
 <asp:UpdatePanel runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 <asp:Panel runat="server" ID="PAnulado" Visible="false" CssClass="anulado"><asp:Label runat="server" ID="LAnulado" Text=""></asp:Label></asp:Panel>
@@ -306,7 +297,7 @@
         <td>
             <asp:Button runat="server" ID="BFormular" Text="Traer formula" CausesValidation="false" OnClick="BFormular_Click" CssClass="hide" />
             <asp:TextBox runat="server" ID="TCantidad" CssClass="presentacion"></asp:TextBox></td>
-        <td>Lote<asp:RequiredFieldValidator ControlToValidate="TLote" ErrorMessage="Por favor ingrese un lote." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
+        <td>Lote<asp:RequiredFieldValidator ControlToValidate="TLote" Enabled="false" ErrorMessage="Por favor ingrese un lote." ID="RequiredFieldValidator5" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator></td>
         <td><asp:TextBox runat="server" ID="TLote" CssClass="lote"></asp:TextBox></td>
     </tr>
     <tr>

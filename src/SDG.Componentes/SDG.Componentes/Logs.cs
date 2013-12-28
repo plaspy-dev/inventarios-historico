@@ -22,7 +22,14 @@ public class Logs
 		}
 		try
 		{
-			text = DateTime.Now.ToString() + " Error[app] : " + Request.Url.ToString() + " - '" + ex.Message.ToString() + "'";
+			text = DateTime.Now.ToString() + " Error[app] : ";
+			if (ex is HttpException)
+			{
+				object obj2 = text;
+				text = string.Concat(obj2, "(", ((HttpException)ex).GetHttpCode(), ") ");
+			}
+			string text2 = text;
+			text = text2 + Request.Url.ToString() + " - '" + ex.Message.ToString() + "'";
 			text += "\r\n";
 		}
 		catch
@@ -47,12 +54,12 @@ public class Logs
 			text += "\r\n";
 			Request.InputStream.Seek(0L, SeekOrigin.Begin);
 			StreamReader streamReader = new StreamReader(Request.InputStream);
-			string text3 = streamReader.ReadToEnd();
-			if (!string.IsNullOrEmpty(text3))
+			string text4 = streamReader.ReadToEnd();
+			if (!string.IsNullOrEmpty(text4))
 			{
-				text += text3;
+				text += text4;
 				text += "\r\n";
-				text += HttpUtility.UrlDecode(text3);
+				text += HttpUtility.UrlDecode(text4);
 				text += "\r\n";
 			}
 		}
@@ -71,11 +78,13 @@ public class Logs
 				case "__EVENTARGUMENT":
 				case "__VIEWSTATE":
 				case "__VIEWSTATEENCRYPTED":
-				case "__EVENTVALIDATION":
 					continue;
 				}
-				text = text + item + "=" + Request.Form[item];
-				text += "\r\n";
+				if (!(item == "__EVENTVALIDATION"))
+				{
+					text = text + item + "=" + Request.Form[item];
+					text += "\r\n";
+				}
 			}
 		}
 		catch
@@ -123,8 +132,8 @@ public class Logs
 				}
 				else
 				{
-					using StreamWriter streamWriter2 = File.AppendText(archivo);
-					streamWriter2.WriteLine(logs);
+					using StreamWriter streamWriter = File.AppendText(archivo);
+					streamWriter.WriteLine(logs);
 				}
 				return true;
 			}

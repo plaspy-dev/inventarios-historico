@@ -104,7 +104,7 @@
         <div id="tpr">
             <ul>
                 <li><a href="#dProducto">Producto</a></li>
-                <li><a href="#dProvedores">Proveedores</a></li>
+                <li><a href="#dProvedores">Tercero</a></li>
                 <li><a href="#dMaxMin">Máximos y mínimos</a></li>
                 <li runat="server" visible="false" id="lcostos"><a href="#<%= PCostos.ClientID %>">Costos</a></li>
                 <li runat="server" visible="false" id="lprecios"><a href="#<%= UPrecios.ClientID %>">Precios</a></li>
@@ -298,8 +298,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Proveedor<asp:RequiredFieldValidator ID="RequiredFieldValidator7" runat="server" ValidationGroup="proveedor" Display="Dynamic" ControlToValidate="UCTercero$TTerceroID" ErrorMessage="Por favor seleccione un proveedor">*</asp:RequiredFieldValidator></td>
-                            <td><uc:Tercero ID="UCTercero" runat="server" Tipo="0" /></td>
+                            <td>Tercero<asp:RequiredFieldValidator ID="RequiredFieldValidator7" runat="server" ValidationGroup="proveedor" Display="Dynamic" ControlToValidate="UCTercero$TTerceroID" ErrorMessage="Por favor seleccione un proveedor">*</asp:RequiredFieldValidator></td>
+                            <td><uc:Tercero ID="UCTercero" runat="server" /></td>
                         </tr>
                         <tr>
                             <td>Código</td>
@@ -671,4 +671,3 @@
 </table>
 </asp:Panel>
 </asp:Content>
-

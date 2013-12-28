@@ -31,6 +31,9 @@
               </td>
           </tr>
           <tr>
+            <td colspan="3"><asp:CheckBox runat="server" ID="CVencidos" Text="Este almacen puede realizar salidas de producto vencido" /></td>
+          </tr>
+          <tr>
               <td colspan="3" class="GridHeader">Ubicaciones</td>
           </tr>
           <tr>
@@ -99,12 +102,17 @@
                     <asp:CommandField ButtonType="Image" DeleteImageUrl="~/img/eliminar.gif" ShowDeleteButton="True" />
                     <asp:BoundField DataField="nombre" HeaderText="Nombre" SortExpression="nombre" ItemStyle-Wrap="false" />
                     <asp:BoundField DataField="descripcion" HeaderText="Descripción" SortExpression="descripcion" ItemStyle-Width="100%" />
+                    <asp:TemplateField HeaderText="Vencidos" SortExpression="vencido" ItemStyle-HorizontalAlign="Right">
+                        <ItemTemplate>
+                            <asp:CheckBox runat="server" ID="C" Enabled="false" Checked='<%# Eval("vencido").ToString()=="1" %>' />
+                        </ItemTemplate>
+                    </asp:TemplateField>
                 </Columns>
             </asp:GridView>
             <asp:SqlDataSource ID="SResultados" runat="server" 
                 ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                 ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                SelectCommand="SELECT id, nombre, descripcion FROM almacen WHERE estado IS NULL ORDER BY nombre" 
+                SelectCommand="SELECT id, nombre, descripcion, vencido FROM almacen WHERE estado IS NULL ORDER BY nombre" 
                 DeleteCommand="UPDATE almacen SET estado=-1 WHERE id=@id" >
             </asp:SqlDataSource>
           </td>

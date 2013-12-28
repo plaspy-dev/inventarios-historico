@@ -10,9 +10,9 @@ namespace SDG.Componentes;
 
 public class Usuario
 {
-	private static bool bHeaderCache;
+	private static bool bHeaderCache = false;
 
-	private static bool bGetKey;
+	private static bool bGetKey = false;
 
 	protected string m_szNombre;
 

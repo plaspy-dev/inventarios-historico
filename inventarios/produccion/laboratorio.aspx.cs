@@ -225,9 +225,10 @@ public partial class produccion_laboratorio : System.Web.UI.Page
         using (CConector conector = new CConector())
         {
             Query query = new Query(tabla);
-            query += "valor";
-            query += "parametro";
-            MySqlDataReader reader = conector.Query(query.GetSelect("analisis=" + analisis));
+            query += tabla+ ".valor";
+            query += tabla + ".parametro";
+            MySqlDataReader reader = conector.Query(query.GetSelect("analisis=" + analisis + " ORDER BY varios.tipo DESC"
+                                                       , "LEFT JOIN varios ON (varios.id=" + tabla + ".parametro)"));
             if (reader != null)
             {
                 while (reader.Read())
@@ -259,6 +260,15 @@ public partial class produccion_laboratorio : System.Web.UI.Page
         info.Fecha = Convert.ToDateTime(TFechaMicro.Text);
         info.Observaciones = TObservacionesMicro.Text;
 
+        for (int i = 0; i < DMicroSimple.Items.Count; i++)
+        {
+            RadioButtonList radio = (RadioButtonList)DMicroSimple.Items[i].FindControl("RValor");
+            info.Parametros[DMicroSimple.DataKeys[i].ToString()] = radio.SelectedValue;
+        }
+
+        DMicroSimple.DataBind();
+
+
         for (int i = 0; i < DMicro.Items.Count; i++)
         {
             TextBox text = (TextBox)DMicro.Items[i].FindControl("TValor");
@@ -266,6 +276,7 @@ public partial class produccion_laboratorio : System.Web.UI.Page
         }
 
         DMicro.DataBind();
+
         HMicro.Value = Serializar.SerializeBinary(lista);
         UpdateList(GMicro, lista.Where(x => x.IdGrid != -1).ToList());
         BCancelarMicro_Clicked(sender, e);
@@ -343,6 +354,8 @@ public partial class produccion_laboratorio : System.Web.UI.Page
             equivalentes[DAnalisis.DataKeys[j].ToString()] = ((HiddenField)DAnalisis.Items[j].FindControl("HId")).Value;
         for (int j = 0; j < DMicro.Items.Count; j++)
             equivalentes[DMicro.DataKeys[j].ToString()] = ((HiddenField)DMicro.Items[j].FindControl("HId")).Value;
+        for (int j = 0; j < DMicroSimple.Items.Count; j++)
+            equivalentes[DMicroSimple.DataKeys[j].ToString()] = ((HiddenField)DMicroSimple.Items[j].FindControl("HId")).Value;
 
         using (CConector conector = new CConector())
         {
@@ -651,17 +664,28 @@ public partial class produccion_laboratorio : System.Web.UI.Page
                 .ToList().First();
 
         SMicro.SelectParameters["analisis"].DefaultValue = info.IdTabla;
+        SMicroSimple.SelectParameters["analisis"].DefaultValue = info.IdTabla;
 
         TFechaMicro.Text = Conector.GetFromMySQLDate(info.Fecha, true);
         TObservacionesMicro.Text = info.Observaciones;
         DMicro.DataBind();
-
         for (int i = 0; i < DMicro.Items.Count; i++)
         {
             TextBox text = (TextBox)DMicro.Items[i].FindControl("TValor");
             try
             {
                 text.Text = info.Parametros[DMicro.DataKeys[i].ToString()];
+            }
+            catch { }
+        }
+
+        DMicroSimple.DataBind();
+        for (int i = 0; i < DMicroSimple.Items.Count; i++)
+        {
+            RadioButtonList radio = (RadioButtonList)DMicroSimple.Items[i].FindControl("RValor");
+            try
+            {
+                radio.SelectedValue= info.Parametros[DMicroSimple.DataKeys[i].ToString()];
             }
             catch { }
         }
@@ -825,7 +849,25 @@ public partial class produccion_laboratorio : System.Web.UI.Page
         if (e.Row.RowIndex != -1)
         {
             for (int i = 3; i < e.Row.Cells.Count - 1; i++)
-                e.Row.Cells[i].Text = ((Analisis)e.Row.DataItem).Parametros[GMicro.Columns[i].HeaderText];
+            {
+                for (int j = 0; j < DMicroSimple.Items.Count; j++) {
+                    if (GMicro.Columns[i].HeaderText == DMicroSimple.DataKeys[j].ToString()) {
+                        switch(((Analisis)e.Row.DataItem).Parametros[GMicro.Columns[i].HeaderText]) {
+                            case "0":
+                                e.Row.Cells[i].Text = "Ausente";
+                                break;
+                            case "1":
+                                e.Row.Cells[i].Text = "Presente";
+                                break;
+                        }
+                        break;
+                    }
+                }
+                if (string.IsNullOrEmpty(e.Row.Cells[i].Text))
+                {
+                    e.Row.Cells[i].Text = ((Analisis)e.Row.DataItem).Parametros[GMicro.Columns[i].HeaderText];
+                }
+            }
         }
     }
 }

@@ -73,9 +73,8 @@ public partial class almacen_entrada : System.Web.UI.Page
 
             if(Session["lentrada"]!=null) {
 
-                ViewState["urlprint"] = Request.Url.AbsolutePath + "?ei=" + Session["lentrada"].ToString() + "&p=1";
-                LImprimir.Text = "Entrada " + Session["lentrada"].ToString() + " Editada.<br/>¿Desea imprimirla?";
-                PImprimir.Visible = true;
+                UCImprimir.Show(Request.Url.AbsolutePath + "?ei=" + Session["lentrada"].ToString() + "&p=1"
+                                    ,"Entrada " + Session["lentrada"].ToString() + " Editada.<br/>¿Desea imprimirla?");
                 Session["lentrada"] = null;
             }
 

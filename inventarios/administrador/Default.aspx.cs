@@ -63,10 +63,12 @@ public partial class administrador_Default : System.Web.UI.Page
             Add("Marmitas", 1001, parent);
             Add("Estado", 1002, parent);
             Add("Análisis físico químico", 1003, parent);
+            Add("Microbiológicas (Ausentes/Presentes)", 1007, parent);
             Add("Microbiológicas", 1004, parent);
             Add("Análisis sensorial", 1005, parent);
             Add("Prueba de esterilidad", 1006, parent);
 
+            // disponible 1008
             if (HTipo.Value.Length == 0)
                 Response.Redirect(Request.Url.AbsolutePath + "?tipo=1");
         }

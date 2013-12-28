@@ -18,6 +18,11 @@
     .esterilidad tr td:nth-child(odd),.sensorial tr td:nth-child(odd) { width: 146px;}
     .esterilidad tr td:nth-child(even),.sensorial tr td:nth-child(even) { width: 129px;}
     .esterilidad tr td { font-size: 12px;}
+    .rmicrosimple 
+    {
+        white-space: nowrap;
+        font-size: 11px;
+    }
 </style>
 <script type="text/javascript">
     function validar(textbox, minimo, maximo) {
@@ -26,13 +31,16 @@
             return;
         }
         var valor = parseFloat($(textbox).val());
-        if (valor < minimo)
+        if (minimo && valor < minimo)
             $(textbox).css("background-color", "#FFFF00").css("color", "#000");
-        else if (valor > maximo)
+        else if (maximo && valor > maximo)
             $(textbox).css("background-color", "#FF0000").css("color", "#FFF");
         else $(textbox).css("background-color", "#00FF00").css("color", "#000");
     }
     $(function() {
+        $(".rmicrosimple").each(function() {
+            $(this).find("tr td:first").hide();
+        });
         $(document).tooltip();
         $(".valores").change();
         $(".porcentaje").autoNumeric('init', { vMin: 0, aSep: '', mDec: 2, aPad: false, aSign: '%', pSign: 's' });
@@ -168,7 +176,7 @@
                                 </td>
                                 <td width="129px"><asp:TextBox runat="server" 
                                     title='<%# "Valor entre " + Eval("minimo")+  "-" + Eval("maximo") %>'
-                                    onchange='<%# "validar(this, " + Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) + "," + Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture)+ ")"%>' 
+                                    onchange='<%# "validar(this, " + (Eval("minimo")==DBNull.Value ? "null" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture)) + "," + (Eval("maximo")==DBNull.Value ? "null" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture)) + ")"%>' 
                                     ID="TValor" CssClass="float valores" Text='<%# Eval("valor")==DBNull.Value ? "" : Convert.ToDouble(Eval("valor")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></td>
                             </tr>
                         </table>
@@ -177,12 +185,12 @@
                 <asp:SqlDataSource ID="SAnalisis" runat="server" 
                     ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
                     ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
-                    SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo 
+                    SelectCommand="SELECT varios.id, varios.nombre,formulacion_parametro.minimo,formulacion_parametro.maximo
                             ,analisis_fisico_quimico_parametros.valor
                             FROM formulacion_parametro 
                             LEFT JOIN varios ON (formulacion_parametro.parametro=varios.id)
                             LEFT JOIN analisis_fisico_quimico_parametros ON (analisis_fisico_quimico_parametros.analisis=@analisis AND analisis_fisico_quimico_parametros.parametro=varios.id)
-                            WHERE formulacion_parametro.formulacion=@producto AND varios.tipo=1003
+                            WHERE formulacion_parametro.formulacion=@producto AND varios.tipo=1003 AND varios.estado IS NULL
                             ORDER BY varios.nombre;">
                             <SelectParameters>
                                 <asp:Parameter Name="analisis" DefaultValue="0" />
@@ -268,6 +276,38 @@
         </tr>
         <tr>
             <td colspan="5" class="tdl tdr">
+                <asp:DataList ID="DMicroSimple" runat="server" AutoGenerateColumns="False" DataSourceID="SMicroSimple" RepeatColumns="2" DataKeyField="nombre">
+                    <ItemTemplate>
+                        <table>
+                            <tr>
+                                <td width="146px" style="font-size: 10px; white-space: nowrap;">
+                                <asp:HiddenField runat="server" ID="HId" Value='<%# Eval("id") %>' />
+                                    <%# Eval("nombre") %>
+                                    <asp:RequiredFieldValidator ValidationGroup="micro" ControlToValidate="RValor" ErrorMessage='<%# "Por favor seleccione un " + Eval("nombre") + "."%>' ID="RequiredFieldValidator6" runat="server" Display="Dynamic" SetFocusOnError="true">*</asp:RequiredFieldValidator>
+                                </td>
+                                <td width="129px">
+                                <asp:RadioButtonList runat="server" ID="RValor" RepeatColumns="3" CssClass="rmicrosimple" SelectedValue='<%# Eval("valor") %>'>
+                                    <asp:ListItem Text="Ninguno" Value=""></asp:ListItem>
+                                    <asp:ListItem Text="Ausente" Value="0"></asp:ListItem>
+                                    <asp:ListItem Text="Presente" Value="1"></asp:ListItem>
+                                </asp:RadioButtonList>
+                            </tr>
+                        </table>
+                    </ItemTemplate>
+                </asp:DataList>
+                <asp:SqlDataSource ID="SMicroSimple" runat="server" 
+                    ConnectionString="<%$ ConnectionStrings:MySQLConnectionString %>" 
+                    ProviderName="<%$ ConnectionStrings:MySQLConnectionString.ProviderName %>" 
+                    SelectCommand="SELECT varios.id, varios.nombre
+                            ,analisis_fisico_quimico_parametros.valor
+                            FROM varios
+                            LEFT JOIN analisis_fisico_quimico_parametros ON (analisis_fisico_quimico_parametros.analisis=@analisis AND analisis_fisico_quimico_parametros.parametro=varios.id)
+                            WHERE varios.tipo=1007 AND varios.estado IS NULL
+                            ORDER BY varios.nombre;">
+                            <SelectParameters>
+                                <asp:Parameter Name="analisis" DefaultValue="0" />
+                            </SelectParameters>
+                </asp:SqlDataSource>
                 <asp:DataList ID="DMicro" runat="server" AutoGenerateColumns="False" DataSourceID="SMicro" RepeatColumns="2" DataKeyField="nombre">
                     <ItemTemplate>
                         <table>
@@ -279,7 +319,7 @@
                                 </td>
                                 <td width="129px"><asp:TextBox runat="server" 
                                     title='<%# "Valor entre " + Eval("minimo")+  "-" + Eval("maximo") %>'
-                                    onchange='<%# "validar(this, " + Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture) + "," + Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture)+ ")"%>' 
+                                    onchange='<%# "validar(this, " + (Eval("minimo")==DBNull.Value ? "null" : Convert.ToDouble(Eval("minimo")).ToString(System.Globalization.CultureInfo.InvariantCulture)) + "," + (Eval("maximo")==DBNull.Value ? "null" : Convert.ToDouble(Eval("maximo")).ToString(System.Globalization.CultureInfo.InvariantCulture)) + ")"%>' 
                                     ID="TValor" CssClass="float valores" Text='<%# Eval("valor")==DBNull.Value ? "" : Convert.ToDouble(Eval("valor")).ToString(System.Globalization.CultureInfo.InvariantCulture) %>'></asp:TextBox></td>
                             </tr>
                         </table>
@@ -293,7 +333,7 @@
                             FROM formulacion_parametro 
                             LEFT JOIN varios ON (formulacion_parametro.parametro=varios.id)
                             LEFT JOIN analisis_fisico_quimico_parametros ON (analisis_fisico_quimico_parametros.analisis=@analisis AND analisis_fisico_quimico_parametros.parametro=varios.id)
-                            WHERE formulacion_parametro.formulacion=@producto AND varios.tipo=1004
+                            WHERE formulacion_parametro.formulacion=@producto AND varios.tipo=1004 AND varios.estado IS NULL
                             ORDER BY varios.nombre;">
                             <SelectParameters>
                                 <asp:Parameter Name="analisis" DefaultValue="0" />

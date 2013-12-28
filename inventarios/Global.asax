@@ -15,17 +15,19 @@
         
     void Application_Error(object sender, EventArgs e) 
     {
-        Exception exx = Server.GetLastError();
-        if (exx is HttpException)
+        try
         {
-            if (((HttpException)(exx)).GetHttpCode() == 404 || ((HttpException)(exx)).GetHttpCode() == 403) // omitimos los errores 403 y 404
-                return;
-        }
-        
-#if DEBUG
-#else        
+            Exception exx = Server.GetLastError().GetBaseException();
+            if (exx is HttpException)
+            {
+                if (((HttpException)(exx)).GetHttpCode() == 404
+                    || ((HttpException)(exx)).GetHttpCode() == 403
+                    || ((HttpException)(exx)).GetHttpCode() == 405
+                    || ((HttpException)(exx)).GetHttpCode() == 411) // omitimos los errores 403 y 404
+                    return;
+            }
+        } catch { }
         SDG.Componentes.Logs.WriteLog(SDG.Componentes.Logs.DumpPage(Server, Request));
-#endif
         // Server.ClearError();
     }
 

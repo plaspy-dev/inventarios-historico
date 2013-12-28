@@ -296,10 +296,15 @@ public class ProductoUsado
                 + " AND estado{0}.ubicacion=" + ubicacion.ToString()
                 , almacen);
             if (salida)
-                consulta += string.Format(" AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL", almacen);
+            {
+                if(!Almacen.GetAlmacenVence(almacen))
+                    consulta += string.Format(" AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE()))", almacen);
+                consulta += string.Format(" AND varios.parametro1 IS NULL", almacen);
+            }
 
             string szDisponible = conector.QueryString(consulta);
-            double dCantidad = Convert.ToDouble(szDisponible);
+            double dCantidad = 0;
+            try { dCantidad = Convert.ToDouble(szDisponible); } catch { }
             dCantidad -= GetProductoUsado(producto, lote, vencimiento);
 
             if (dCantidad < cantidad)
@@ -311,7 +316,11 @@ public class ProductoUsado
                 + " AND estado{0}.ubicacion=" + ubicacion.ToString()
                 , almacen);
             if (salida)
-                consulta += string.Format(" AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE())) AND varios.parametro1 IS NULL", almacen);
+            {
+                if (!Almacen.GetAlmacenVence(almacen))
+                    consulta += string.Format(" AND (estado{0}.vence='0000-00-00' OR estado{0}.vence>=DATE(SYSDATE()))", almacen);
+                consulta += string.Format(" AND varios.parametro1 IS NULL", almacen);
+            }
 
             MySqlDataReader reader = conector.Query(consulta);
             if (reader != null)

@@ -12,7 +12,7 @@ namespace SDG.Componentes;
 
 public class ConectorMS : IDisposable
 {
-	private static bool bGetKey;
+	private static bool bGetKey = false;
 
 	protected string m_szLastError;
 
@@ -20,7 +20,7 @@ public class ConectorMS : IDisposable
 
 	protected string m_szConexion;
 
-	public bool m_bTransaccion;
+	public bool m_bTransaccion = false;
 
 	protected SqlConnection m_pSQLConector;
 
@@ -62,6 +62,7 @@ public class ConectorMS : IDisposable
 			{
 				m_pSQLReader.Close();
 			}
+			m_pSQLReader = null;
 		}
 		catch
 		{
@@ -72,6 +73,7 @@ public class ConectorMS : IDisposable
 			{
 				m_pSQLConector.Close();
 			}
+			m_pSQLConector = null;
 		}
 		catch
 		{
@@ -90,11 +92,6 @@ public class ConectorMS : IDisposable
 
 	public void ShowError(string error)
 	{
-		string text = DateTime.Now.ToString() + " Error[ConectorMS] : ";
-		text = ((HttpContext.Current != null) ? (text + HttpContext.Current.Request.Url.ToString()) : (text + Path.GetFileName(Assembly.GetEntryAssembly().Location)));
-		string text2 = text;
-		text = text2 + "\r\n" + m_szLastError + "\r\n" + m_szQuery;
-		Logs.WriteLog(text);
 		try
 		{
 			Page page = (Page)HttpContext.Current.Handler;
@@ -180,8 +177,11 @@ public class ConectorMS : IDisposable
 			m_szLastError = ex.Message;
 			ShowError(m_szLastError + "\nEn la consulta:\n" + query);
 		}
-		catch
+		catch (Exception ex2)
 		{
+			num = -1;
+			m_szLastError = ex2.Message;
+			ShowError(m_szLastError + "\nEn la consulta:\n" + query);
 		}
 		if (identity && num != -1)
 		{

@@ -40,6 +40,22 @@ public class Almacen
         return full;
     }
 
+    static public void RemoveUbicacion(string idAlmacen)
+    {
+        Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "av" + idAlmacen);
+    }
+
+    static public bool GetAlmacenVence(string idAlmacen)
+    {
+        object retorno = Cache.Get(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "av" + idAlmacen);
+        if (retorno == null) {
+            using (CConector conector = new CConector())
+                retorno = conector.QueryString("SELECT vencido FROM almacen WHERE id=" + Query.GetValor(idAlmacen))=="1";
+            Cache.Set(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "av" + idAlmacen, retorno);
+        }
+        return (bool)retorno;
+    }
+
     static public void RemoveUbicacion(int ubicacion) {
         Cache.Remove(((CUsuario)Usuario.GetUsuario()).GetDatabase() + "u" + ubicacion.ToString());
     }
