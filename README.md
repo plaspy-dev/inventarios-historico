@@ -8,16 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2013-12-28 · Ajustar campos de laboratorio y de movimientos.** Añade campos enlazados en laboratorio y reorganiza controles de salida y traslado. Esto alinea la información visible con las operaciones que se pueden completar desde cada pantalla.
-
-### Cómo explorar el código
-
-El sitio usa ASP.NET de su época. Revisa las páginas y su código en un entorno Windows compatible con .NET Framework. Para una ejecución local, identifica las conexiones que usa la aplicación y prepara una base vacía con datos de prueba. Las conexiones, recursos y servicios originales se gestionan por separado.
-
-- [inventarios/Default.aspx](inventarios/Default.aspx)
-- [inventarios/inicio.aspx](inventarios/inicio.aspx)
-- [inventarios/administrador/Default.aspx](inventarios/administrador/Default.aspx)
-- [inventarios/error/Default.aspx](inventarios/error/Default.aspx)
+**2015-06-17 · Registrar un respaldo sin el árbol de inventario.** Retira del respaldo los formularios y modelos de productos que estaban presentes en la versión anterior. El historial permite identificar el punto donde esos archivos quedaron fuera de la copia.
 
 ## English
 
@@ -25,13 +16,4 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2013-12-28 · Update lab and movement form fields.** Add bound lab fields and reorganize withdrawal and transfer controls. This aligns visible information with the operations available on each screen.
-
-### How to explore the source
-
-The site uses historical ASP.NET. Review its pages and code in a Windows environment compatible with .NET Framework. To run locally, identify the connections the application uses and prepare an empty database with test data. Original connections, resources, and services are managed separately.
-
-- [inventarios/Default.aspx](inventarios/Default.aspx)
-- [inventarios/inicio.aspx](inventarios/inicio.aspx)
-- [inventarios/administrador/Default.aspx](inventarios/administrador/Default.aspx)
-- [inventarios/error/Default.aspx](inventarios/error/Default.aspx)
+**2015-06-17 · Record a snapshot without the inventory tree.** Remove product forms and models present in the preceding version. The history identifies where those files were omitted from the snapshot.
