@@ -1,0 +1,108 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="MasterPage" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <link rel="Stylesheet" type="text/css" href="css/estilos.css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Gestión de inventarios · edición histórica</title>
+    <link rel="Stylesheet" type="text/css" href="css/jquery-ui-1.8.20.custom.css" />
+    <script type="text/javascript" src="https://service.example.invalid/ajax/libs/jquery/1.10.1/jquery.min.js"></script> 
+    <script type="text/javascript" src="https://service.example.invalid/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+    <asp:ContentPlaceHolder id="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server" class="cxc" >
+    <div id="contenedor">
+    <table class="cxc" border="0" id="tcxc" cellpadding=0 cellspacing=0>
+  <tr>
+    <td><table width="100%" border="0" id="tlogo" cellpadding=0 cellspacing=0 style="background: #DDEBCF">
+      <tr>
+        <td rowspan="2" width="12px">
+            <asp:ImageButton ID="ILogo" runat="server" CausesValidation="False" ImageUrl="~/img/logo.png" PostBackUrl="~/Default.aspx" />
+       </td>
+        <td align="right"><asp:Label runat="server" ID="LPagina" CssClass="titulo"></asp:Label></td>
+      </tr>
+      <tr>
+        <td align="left" valign="bottom">
+        </td>
+        </tr>
+      </table></td>
+  </tr>
+  <tr>
+    <td style="height:100%; min-height:100%; width: 100%" id="tdcxc">
+        <table border="0" cellpadding="0" cellspacing="0" class="cxc">
+      <!-- fwtable fwsrc="template.png" fwpage="Página 1" fwbase="template.jpg" fwstyle="Dreamweaver" fwdocid = "528861927" fwnested="0" -->
+      <tr>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="51" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="817" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="43" Height="1" /></td>
+        <td><asp:Image runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="1" /></td>
+        </tr>
+      <tr>
+        <td><asp:Image ID="Image1" runat="server" ImageUrl="~/img/img/template_r1_c1.jpg" Width="51" Height="42" /></td>
+        <td width="100%" class="bg2" valign="top" align="right"><asp:Label runat="server" ID="LUsuario" CssClass="usuario"></asp:Label></td>
+        <td><asp:Image ID="Image2" runat="server" ImageUrl="~/img/img/template_r1_c3.jpg" Width="43" Height="42" /></td>
+        <td><asp:Image ID="Image3" runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="42" /></td>
+        </tr>
+      <tr class="cxc">
+        <td class="bg3"></td>
+        <td class="bg4" valign="top">
+            <asp:ContentPlaceHolder id="ContentPlaceHolder1" runat="server">
+          </asp:ContentPlaceHolder></td>
+          <td class="bg5"></td>
+        <td background="img/img/spacer.gif"></td>
+        </tr>
+      <tr>
+        <td><asp:Image ID="Image4" runat="server" ImageUrl="~/img/img/template_r3_c1.jpg" Width="51" Height="49" /></td>
+        <td class="bg6"></td>
+        <td><asp:Image ID="Image5" runat="server" ImageUrl="~/img/img/template_r3_c3.jpg" Width="43" Height="49" /></td>
+        <td><asp:Image ID="Image6" runat="server" ImageUrl="~/img/img/spacer.gif" Width="1" Height="49" /></td>
+        </tr>
+      </table></td>
+  </tr>
+</table>
+</div>
+    <div id="footer">Carrera 23 No. 80-58 PBX:(057+1)702 7022 Bogotá,Colombia<br />
+          Todos los derechos reservados <strong>SDG LTDA. </strong><br />
+          Desarrollado por <a href="https://service.example.invalid" target="_blank">Software 
+        Developers Group Ltda</a>.</div>    
+    </form>    
+    <script type="text/javascript">
+        // reemplazamos la funcion de validacion de ASP
+        function ValidatorOnChange(event) {
+            if (!event) {
+                event = window.event;
+            }
+            Page_InvalidControlToBeFocused = null;
+            var targetedControl;
+            if (event) {
+                if ((typeof (event.srcElement) != "undefined") && (event.srcElement != null)) {
+                    targetedControl = event.srcElement;
+                }
+                else {
+                    targetedControl = event.target;
+                }
+            }
+            var vals;
+            if (typeof (targetedControl) != "undefined") { // omitimos este
+                if (typeof (targetedControl.Validators) != "undefined") {
+                    vals = targetedControl.Validators;
+                } else {
+                    if (targetedControl.tagName.toLowerCase() == "label") {
+                        targetedControl = document.getElementById(targetedControl.htmlFor);
+                        vals = targetedControl.Validators;
+                    }
+                }
+            }
+            var i;
+            if (vals) {
+                for (i = 0; i < vals.length; i++) {
+                    ValidatorValidate(vals[i], null, event);
+                }
+            }
+            ValidatorUpdateIsValid();
+        }
+    </script>
+</body>
+</html>
