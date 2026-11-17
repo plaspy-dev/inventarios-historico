@@ -8,7 +8,7 @@ Aplicación web para saber qué artículos hay en cada almacén y de dónde vien
 
 ### Esta revisión
 
-**2015-06-17 · Restituir los formularios y modelos de inventario.** Recupera el árbol que contiene las fichas de productos y las clases que consultan sus datos. El lector vuelve a tener el código para seguir la administración de artículos en esta edición.
+**2026-11-17 · Ilustrar entradas, salidas y traslados con datos ficticios.** Añade un ejemplo inventado que permite seguir cómo cambia la cantidad de un almacén al recibir, retirar y trasladar unidades. El lector puede comparar los saldos esperados con los movimientos descritos.
 
 ### Cómo explorar el código
 
@@ -22,7 +22,7 @@ A web application for looking up stock at each warehouse and tracing where chang
 
 ### This revision
 
-**2015-06-17 · Restore inventory forms and data models.** Recover the tree containing product records and the classes that query their data. Readers again have the source needed to follow product administration in this edition.
+**2026-11-17 · Illustrate stock movements with fictional records.** Add a fictional example that shows how warehouse stock changes during receipts, withdrawals, and transfers. Readers can compare expected balances with the listed movements.
 
 ### How to explore the source
 
