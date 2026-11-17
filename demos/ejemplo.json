@@ -1,0 +1,38 @@
+{
+  "articulo": {
+    "codigo": "DEMO-HERR-01",
+    "nombre": "Herramienta de práctica"
+  },
+  "almacenes": [
+    {
+      "codigo": "DEMO-A",
+      "nombre": "Almacén de recepción"
+    },
+    {
+      "codigo": "DEMO-B",
+      "nombre": "Almacén de trabajo"
+    }
+  ],
+  "movimientos": [
+    {
+      "tipo": "entrada",
+      "destino": "DEMO-A",
+      "unidades": 10
+    },
+    {
+      "tipo": "traslado",
+      "origen": "DEMO-A",
+      "destino": "DEMO-B",
+      "unidades": 2
+    },
+    {
+      "tipo": "salida",
+      "origen": "DEMO-B",
+      "unidades": 1
+    }
+  ],
+  "saldos_esperados": {
+    "DEMO-A": 8,
+    "DEMO-B": 1
+  }
+}

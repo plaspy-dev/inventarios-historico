@@ -9,7 +9,7 @@ Archived Web Forms site for recording stock receipts, issues and transfers acros
 > [!WARNING]
 > **Status: Archived.** The website compiles today with the documented Windows toolchain.
 
-This 2015-06-17 source snapshot tracks stock and movements separately for each warehouse.
+The recovered Web Forms site tracks stock and movements separately for each warehouse. The newest archived website dates to June 2015. The November 2026 work documents the reconstruction and adds local test tools.
 
 ### Overview
 
@@ -60,21 +60,21 @@ MySQL Connector/NET 6.3.5.0 is included. The archived optional adapters use BeIT
 
 The recovery includes the archived menu definition `inventarios/directorio.xml` dated 2014-03-01, and 22 interface graphics from the same source.
 
-`inventarios/` has the pages and stock workflows. `src/SDG.Componentes/` builds the C# reconstruction of the period assembly. `demo/` contains the build script and Web Forms configuration template.
+`inventarios/` has the pages and stock workflows. `src/SDG.Componentes/` builds the C# reconstruction of the period assembly. `demo/` contains the build script and recipe. `demos/ejemplo.json` shows fictional stock transfers.
 
 ### Usage and limits
 
 Generate hexadecimal `INVENTARIO_DEMO_ROOT` and `INVENTARIO_DEMO_LOGIN` in the current shell. Run `docker compose -f demo/compose.yaml up -d`. From this checkout, run `python demo/preparar-sitio-local.py <new-folder>` and open the generated `inventarios/` folder in IIS Express. The script only changes the settings in that disposable copy. Sign in as `alicia_demo` with the generated login password and confirm that Inicio shows Deposito Norte. Remove the service after the test with `docker compose -f demo/compose.yaml down --volumes`.
 
-Open the local site and sign in with the generated account. The verification records the protected home page and fictional data service.
+Sign in to the local site to see the example warehouse on the home page. The tests use generated credentials and fictional records. Coverage includes sign-in and display of the example warehouse.
 
 ### Verification
 
-The later 2026 reconstruction trial runs the exact revision with ASP.NET Compiler 4.8.10001.0 and a disposable MySQL server. The local test covers sign-in and the protected home page. Results for other workflows depend on the files and permissions of each edition.
+Tested in the 2026 reconstruction on Windows with ASP.NET Compiler 4.8.10001.0, IIS Express 10.0.26013.1000, .NET SDK 11.0.100, Python 3.12.4 and disposable MySQL 5.6.51. The Build command succeeded. The local account opened the warehouse home page.
 
 ### History
 
-The June 17, 2015 web application comes from the previous Git history. The 2026 reconstruction supplies the build instructions and fictional database recipe.
+The Web Forms history begins with the November 2012 archive, continues through the 2013 editions and includes a documentation-only snapshot. The latest archived website is dated June 17, 2015. The 2026 commits add the bilingual guide, fictional data and independent tests for the archived application.
 
 ### Keys for IIS
 
@@ -101,7 +101,7 @@ Archivado — Sitio Web Forms para registrar entradas, salidas y traslados de ex
 > [!WARNING]
 > **Estado: archivado.** El sitio compila hoy con las herramientas de Windows indicadas.
 
-Este respaldo de fuentes del 2015-06-17 controla existencias y movimientos por almacén.
+El sitio Web Forms recuperado controla existencias y movimientos por almacén. El sitio archivado más reciente es de junio de 2015. El trabajo de noviembre de 2026 documenta la reconstrucción y agrega herramientas para las pruebas locales.
 
 ### Descripción general
 
@@ -152,21 +152,21 @@ El árbol incluye MySQL Connector/NET 6.3.5.0. Los adaptadores opcionales usan B
 
 La recuperación incluye la definición del menú archivado `inventarios/directorio.xml` del 2014-03-01 y 22 gráficos de interfaz del mismo respaldo.
 
-`inventarios/` contiene las páginas y los movimientos. `src/SDG.Componentes/` compila la reconstrucción C# del ensamblado de época. `demo/` contiene el lanzador de compilación y la plantilla Web Forms.
+`inventarios/` contiene las páginas y los movimientos. `src/SDG.Componentes/` compila la reconstrucción C# del ensamblado de época. `demo/` contiene el lanzador de compilación y la receta. `demos/ejemplo.json` muestra movimientos ficticios.
 
 ### Uso y alcance
 
 Genera `INVENTARIO_DEMO_ROOT` e `INVENTARIO_DEMO_LOGIN` en hexadecimal para la sesión actual. Ejecuta `docker compose -f demo/compose.yaml up -d`. Desde esta copia, ejecuta `python demo/preparar-sitio-local.py <carpeta-nueva>` y abre la carpeta `inventarios/` generada en IIS Express. El script configura únicamente esa copia desechable. Ingresa como `alicia_demo` con la clave generada y comprueba que Inicio muestra Deposito Norte. Retira el servicio con `docker compose -f demo/compose.yaml down --volumes` al terminar.
 
-Abre el sitio local e inicia sesión con la cuenta generada. La verificación registra la portada protegida y el servicio de datos ficticios.
+Ingresa al sitio local para ver el almacén de ejemplo en Inicio. La prueba usa datos ficticios y claves generadas. Se comprobó el ingreso y la visualización del almacén de ejemplo.
 
 ### Verificación
 
-En la prueba posterior de reconstrucción de 2026 se usa esta revisión exacta con ASP.NET Compiler 4.8.10001.0 y MySQL desechable. La prueba local cubre el ingreso y la portada protegida. El alcance de otros recorridos depende de los archivos y permisos de cada edición.
+Probado en la reconstrucción de 2026 en Windows con ASP.NET Compiler 4.8.10001.0, IIS Express 10.0.26013.1000, SDK .NET 11.0.100, Python 3.12.4 y MySQL 5.6.51 desechable. El comando de compilación terminó correctamente. La cuenta local abrió el inicio del almacén.
 
 ### Historial
 
-La aplicación web del 17 de junio de 2015 proviene del historial de Git anterior. La reconstrucción de 2026 aporta las instrucciones de compilación y la receta de datos ficticios.
+La historia Web Forms empieza con el respaldo de noviembre de 2012, continúa con las ediciones de 2013 e incluye un corte exclusivamente documental. El último sitio archivado es del 17 de junio de 2015. Los commits de 2026 agregan la guía bilingüe, los datos ficticios y las pruebas aisladas.
 
 ### Claves de IIS
 
