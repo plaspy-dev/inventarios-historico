@@ -74,7 +74,7 @@ Tested in the 2026 reconstruction on Windows with ASP.NET Compiler 4.8.10001.0, 
 
 ### History
 
-The Web Forms history begins with the November 2012 archive, continues through the 2013 editions and includes a documentation-only snapshot. The latest archived website is dated June 17, 2015. The 2026 commits add the bilingual guide, fictional data and independent tests for the archived application.
+The Web Forms history begins with the November 2012 archive, continues through the 2013 editions and includes a documentation-only snapshot. The latest archived website is dated June 17, 2015. The 2026 commits add the bilingual guide, fictional data and independent tests for the archived application. The local recipe explains how to start the recovered warehouse website in an independent test directory.
 
 ### Keys for IIS
 
@@ -166,7 +166,7 @@ Probado en la reconstrucción de 2026 en Windows con ASP.NET Compiler 4.8.10001.
 
 ### Historial
 
-La historia Web Forms empieza con el respaldo de noviembre de 2012, continúa con las ediciones de 2013 e incluye un corte exclusivamente documental. El último sitio archivado es del 17 de junio de 2015. Los commits de 2026 agregan la guía bilingüe, los datos ficticios y las pruebas aisladas.
+La historia Web Forms empieza con el respaldo de noviembre de 2012, continúa con las ediciones de 2013 e incluye un corte exclusivamente documental. El último sitio archivado es del 17 de junio de 2015. Los commits de 2026 agregan la guía bilingüe, los datos ficticios y las pruebas aisladas. La receta local explica cómo abrir el sitio de almacén recuperado en una carpeta de prueba independiente.
 
 ### Claves de IIS
 
