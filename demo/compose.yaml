@@ -13,5 +13,16 @@ services:
     volumes:
       - ./schema.sql:/docker-entrypoint-initdb.d/10-schema.sql:ro
       - ./insertar-demo.sh:/docker-entrypoint-initdb.d/20-demo.sh:ro
+  s3:
+    image: python:3.12-slim
+    container_name: prueba-inventarios-historico-s3
+    environment:
+      FIXTURE_ACCESS_KEY: ${INVENTARIO_DEMO_S3_KEY:?Generate a local test key}
+    ports:
+      - "127.0.0.1:58090:8090"
+    networks: [demo]
+    volumes:
+      - ./s3_fixture.py:/fixture.py:ro
+    command: ["python", "-u", "/fixture.py"]
 networks:
   demo: {}

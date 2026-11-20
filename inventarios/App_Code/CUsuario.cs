@@ -47,7 +47,7 @@ public class CUsuario : Usuario
         if(db==null) {
             // Conector conectorUsuario = new Conector(ConfigurationManager.ConnectionStrings["ConexionUsuario"].ConnectionString);
             // conectorUsuario.QueryString("");
-            db = "demo_inventory";
+            db = System.Configuration.ConfigurationManager.AppSettings["InventoryDatabase"] ?? "demo_inventory";
             Cache.Set("idbu" + usuario.ToLower(), db);
         }
         return db;
@@ -78,7 +78,7 @@ public class CUsuario : Usuario
 
                 CUsuario pUsuario = new CUsuario(id, reader["nombre"].ToString(), grupo, usuario);
                 pUsuario["almacenes"] = reader["almacenes"].ToString();
-                pUsuario.szDatabase = "demo_inventory";
+                pUsuario.szDatabase = System.Configuration.ConfigurationManager.AppSettings["InventoryDatabase"] ?? "demo_inventory";
                 
                 CConector.SetCookie("usuario", usuario);
                 Cache.Remove("iiu" + pUsuario.m_szLogin.ToLower());

@@ -23,6 +23,16 @@ public class Formato
 
         servicio.AccessKeyID = ConfigurationManager.AppSettings["s3Key"];
         servicio.SecretAccessKey = ConfigurationManager.AppSettings["s3Password"];
+        string port = ConfigurationManager.AppSettings["s3LocalPort"];
+        if (!String.IsNullOrEmpty(port)) {
+            int localPort;
+            if (!Int32.TryParse(port, out localPort) || localPort < 1 || localPort > 65535)
+                throw new InvalidOperationException("Invalid local S3 port.");
+            servicio.Host = "127.0.0.1";
+            servicio.CustomPort = localPort;
+            servicio.UseSubdomains = false;
+            servicio.UseSsl = false;
+        }
         return servicio;
     }
 
