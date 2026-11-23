@@ -30,6 +30,7 @@ CREATE TABLE `varios` (
   `tipo` int(11) DEFAULT NULL,
   `szReservado` varchar(1024) DEFAULT NULL,
   `parametro1` bigint(20) unsigned DEFAULT NULL,
+  estado INT,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 CREATE TABLE `grupo` (
@@ -60,6 +61,8 @@ CREATE TABLE `producto` (
   empresa VARCHAR(255),
   estado INT,
   nSerial INT,
+  serial INT,
+  diasvencimiento INT,
   vence INT,
   lote INT,
   entero INT,
@@ -304,4 +307,7 @@ CREATE TABLE transformacion_entrada0 (
 	proveedor BIGINT UNSIGNED DEFAULT 0,
 	FOREIGN KEY (producto) REFERENCES producto(id),
 	PRIMARY KEY(id)
+) ENGINE=InnoDB;
+CREATE TABLE configuracion (
+  configuracion LONGTEXT NOT NULL
 ) ENGINE=InnoDB;

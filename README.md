@@ -15,8 +15,8 @@ The recovered Web Forms site tracks stock and movements separately for each ware
 
 ### Features
 
-- Open stock transformations in `almacen/transformaciones.aspx`.
-- Open the production process data in `produccion/proceso.aspx`.
+- Open stock transformations in `inventarios/almacen/transformaciones.aspx`.
+- Open the production process data in `inventarios/produccion/proceso.aspx`.
 - Sign in with a local inventory account through `inventarios/Default.aspx`.
 - Record incoming stock at `inventarios/almacen/entrada.aspx`.
 - Record stock withdrawals at `inventarios/almacen/salida.aspx`.
@@ -80,9 +80,13 @@ Sign in to the local site to see the example warehouse on the home page. The tes
 
 ### Verification
 
-Tested in the 2026 reconstruction on Windows with ASP.NET Compiler 4.8.10001.0, IIS Express 10.0.26013.1000, .NET SDK 11.0.100, Python 3.12.4 and disposable MySQL 5.6.51. The Build command succeeded. The local account opened the warehouse home page. Docker Compose 5.6.1 started the fictional database and storage endpoint and both passed their checks.
+The local demo grants read access to Products. In the authenticated menu, open Products and look for the fictional item H-501, Llave de ensayo. The trial covers the catalogue read and leaves edits and deletes outside its scope.
+
+A follow-up verification of the November 23 snapshot used its recorded application inputs on November 24, 2026, under Windows with ASP.NET Compiler 4.8.10001.0, IIS Express 10.0.26013.1000, .NET SDK 11.0.100, Python 3.12.4 and disposable MySQL 5.6.51. The Build command succeeded. The local account opened the warehouse home page. Docker Compose 5.6.1 started the fictional database and storage endpoint and both passed their checks.
 
 ### History
+
+Four archived editions use the order template from the source tree. The conflict copy of that template stays in the corresponding backup. Other snapshots retain the warehouse source conflict copy as part of that archived tree.
 
 The Web Forms history begins with the November 2012 archive, continues through the 2013 editions and includes a documentation-only snapshot. The latest archived website is dated June 17, 2015. The 2026 commits add the bilingual guide, fictional data and independent tests for the archived application.
 
@@ -119,8 +123,8 @@ El sitio Web Forms recuperado controla existencias y movimientos por almacén. E
 
 ### Funciones
 
-- Abre las transformaciones de existencias en `almacen/transformaciones.aspx`.
-- Abre los datos del proceso de producción en `produccion/proceso.aspx`.
+- Abre las transformaciones de existencias en `inventarios/almacen/transformaciones.aspx`.
+- Abre los datos del proceso de producción en `inventarios/produccion/proceso.aspx`.
 - Inicia sesión con una cuenta local de inventarios desde `inventarios/Default.aspx`.
 - Registra entradas de existencias en `inventarios/almacen/entrada.aspx`.
 - Registra salidas de existencias en `inventarios/almacen/salida.aspx`.
@@ -132,7 +136,7 @@ El sitio Web Forms recuperado controla existencias y movimientos por almacén. E
 - Consulta órdenes de producción en `inventarios/produccion/orden.aspx`.
 - Registra los datos de laboratorio en `inventarios/produccion/laboratorio.aspx`.
 
-### Compilar
+### Cómo empezar a compilar
 
 Necesitas Windows x64 con ASP.NET de .NET Framework 4.8, su Developer Pack, el SDK .NET 11.0.100 y Python 3.12.4. El comando recompila la biblioteca propia y precompila las páginas desde una copia temporal. Usa una carpeta de salida nueva.
 
@@ -184,9 +188,13 @@ Ingresa al sitio local para ver el almacén de ejemplo en Inicio. La prueba usa 
 
 ### Verificación
 
-Probado en la reconstrucción de 2026 en Windows con ASP.NET Compiler 4.8.10001.0, IIS Express 10.0.26013.1000, SDK .NET 11.0.100, Python 3.12.4 y MySQL 5.6.51 desechable. El comando de compilación terminó correctamente. La cuenta local abrió el inicio del almacén. Docker Compose 5.6.1 inició la base y el almacenamiento ficticios y ambos pasaron las pruebas.
+La demo local concede acceso de lectura a Productos. En el menú autenticado, abre Productos y busca H-501, Llave de ensayo. La prueba cubre la consulta del catálogo. La edición y el borrado quedan fuera del ensayo.
+
+El 24 de noviembre de 2026 se hizo una verificación posterior del corte del 23 de noviembre con sus insumos de aplicación registrados, en Windows con ASP.NET Compiler 4.8.10001.0, IIS Express 10.0.26013.1000, SDK .NET 11.0.100, Python 3.12.4 y MySQL 5.6.51 desechable. El comando de compilación terminó correctamente. La cuenta local abrió el inicio del almacén. Docker Compose 5.6.1 inició la base y el almacenamiento ficticios y ambos pasaron las pruebas.
 
 ### Historial
+
+Cuatro ediciones archivadas usan la plantilla de órdenes del árbol fuente. Su copia en conflicto queda en el respaldo correspondiente. Otros cortes conservan la copia en conflicto del archivo fuente de almacenes como parte de su árbol archivado.
 
 La historia Web Forms empieza con el respaldo de noviembre de 2012, continúa con las ediciones de 2013 e incluye un corte exclusivamente documental. El último sitio archivado es del 17 de junio de 2015. Los commits de 2026 agregan la guía bilingüe, los datos ficticios y las pruebas aisladas.
 
